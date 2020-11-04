@@ -1,4 +1,4 @@
-namespace YogRobot
+namespace Jottai
 
 module SensorHistoryStorage =
     open System
@@ -6,7 +6,7 @@ module SensorHistoryStorage =
     open MongoDB.Bson
     open MongoDB.Bson.Serialization.Attributes
     open MongoDB.Driver
-    open YogRobot.Expressions
+    open Jottai.Expressions
 
     [<CLIMutable>]
     [<BsonIgnoreExtraElements>]
@@ -55,7 +55,7 @@ module SensorHistoryStorage =
           
         let filter = filterHistoryBy history.DeviceGroupId history.SensorId
         
-        sensorHistoryCollection.ReplaceOneAsync<StorableSensorHistory>(filter, history, BsonStorage.Upsert)
+        sensorHistoryCollection.ReplaceOneAsync<StorableSensorHistory>(filter, history, BsonStorage.Replace)
         |> Async.AwaitTask
         |> Async.Ignore
     

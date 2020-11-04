@@ -1,4 +1,4 @@
-﻿namespace YogRobot
+﻿namespace Jottai
 
 module Program = 
     open System

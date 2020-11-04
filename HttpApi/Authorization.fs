@@ -1,4 +1,4 @@
-﻿namespace YogRobot
+﻿namespace Jottai
 
 [<AutoOpen>]
 module Authorization = 
@@ -42,7 +42,7 @@ module Authorization =
     
     let private validMasterKeyHeaderIsPresent request =
         async {
-            let headers = request |> FindHeader "yog-robot-key"
+            let headers = request |> FindHeader "jottai-key"
             match headers with
             | key :: _ ->                 
                 return! Application.IsValidMasterKey key
@@ -51,8 +51,8 @@ module Authorization =
     
     let private validDeviceGroupKeyHeaderIsPresent request = 
         async {
-            let key = request |> FindHeader "yog-robot-device-group-key"
-            let deviceGroupIds = request |> FindHeader "yog-robot-device-group-id"
+            let key = request |> FindHeader "jottai-device-group-key"
+            let deviceGroupIds = request |> FindHeader "jottai-device-group-id"
         
             let headers = 
                 if key.Length = deviceGroupIds.Length then key |> List.zip deviceGroupIds
@@ -67,9 +67,9 @@ module Authorization =
 
     let private validSensorDataKeyHeaderIsPresent request = 
         async {
-            let key = request |> FindHeader "yog-robot-sensor-data-key"
-            let deviceGroupIdHeader = request |> FindHeader "yog-robot-device-group-id"
-            let botIdIdHeader = request |> FindHeader "yog-robot-bot-id"
+            let key = request |> FindHeader "jottai-sensor-data-key"
+            let deviceGroupIdHeader = request |> FindHeader "jottai-device-group-id"
+            let botIdIdHeader = request |> FindHeader "jottai-bot-id"
             let deviceGroupIds = deviceGroupIdHeader |> List.append botIdIdHeader 
         
             let headers = 
@@ -105,8 +105,8 @@ module Authorization =
         user.Claims.Single(fun claim -> claim.Type = "DeviceGroupId").Value    
 
     let FindDeviceGroupId request =
-        let deviceGroupIdHeader = request |> FindHeader "yog-robot-device-group-id"
-        let botIdIdHeader = request |> FindHeader "yog-robot-bot-id"
+        let deviceGroupIdHeader = request |> FindHeader "jottai-device-group-id"
+        let botIdIdHeader = request |> FindHeader "jottai-bot-id"
         let headers = deviceGroupIdHeader |> List.append botIdIdHeader 
 
         headers
@@ -115,7 +115,7 @@ module Authorization =
     let BuildRoleToken role deviceGroupId = 
         let roleClaim = Claim(ClaimTypes.Role, role)
         let deviceGroupIdClaim = Claim("DeviceGroupId", deviceGroupId)
-        let claimsIdentity = ClaimsIdentity([roleClaim; deviceGroupIdClaim], "YogRobot")
+        let claimsIdentity = ClaimsIdentity([roleClaim; deviceGroupIdClaim], "Jottai")
         let securityTokenDescriptor = SecurityTokenDescriptor()
         securityTokenDescriptor.Subject <- claimsIdentity
         securityTokenDescriptor.SigningCredentials <- SecureSigningCredentials

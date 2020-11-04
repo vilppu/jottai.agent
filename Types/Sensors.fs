@@ -1,4 +1,4 @@
-namespace YogRobot
+namespace Jottai
 
 [<AutoOpen>]
 module Sensors =

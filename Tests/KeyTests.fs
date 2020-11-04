@@ -1,4 +1,4 @@
-﻿namespace YogRobot
+﻿namespace Jottai
 
 module KeyTest = 
     open System.Net

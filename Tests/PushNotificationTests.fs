@@ -1,4 +1,4 @@
-namespace YogRobot
+namespace Jottai
 
 module PushNotificationTests = 
     open Xunit
@@ -95,23 +95,8 @@ module PushNotificationTests =
         
             do! WaitForBackgroundProcessingToComplete()
 
-            Assert.Equal(2, SentHttpRequests.Count)
+            Assert.Equal(3, SentHttpRequests.Count)
             Assert.Equal("https://fcm.googleapis.com/fcm/send", SentHttpRequests.[0].RequestUri.ToString())
-        }
-
-    [<Fact>]
-    let DoNotNotifyAboutNoMotion() = 
-        async {
-            use context = SetupContext()
-            let noMotion = Measurement.Measurement.Motion Measurement.NoMotion
-
-            context |> SetupToReceivePushNotifications        
-            
-            context |> WriteMeasurementSynchronously(Fake.Measurement noMotion)
-        
-            do! WaitForBackgroundProcessingToComplete()
-
-            Assert.Equal(0, SentHttpRequests.Count)
         }
 
     [<Fact>]

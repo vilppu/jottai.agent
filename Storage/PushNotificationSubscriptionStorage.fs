@@ -1,4 +1,4 @@
-namespace YogRobot
+namespace Jottai
 
 module PushNotificationSubscriptionStorage =
     open System
@@ -34,7 +34,7 @@ module PushNotificationSubscriptionStorage =
             let! stored = stored.FirstOrDefaultAsync<StorablePushNotificationSubscriptions>() |> Async.AwaitTask
             stored.Tokens.RemoveAll (fun token -> tokens.Contains(token)) |> ignore
             return!
-                collection.ReplaceOneAsync<StorablePushNotificationSubscriptions>((fun x -> x.DeviceGroupId = deviceGroupId), stored, BsonStorage.Upsert)
+                collection.ReplaceOneAsync<StorablePushNotificationSubscriptions>((fun x -> x.DeviceGroupId = deviceGroupId), stored, BsonStorage.Replace)
                 |> Async.AwaitTask
                 |> Async.Ignore
         }
@@ -57,7 +57,7 @@ module PushNotificationSubscriptionStorage =
             if not(toBeAdded |> List.isEmpty) then
                 do!
                     stored.Tokens.AddRange toBeAdded
-                    collection.ReplaceOneAsync<StorablePushNotificationSubscriptions>((fun x -> x.DeviceGroupId = deviceGroupId), stored, BsonStorage.Upsert)
+                    collection.ReplaceOneAsync<StorablePushNotificationSubscriptions>((fun x -> x.DeviceGroupId = deviceGroupId), stored, BsonStorage.Replace)
                     |> Async.AwaitTask
                     |> Async.Ignore
         }

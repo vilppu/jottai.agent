@@ -1,4 +1,4 @@
-﻿namespace YogRobot
+﻿namespace Jottai
 
 [<AutoOpen>]
 module TestContext = 
@@ -19,11 +19,11 @@ module TestContext =
     let AnotherTestDeviceGroupId = "AnotherTestDeviceGroupId"
 
     let SetupEmptyEnvironmentUsing httpSend = 
-        Environment.SetEnvironmentVariable("YOG_BOT_BASE_URL", "http://127.0.0.1:18888/yog-robot/")
-        Environment.SetEnvironmentVariable("YOG_MONGODB_DATABASE", "YogRobot_Test")
-        Environment.SetEnvironmentVariable("YOG_MASTER_KEY", TheMasterKey)
-        Environment.SetEnvironmentVariable("YOG_TOKEN_SECRET", "fake-token-secret")
-        Environment.SetEnvironmentVariable("YOG_FCM_KEY", "fake")
+        Environment.SetEnvironmentVariable("JOTTAI_BASE_URL", "http://127.0.0.1:18888/jottai/")
+        Environment.SetEnvironmentVariable("JOTTAI_MONGODB_DATABASE", "Jottai_Test")
+        Environment.SetEnvironmentVariable("JOTTAI_MASTER_KEY", TheMasterKey)
+        Environment.SetEnvironmentVariable("JOTTAI_TOKEN_SECRET", "fake-token-secret")
+        Environment.SetEnvironmentVariable("JOTTAI_FCM_KEY", "fake")
         KeyStorage.Drop()
         SensorEventStorage.Drop TestDeviceGroupId
         SensorEventStorage.Drop AnotherTestDeviceGroupId

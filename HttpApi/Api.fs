@@ -1,4 +1,4 @@
-﻿namespace YogRobot
+﻿namespace Jottai
 
 open System.Net.Http
 open Microsoft.AspNetCore.Authorization

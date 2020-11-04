@@ -1,4 +1,4 @@
-namespace YogRobot
+namespace Jottai
 
 module Http = 
     open System.Net.Http

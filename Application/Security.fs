@@ -1,4 +1,4 @@
-﻿namespace YogRobot
+﻿namespace Jottai
 
 module internal Security =     
     open System
@@ -36,12 +36,12 @@ module internal Security =
           DeviceGroupId : DeviceGroupId
           ValidThrough : DateTime }
      
-    let StoredMasterKey() = Environment.GetEnvironmentVariable("YOG_MASTER_KEY")
+    let StoredMasterKey() = Environment.GetEnvironmentVariable("JOTTAI_MASTER_KEY")
 
     let StoredTokenSecret() =
-        let tokenSecret = Environment.GetEnvironmentVariable("YOG_TOKEN_SECRET")
+        let tokenSecret = Environment.GetEnvironmentVariable("JOTTAI_TOKEN_SECRET")
         if tokenSecret |> isNull then
-            eprintfn "Environment variable YOG_TOKEN_SECRET is not set."
+            eprintfn "Environment variable JOTTAI_TOKEN_SECRET is not set."
         tokenSecret
     
     let ToStorableMasterKey (key : MasterKey) : KeyStorage.StorableMasterKey =

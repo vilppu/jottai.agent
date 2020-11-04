@@ -1,4 +1,4 @@
-namespace YogRobot
+namespace Jottai
 
 module internal ConvertSensorHistory =
     open System.Collections.Generic

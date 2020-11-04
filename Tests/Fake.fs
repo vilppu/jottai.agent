@@ -1,4 +1,4 @@
-﻿namespace YogRobot
+﻿namespace Jottai
 
 module Fake = 
     open Microsoft.FSharp.Data.UnitSystems.SI.UnitSymbols

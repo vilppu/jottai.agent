@@ -1,4 +1,4 @@
-namespace YogRobot
+namespace Jottai
 
 module Firebase =
     open System
@@ -6,7 +6,7 @@ module Firebase =
     open System.Net.Http
     open Newtonsoft.Json
 
-    let StoredFirebaseKey() = Environment.GetEnvironmentVariable("YOG_FCM_KEY")
+    let StoredFirebaseKey() = Environment.GetEnvironmentVariable("JOTTAI_FCM_KEY")
 
     type SubscriptionChanges = 
         { SubscriptionsToBeRemoved : string list

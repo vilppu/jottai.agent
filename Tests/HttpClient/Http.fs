@@ -1,4 +1,4 @@
-﻿namespace YogRobot
+﻿namespace Jottai
 
 module Http =
     open System
@@ -6,7 +6,7 @@ module Http =
     open System.Net.Http.Headers
     open Newtonsoft.Json
     
-    let private getBaseUrl() = Environment.GetEnvironmentVariable("YOG_BOT_BASE_URL")
+    let private getBaseUrl() = Environment.GetEnvironmentVariable("JOTTAI_BASE_URL")
     let private httpClient = new HttpClient(BaseAddress = Uri(getBaseUrl()))
     
     let FailOnServerError(response : HttpResponseMessage) : HttpResponseMessage = 

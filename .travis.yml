@@ -3,7 +3,7 @@ dist: trusty
 sudo: required
 mono: none
 dotnet: 2.0.3
-solution: YogRobot.Agent.sln
+solution: Jottai.Agent.sln
 services:
   - mongodb
 script: ./build.sh
@@ -11,7 +11,7 @@ deploy:
   provider: releases
   api_key: $GitHubReleasesKey
   file:
-    - yog-robot.agent.zip
+    - jottai.agent.zip
   skip_cleanup: true
   on:
     all_branches: true

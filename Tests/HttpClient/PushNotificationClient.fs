@@ -1,5 +1,5 @@
 //push-notifications/subscribe/{token}
-namespace YogRobot
+namespace Jottai
 
 [<AutoOpen>]
 module PushNotificationClient = 

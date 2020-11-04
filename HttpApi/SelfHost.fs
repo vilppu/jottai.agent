@@ -1,4 +1,4 @@
-﻿namespace YogRobot
+﻿namespace Jottai
 
 [<AutoOpen>]
 module SelfHost = 
@@ -21,20 +21,16 @@ module SelfHost =
         
     let private GetUrl() =
         
-        let configuredUrl = Environment.GetEnvironmentVariable("YOG_BOT_BASE_URL")
+        let configuredUrl = Environment.GetEnvironmentVariable("JOTTAI_BASE_URL")
         let url = 
-            if String.IsNullOrWhiteSpace(configuredUrl) then "http://localhost:18888/yog-robot"
+            if String.IsNullOrWhiteSpace(configuredUrl) then "http://localhost:18888/jottai"
             else configuredUrl
 
         new Uri(url)
     
-    type Startup(environment : IHostingEnvironment) =       
+    type Startup(environment : IWebHostEnvironment) =       
 
-        member this.Configure(app : IApplicationBuilder, env : IHostingEnvironment, loggerFactory : ILoggerFactory, httpSend : HttpRequestMessage -> Async<HttpResponseMessage>) =             
-            loggerFactory
-                .AddConsole(LogLevel.Warning)
-                .AddDebug()
-                |> ignore            
+        member this.Configure(app : IApplicationBuilder, env : IWebHostEnvironment, loggerFactory : ILoggerFactory, httpSend : HttpRequestMessage -> Async<HttpResponseMessage>) =
 
             app
                 .UsePathBase(new Microsoft.AspNetCore.Http.PathString(GetUrl().PathAndQuery))
@@ -49,14 +45,17 @@ module SelfHost =
                 |> ignore
             
         member this.ConfigureServices(services : IServiceCollection) =
-            let configureJson (options : MvcJsonOptions) = 
+            let configureJson (options : MvcNewtonsoftJsonOptions) = 
                 options.SerializerSettings.ContractResolver <- CamelCasePropertyNamesContractResolver()
-            let configureJsonAction = new Action<MvcJsonOptions>(configureJson)            
-
+            let configureJsonAction = new Action<MvcNewtonsoftJsonOptions>(configureJson)            
+            
+            services
+                .AddLogging(fun options -> options.AddConsole().AddDebug |> ignore)
+                 |> ignore
             services
                 //.AddCors()
                 .AddMvc()
-                .AddJsonOptions(configureJsonAction)
+                .AddNewtonsoftJson(configureJsonAction)
                 |> ignore
             
             let configureAdminPolicy =

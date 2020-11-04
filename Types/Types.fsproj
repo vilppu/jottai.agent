@@ -15,7 +15,7 @@
     <Compile Include="Sensors.fs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="4.2.3" />
+    <PackageReference Update="FSharp.Core" Version="5.0.0" />
   </ItemGroup>
 
 </Project>

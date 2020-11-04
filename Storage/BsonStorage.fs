@@ -1,4 +1,4 @@
-﻿namespace YogRobot
+﻿namespace Jottai
 
 module BsonStorage = 
     open System
@@ -15,16 +15,16 @@ module BsonStorage =
 
     let Database = 
         let client = MongoClient("mongodb://localhost/?maxPoolSize=1024")
-        let databaseNameOrNull = Environment.GetEnvironmentVariable "YOG_MONGODB_DATABASE"
+        let databaseNameOrNull = Environment.GetEnvironmentVariable "JOTTAI_MONGODB_DATABASE"
         
         let databaseName = 
             match databaseNameOrNull with
-            | null -> "YogRobot"
+            | null -> "Jottai"
             | databaseName -> databaseName
 
         let conventionPack = new ConventionPack()
         conventionPack.Add (IgnoreBackingFieldsConvention())
-        ConventionRegistry.Register("YogRobotConventions", conventionPack, (fun t -> true));
+        ConventionRegistry.Register("JottaiConventions", conventionPack, (fun t -> true));
 
         client.GetDatabase databaseName
     
@@ -37,10 +37,16 @@ module BsonStorage =
         let builder = Builders<'TDocument>.IndexKeys
         let field = FieldDefinition<'TDocument>.op_Implicit(fieldName)
         let key = builder.Descending(field)
-        collection.Indexes.CreateOne key |> ignore
+        let index = new CreateIndexModel<'TDocument>(key)
+        collection.Indexes.CreateOne index |> ignore
         collection
-
+        
     let Upsert =
         let options = UpdateOptions()
+        options.IsUpsert <- true
+        options
+
+    let Replace =
+        let options = ReplaceOptions()
         options.IsUpsert <- true
         options

@@ -1,4 +1,4 @@
-﻿namespace YogRobot
+﻿namespace Jottai
 
 open Microsoft.FSharp.Data.UnitSystems.SI.UnitSymbols
 

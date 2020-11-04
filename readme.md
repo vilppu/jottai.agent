@@ -1,5 +1,5 @@
 
-<a href="https://travis-ci.org/vilppu/yog-robot.agent"><img src="https://travis-ci.org/vilppu/yog-robot.agent.svg?branch=master"></a>
+<a href="https://travis-ci.org/vilppu/jottai.agent"><img src="https://travis-ci.org/vilppu/jottai.agent.svg?branch=master"></a>
 
 HTTP based IoT agent that listens for sensor events and stores them to database.
 
