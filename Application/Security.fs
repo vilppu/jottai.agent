@@ -36,7 +36,11 @@ module internal Security =
           DeviceGroupId : DeviceGroupId
           ValidThrough : DateTime }
      
-    let StoredMasterKey() = Environment.GetEnvironmentVariable("JOTTAI_MASTER_KEY")
+    let StoredMasterKey() = 
+        let masterKey = Environment.GetEnvironmentVariable("JOTTAI_MASTER_KEY")
+        if masterKey |> isNull then
+            eprintfn "Environment variable JOTTAI_TOKEN_SECRET is not set."
+        masterKey
 
     let StoredTokenSecret() =
         let tokenSecret = Environment.GetEnvironmentVariable("JOTTAI_TOKEN_SECRET")

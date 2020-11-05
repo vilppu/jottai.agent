@@ -35,14 +35,18 @@ module SelfHost =
             app
                 .UsePathBase(new Microsoft.AspNetCore.Http.PathString(GetUrl().PathAndQuery))
                 .UseAuthentication()
+                .UseRouting()
+                .UseAuthorization()
                 //.UseCors(fun options ->
                 //    options
                 //     .AllowAnyOrigin()
                 //     .AllowAnyMethod()
                 //     .AllowAnyHeader()
                 //     .AllowCredentials()|> ignore)
-                .UseMvc()
+                //.UseMvc()
+                .UseEndpoints(fun endpoints -> endpoints.MapControllers() |> ignore)                
                 |> ignore
+             
             
         member this.ConfigureServices(services : IServiceCollection) =
             let configureJson (options : MvcNewtonsoftJsonOptions) = 
@@ -54,7 +58,7 @@ module SelfHost =
                  |> ignore
             services
                 //.AddCors()
-                .AddMvc()
+                .AddControllers()
                 .AddNewtonsoftJson(configureJsonAction)
                 |> ignore
             

@@ -3,9 +3,7 @@
 [<AutoOpen>]
 module Authorization = 
     open System
-    open System.Collections.Generic
     open System.Linq
-    open System.Security.Cryptography
     open System.Text
     open System.IdentityModel.Tokens.Jwt
     open System.Security.Claims    
