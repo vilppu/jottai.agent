@@ -84,7 +84,7 @@ module SelfHost =
                 options.AddPolicy(Roles.Administrator, configureAdminPolicy)
                 options.AddPolicy(Roles.User, configureUserPolicy)
                 options.AddPolicy(Roles.Sensor, configureSensorPolicy)
-            ) |> ignore            
+            ) |> ignore
 
                 
             let tokenValidationParameters = TokenValidationParameters()

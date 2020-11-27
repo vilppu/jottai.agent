@@ -5,79 +5,18 @@ module Application =
     open DataTransferObject
     open System.Security.Cryptography
 
-    let GenerateSecureToken() = 
-        let randomNumberGenerator = RandomNumberGenerator.Create()
+    let GenerateSecureToken() =         
         let tokenBytes = Array.zeroCreate<byte> 16
-        randomNumberGenerator.GetBytes tokenBytes
+        RandomNumberGenerator.Create().GetBytes tokenBytes
         let tokenWithDashes = BitConverter.ToString tokenBytes
         tokenWithDashes.Replace("-", "")
 
-    let StoredTokenSecret() =
-        Security.StoredTokenSecret()
+    let TokenSecret() =
+        let tokenSecret = Environment.GetEnvironmentVariable("JOTTAI_TOKEN_SECRET")
+        if tokenSecret |> isNull then
+            eprintfn "Environment variable JOTTAI_TOKEN_SECRET is not set."
+        tokenSecret
 
-    let IsValidMasterKey token = 
-        async {        
-            let keys = 
-                match Security.StoredMasterKey() with
-                | null -> []
-                | key -> [ key ] |> List.filter (fun key -> key = token)
-            return keys.Length > 0
-        }
-
-    let IsValidDeviceGroupKey deviceGroupId token validationTime =
-        async {
-            let! keys = KeyStorage.GetDeviceGroupKeys deviceGroupId token validationTime
-            return keys.Length > 0
-        }
-
-    let IsValidSensorKey deviceGroupId token validationTime = 
-        async {
-            let! keys = KeyStorage.GetSensorKeys deviceGroupId token validationTime
-            return keys.Length > 0
-        }
-    
-    let RegisterDeviceGroupKey deviceGroupId = 
-        let key : Security.DeviceGroupKey = 
-            { Token = Security.DeviceGroupKeyToken(GenerateSecureToken())
-              DeviceGroupId = DeviceGroupId deviceGroupId
-              ValidThrough = DateTime.UtcNow.AddYears(10) }
-        async { 
-            do! KeyStorage.StoreDeviceGroupKey (key |> Security.ToStorableDeviceGroupKeykey)
-            return key.Token.AsString
-        }
-    
-    let RegisterSensorKey deviceGroupId = 
-        let key : Security.SensorKey = 
-            { Token = Security.SensorKeyToken(GenerateSecureToken())
-              DeviceGroupId = DeviceGroupId deviceGroupId
-              ValidThrough = DateTime.UtcNow.AddYears(10) }
-        async { 
-            do! KeyStorage.StoreSensorKey (key |> Security.ToStorableSensorKey)
-            return key.Token.AsString
-        }
-    
-    let PostDeviceGroupKey httpSend deviceGroupId token : Async<string> = 
-        async {
-            let key : Security.DeviceGroupKey = 
-                { Token = Security.DeviceGroupKeyToken token
-                  DeviceGroupId = DeviceGroupId deviceGroupId
-                  ValidThrough = System.DateTime.UtcNow.AddYears(10) }
-            let command = Command.SaveDeviceGroupKey { Key = key }
-            do! Command.Execute httpSend command
-            return key.Token.AsString
-        }
-    
-    let PostSensorKey httpSend deviceGroupId token : Async<string> = 
-        async {
-            let key : Security.SensorKey = 
-                { Token = Security.SensorKeyToken token
-                  DeviceGroupId = DeviceGroupId deviceGroupId
-                  ValidThrough = System.DateTime.UtcNow.AddYears(10) }
-            let command = Command.SaveSensorKey { Key = key }
-            do! Command.Execute httpSend command
-            return key.Token.AsString
-        }
-    
     let PostSensorName httpSend deviceGroupId sensorId sensorName : Async<unit> = 
         async {    
             let changeSensorName : Command.ChangeSensorName =

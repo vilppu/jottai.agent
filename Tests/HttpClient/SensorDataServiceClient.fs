@@ -4,11 +4,13 @@
 module SensorDataServiceClient = 
     open DataTransferObject
     
-    let PostSensorData key deviceGroupId (sensorData : SensorData) = 
+    let PostSensorData token (sensorData : SensorData) = 
         let apiUrl = "api/sensor-data"
-        async { return! Agent.PostWithSensorKey key deviceGroupId apiUrl sensorData }
+        async {
+            return! Http.Post token apiUrl sensorData            
+        }
 
-    let PostMeasurement key deviceGroupId deviceId (measurement : Measurement.Measurement) =        
+    let PostMeasurement token deviceId (measurement : Measurement.Measurement) =        
         let sensorData = 
           { event = "sensor data"
             gatewayId = ""
@@ -18,4 +20,6 @@ module SensorDataServiceClient =
             batteryVoltage = ""
             rssi = "" }
         let event = sensorData |> WithMeasurement(measurement)
-        async { return! PostSensorData key deviceGroupId event }
+        async { 
+            return! PostSensorData token event 
+        }

@@ -5,71 +5,11 @@ open Microsoft.AspNetCore.Authorization
 open Microsoft.AspNetCore.Http
 open Microsoft.AspNetCore.Mvc
 open DataTransferObject
-open Microsoft.AspNetCore.Cors
 
 [<Route("api")>]
 type ApiController(httpSend : HttpRequestMessage -> Async<HttpResponseMessage>) = 
     inherit Controller()
     member private this.DeviceGroupId = GetDeviceGroupId this.User
-    
-    [<Route("secure-token")>]
-    [<HttpGet>]
-    member this.GetRandomKey() : string = Application.GenerateSecureToken()
-
-    [<Route("tokens/master")>]
-    [<HttpGet>]
-    member this.GetMasterAccessToken()  =
-        async {
-            let! keyIsMissing = MasterKeyIsMissing this.Request
-            if keyIsMissing then
-                return this.StatusCode(StatusCodes.Status401Unauthorized) :> IActionResult
-            else
-                return this.Json(GenerateMasterAccessToken()) :> IActionResult
-        }
-    
-    [<Route("tokens/device-group")>]
-    [<HttpGet>]
-    member this.GetDeviceGroupAccessToken() = 
-        async {
-            let! keyIsMissing = DeviceGroupKeyIsMissing this.Request
-            if keyIsMissing then
-                return this.StatusCode(StatusCodes.Status401Unauthorized) :> IActionResult
-            else
-                let deviceGroupId = FindDeviceGroupId this.Request
-                return this.Json(GenerateDeviceGroupAccessToken(deviceGroupId)) :> IActionResult
-        }
-
-    [<Route("tokens/sensor")>]
-    [<HttpGet>]
-    member this.GetSensorAccessToken() = 
-        async {
-            let! keyIsMissing = SensorKeyIsMissing this.Request
-            if keyIsMissing then
-                return this.StatusCode(StatusCodes.Status401Unauthorized) :> IActionResult
-            else
-                let deviceGroupId = FindDeviceGroupId this.Request
-                return this.Json(GenerateSensorAccessToken(deviceGroupId)) :> IActionResult
-        }
-    
-    [<Route("keys/device-group-keys/{deviceGroupId}")>]
-    [<HttpPost>]
-    [<Authorize(Policy = Roles.Administrator)>]
-    member this.PostDeviceGroupKey(deviceGroupId : string) : Async<JsonResult> = 
-        async {
-            let token = Application.GenerateSecureToken()
-            let! key = Application.PostDeviceGroupKey httpSend deviceGroupId token
-            return this.Json(key)
-        }
-    
-    [<Route("keys/sensor-keys/{deviceGroupId}")>]
-    [<HttpPost>]
-    [<Authorize(Policy = Roles.Administrator)>]
-    member this.PostSensorKey(deviceGroupId : string) : Async<JsonResult> = 
-        async {
-            let token = Application.GenerateSecureToken()
-            let! key = Application.PostSensorKey httpSend deviceGroupId token
-            return this.Json(key)
-        }
     
     [<Route("sensor/{sensorId}/name/{sensorName}")>]
     [<HttpPost>]
@@ -105,13 +45,9 @@ type ApiController(httpSend : HttpRequestMessage -> Async<HttpResponseMessage>) 
     
     [<Route("sensor-data")>]
     [<HttpPost>]
-    member this.PostSensorData([<FromBody>]sensorData : SensorData) =
-        async {  
-            let! keyIsMissing = SensorKeyIsMissing this.Request           
-            if keyIsMissing then
-                return this.StatusCode(StatusCodes.Status401Unauthorized)
-            else
-                let deviceGroupId = FindDeviceGroupId this.Request
-                return! Application.PostSensorData httpSend deviceGroupId sensorData
-                return this.StatusCode(StatusCodes.Status201Created)
+    [<Authorize(Policy = Roles.Sensor)>]
+    member this.PostSensorData([<FromBody>]sensorData : SensorData) : Async<StatusCodeResult> =
+        async {
+            return! Application.PostSensorData httpSend this.DeviceGroupId sensorData
+            return this.StatusCode(StatusCodes.Status201Created)                
         }

@@ -20,22 +20,10 @@ module internal Event =
           DeviceGroupId : DeviceGroupId
           SensorName : string }
 
-    type SavedMasterKey =
-        { Key : Security.MasterKey }
-    
-    type SavedDeviceGroupKey = 
-        { Key : Security.DeviceGroupKey }
-    
-    type SavedSensorKey =
-        { Key : Security.SensorKey }
-
     type Event =
         | SubscribedToPushNotifications of SubscribedToPushNotifications
         | SensorStateChanged of SensorStateChanged
-        | SensorNameChanged of SensorNameChanged
-        | SavedDeviceGroupKey of SavedDeviceGroupKey
-        | SavedSensorKey of SavedSensorKey
-    
+        | SensorNameChanged of SensorNameChanged    
 
     let private toSensorStateUpdate (event : SensorStateChanged) : SensorStateUpdate = 
         { SensorId = event.SensorId
@@ -55,8 +43,6 @@ module internal Event =
                     let sensorStateUpdate = sensorStateChanged |> toSensorStateUpdate
                     do! Action.StoreSensorStateChangedEvent sensorStateUpdate
             | SensorNameChanged _ -> ()
-            | SavedDeviceGroupKey _ -> ()
-            | SavedSensorKey _ -> ()
         }
 
     let Send httpSend (event : Event) : Async<unit> =
@@ -75,11 +61,5 @@ module internal Event =
 
             | SensorNameChanged event ->
                 do! SensorStateStorage.StoreSensorName event.DeviceGroupId.AsString event.SensorId.AsString event.SensorName
-
-            | SavedDeviceGroupKey event ->
-                do! KeyStorage.StoreDeviceGroupKey (event.Key |> Security.ToStorableDeviceGroupKeykey)
-
-            | SavedSensorKey event ->
-                do! KeyStorage.StoreSensorKey (event.Key |> Security.ToStorableSensorKey)
         }
   

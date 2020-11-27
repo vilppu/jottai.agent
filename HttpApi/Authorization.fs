@@ -21,9 +21,11 @@ module Authorization =
         [<Literal>]
         let Sensor = "RequiresSensorToken"
     
-    let SigningKey=
-        let secretKey = Application.StoredTokenSecret()
-        SymmetricSecurityKey(Encoding.ASCII.GetBytes(secretKey))
+    let SigningKey : SymmetricSecurityKey =
+        let tokenSecret = Application.TokenSecret()
+        let tokenSecretBytes = Encoding.ASCII.GetBytes(tokenSecret)
+        let signingKey = SymmetricSecurityKey(tokenSecretBytes)
+        signingKey
 
     let SecureSigningCredentials = 
         let credentials = SigningCredentials(SigningKey, SecurityAlgorithms.HmacSha256)
@@ -36,79 +38,10 @@ module Authorization =
         |> List.map (fun header -> 
                header.Value
                |> Seq.toList
-               |> Seq.head)
-    
-    let private validMasterKeyHeaderIsPresent request =
-        async {
-            let headers = request |> FindHeader "jottai-key"
-            match headers with
-            | key :: _ ->                 
-                return! Application.IsValidMasterKey key
-            | [] -> return false
-        }
-    
-    let private validDeviceGroupKeyHeaderIsPresent request = 
-        async {
-            let key = request |> FindHeader "jottai-device-group-key"
-            let deviceGroupIds = request |> FindHeader "jottai-device-group-id"
-        
-            let headers = 
-                if key.Length = deviceGroupIds.Length then key |> List.zip deviceGroupIds
-                else []
-            match headers with
-            | head :: _ -> 
-                let (deviceGroupId, key) = head
-                let now = DateTime.UtcNow
-                return! Application.IsValidDeviceGroupKey deviceGroupId key now
-            | [] -> return false
-        }
-
-    let private validSensorDataKeyHeaderIsPresent request = 
-        async {
-            let key = request |> FindHeader "jottai-sensor-data-key"
-            let deviceGroupIdHeader = request |> FindHeader "jottai-device-group-id"
-            let botIdIdHeader = request |> FindHeader "jottai-bot-id"
-            let deviceGroupIds = deviceGroupIdHeader |> List.append botIdIdHeader 
-        
-            let headers = 
-                if key.Length = deviceGroupIds.Length then key |> List.zip deviceGroupIds
-                else []
-            match headers with
-            | head :: _ -> 
-                let (deviceGroupId, key) = head
-                let now = DateTime.UtcNow
-                return! Application.IsValidSensorKey deviceGroupId key now
-            | [] -> return false
-        }
-    
-    let MasterKeyIsMissing request =
-        async {
-            let! isPresent = validMasterKeyHeaderIsPresent request
-            return not(isPresent)
-        }
-
-    let DeviceGroupKeyIsMissing request =
-        async {
-            let! isPresent = validDeviceGroupKeyHeaderIsPresent request
-            return not(isPresent)
-        }
-    
-    let SensorKeyIsMissing request =
-        async {
-            let! isPresent = validSensorDataKeyHeaderIsPresent request
-            return not(isPresent)
-        }
+               |> Seq.head)   
 
     let GetDeviceGroupId(user : ClaimsPrincipal) = 
-        user.Claims.Single(fun claim -> claim.Type = "DeviceGroupId").Value    
-
-    let FindDeviceGroupId request =
-        let deviceGroupIdHeader = request |> FindHeader "jottai-device-group-id"
-        let botIdIdHeader = request |> FindHeader "jottai-bot-id"
-        let headers = deviceGroupIdHeader |> List.append botIdIdHeader 
-
-        headers
-        |> List.head 
+        user.Claims.Single(fun claim -> claim.Type = "DeviceGroupId").Value
 
     let BuildRoleToken role deviceGroupId = 
         let roleClaim = Claim(ClaimTypes.Role, role)

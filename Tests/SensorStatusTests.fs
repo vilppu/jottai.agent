@@ -190,7 +190,7 @@ module SensorStateTests =
             |> WithMeasurement(measurement)
 
         async { 
-            return! PostSensorData context.SensorKeyToken context.DeviceGroupId sensorData
+            return! PostSensorData context.SensorToken sensorData
         }
         |> Async.RunSynchronously
         |> ignore
@@ -208,7 +208,7 @@ module SensorStateTests =
             |> WithMeasurement(measurement)
 
         async { 
-            return! PostSensorData context.SensorKeyToken context.DeviceGroupId sensorData
+            return! PostSensorData context.SensorToken sensorData
         }
         |> Async.RunSynchronously
         |> ignore

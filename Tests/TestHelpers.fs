@@ -4,7 +4,7 @@ namespace Jottai
 module TestHelpers = 
     
     let WriteMeasurement (measurement, deviceId) (context : Context) = 
-        PostMeasurement context.SensorKeyToken context.DeviceGroupId deviceId measurement
+        PostMeasurement context.SensorToken deviceId measurement
 
     let WriteMeasurementSynchronously (measurement, deviceId) (context : Context) = 
         WriteMeasurement (measurement, deviceId) context |> Async.RunSynchronously |> ignore

@@ -21,18 +21,10 @@ module internal Command =
           DeviceGroupId : DeviceGroupId
           SensorName : string }
     
-    type SaveDeviceGroupKey = 
-        { Key : Security.DeviceGroupKey }
-    
-    type SaveSensorKey =
-        { Key : Security.SensorKey }
-    
     type Command =
         | SubscribeToPushNotifications of SubscribeToPushNotifications
         | ChangeSensorState of ChangeSensorState
         | ChangeSensorName of ChangeSensorName
-        | SaveDeviceGroupKey of SaveDeviceGroupKey
-        | SaveSensorKey of SaveSensorKey
 
     let private subscribedToPushNotificationsEvent (command : SubscribeToPushNotifications) =
         async {
@@ -63,16 +55,6 @@ module internal Command =
               SensorName = command.SensorName }
         Event.SensorNameChanged event
 
-    let private saveDeviceGroupKeyEvent (command : SaveDeviceGroupKey) =
-        let event : Event.SavedDeviceGroupKey =
-            { Key = command.Key }
-        Event.SavedDeviceGroupKey event
-
-    let private saveSensorKeyEvent (command : SaveSensorKey) =
-        let event : Event.SavedSensorKey =
-            { Key = command.Key }
-        Event.SavedSensorKey event
-
     let private createEventFromCommand (command : Command) = 
         async {
             match command with
@@ -84,12 +66,6 @@ module internal Command =
 
             | ChangeSensorName changeSensorName ->
                 return sensorNameChangedEvent changeSensorName
-
-            | SaveDeviceGroupKey saveDeviceGroupKey ->
-                return saveDeviceGroupKeyEvent saveDeviceGroupKey
-
-            | SaveSensorKey saveSensorKey ->
-                return saveSensorKeyEvent saveSensorKey
        }
     
     let private toChangeSensorStateCommand
