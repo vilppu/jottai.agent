@@ -25,6 +25,7 @@
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.8.0" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Options.fs" />
     <Compile Include="Http.fs" />
     <Compile Include="Authorization.fs" />
     <Compile Include="Api.fs" />

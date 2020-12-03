@@ -41,7 +41,7 @@ module Authorization =
                |> Seq.head)   
 
     let GetDeviceGroupId(user : ClaimsPrincipal) = 
-        user.Claims.Single(fun claim -> claim.Type = "DeviceGroupId").Value
+        user.Claims.Single(fun claim -> claim.Type = "DeviceGroupId" || claim.Type = "https://agent.jottai.net/device-group-id").Value
 
     let BuildRoleToken role deviceGroupId = 
         let roleClaim = Claim(ClaimTypes.Role, role)

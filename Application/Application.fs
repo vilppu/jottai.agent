@@ -10,12 +10,37 @@ module Application =
         RandomNumberGenerator.Create().GetBytes tokenBytes
         let tokenWithDashes = BitConverter.ToString tokenBytes
         tokenWithDashes.Replace("-", "")
+        
+    let HasTokenSecret =
+        let tokenSecret = Environment.GetEnvironmentVariable("JOTTAI_TOKEN_SECRET")
+        if tokenSecret |> isNull then
+            false
+        else
+            true
 
-    let TokenSecret() =
+    let TokenSecret() : string =
         let tokenSecret = Environment.GetEnvironmentVariable("JOTTAI_TOKEN_SECRET")
         if tokenSecret |> isNull then
             eprintfn "Environment variable JOTTAI_TOKEN_SECRET is not set."
-        tokenSecret
+            String.Empty
+        else
+            tokenSecret
+        
+    let Authority() : string =
+        let authority = Environment.GetEnvironmentVariable("JOTTAI_AUTHORITY")
+        if authority |> isNull then
+            eprintfn "Environment variable JOTTAI_AUTHORITY is not set."
+            String.Empty
+        else
+            authority
+                
+    let Audience() : string =
+        let audience = Environment.GetEnvironmentVariable("JOTTAI_AUDIENCE")
+        if audience |> isNull then
+            eprintfn "Environment variable JOTTAI_AUDIENCE is not set."
+            String.Empty
+        else
+            audience
 
     let PostSensorName httpSend deviceGroupId sensorId sensorName : Async<unit> = 
         async {    

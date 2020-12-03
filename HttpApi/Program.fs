@@ -12,7 +12,7 @@ module Program =
     [<EntryPoint>]
     let main argv = 
         try 
-            let server = CreateHttpServer Http.Send
+            let server = CreateHttpServer Options.UseAuthrority Http.Send
             server.Wait()
             0
         with

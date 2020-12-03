@@ -26,7 +26,7 @@ module TestContext =
         SensorHistoryStorage.Drop()
     
         if serverTask |> isNull then
-            serverTask <- CreateHttpServer httpSend
+            serverTask <- CreateHttpServer Options.UseSigninKey httpSend
 
     let SentHttpRequests = System.Collections.Generic.List<HttpRequestMessage>()
     let SentHttpRequestContents = System.Collections.Generic.List<string>()

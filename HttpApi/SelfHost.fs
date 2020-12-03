@@ -7,19 +7,17 @@ module SelfHost =
     open System.Net.Http
     open System.Threading.Tasks    
     open Microsoft.AspNetCore.Authorization
-    open Microsoft.AspNetCore.Authentication;
     open Microsoft.AspNetCore.Authentication.JwtBearer;
     open Microsoft.AspNetCore.Builder
     open Microsoft.AspNetCore.Hosting
     open Microsoft.AspNetCore.Mvc
-    open Microsoft.AspNetCore.Cors.Infrastructure
     open Microsoft.Extensions.DependencyInjection
     open Microsoft.Extensions.Logging
     open Microsoft.IdentityModel.Tokens
-    open Newtonsoft.Json
     open Newtonsoft.Json.Serialization
-        
-    let private GetUrl() =
+    open Options
+
+    let private GetUrl() : Uri =
         
         let configuredUrl = Environment.GetEnvironmentVariable("JOTTAI_BASE_URL")
         let url = 
@@ -27,23 +25,30 @@ module SelfHost =
             else configuredUrl
 
         new Uri(url)
-    
-    type Startup(environment : IWebHostEnvironment) =       
 
-        member this.Configure(app : IApplicationBuilder, env : IWebHostEnvironment, loggerFactory : ILoggerFactory, httpSend : HttpRequestMessage -> Async<HttpResponseMessage>) =
+    let private SigninKeyValidationParameters =                    
+        let tokenValidationParameters = TokenValidationParameters()
+        tokenValidationParameters.ValidateIssuerSigningKey <- true
+        tokenValidationParameters.IssuerSigningKey <- SigningKey
+        tokenValidationParameters.ClockSkew <- TimeSpan.Zero
+        tokenValidationParameters.ValidateIssuer <- false
+        tokenValidationParameters.ValidIssuer <- "NotUsed"
+        tokenValidationParameters.ValidateAudience <- false
+        tokenValidationParameters.ValidAudience <- "NotUsed"
+        tokenValidationParameters.ValidateLifetime <- false 
+        tokenValidationParameters
+    
+    type Startup(environment : IWebHostEnvironment, authenticationOptions : AuthenticationOptions) =
+        member this.Configure(app : IApplicationBuilder,
+                              env : IWebHostEnvironment,
+                              loggerFactory : ILoggerFactory,
+                              httpSend : HttpRequestMessage -> Async<HttpResponseMessage>) =
 
             app
                 .UsePathBase(new Microsoft.AspNetCore.Http.PathString(GetUrl().PathAndQuery))
                 .UseAuthentication()
                 .UseRouting()
                 .UseAuthorization()
-                //.UseCors(fun options ->
-                //    options
-                //     .AllowAnyOrigin()
-                //     .AllowAnyMethod()
-                //     .AllowAnyHeader()
-                //     .AllowCredentials()|> ignore)
-                //.UseMvc()
                 .UseEndpoints(fun endpoints -> endpoints.MapControllers() |> ignore)                
                 |> ignore
              
@@ -57,7 +62,6 @@ module SelfHost =
                 .AddLogging(fun options -> options.AddConsole().AddDebug |> ignore)
                  |> ignore
             services
-                //.AddCors()
                 .AddControllers()
                 .AddNewtonsoftJson(configureJsonAction)
                 |> ignore
@@ -86,37 +90,35 @@ module SelfHost =
                 options.AddPolicy(Roles.Sensor, configureSensorPolicy)
             ) |> ignore
 
-                
-            let tokenValidationParameters = TokenValidationParameters()
-            tokenValidationParameters.ValidateIssuerSigningKey <- true
-            tokenValidationParameters.IssuerSigningKey <- SigningKey
-            tokenValidationParameters.ClockSkew <- TimeSpan.Zero
-            tokenValidationParameters.ValidateIssuer <- false
-            tokenValidationParameters.ValidIssuer <- "NotUsed"
-            tokenValidationParameters.ValidateAudience <- false
-            tokenValidationParameters.ValidAudience <- "NotUsed"
-            tokenValidationParameters.ValidateLifetime <- false
-
             services
                 .AddAuthentication(fun options -> 
                     options.DefaultAuthenticateScheme <- JwtBearerDefaults.AuthenticationScheme
                     options.DefaultChallengeScheme <- JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(fun options ->
-                    options.TokenValidationParameters <- tokenValidationParameters
-                    )
+                   match authenticationOptions with
+                   | UseSigninKey _ ->
+                        options.TokenValidationParameters <- SigninKeyValidationParameters
+                   | UseAuthrority _ ->
+                        options.Authority <- Application.Authority()
+                        options.Audience <- Application.Audience())
                 |> ignore
 
             services.AddSingleton<IAuthorizationHandler, PermissionHandler>()
             |> ignore
 
-    let CreateHttpServer (httpSend : HttpRequestMessage -> Async<HttpResponseMessage>) : Task = 
+    let CreateHttpServer
+        (authenticationOptions : AuthenticationOptions)
+        (httpSend : HttpRequestMessage -> Async<HttpResponseMessage>)
+        : Task = 
 
         let url = GetUrl()
         let host = url.Scheme + Uri.SchemeDelimiter + url.Host + ":" + url.Port.ToString()
 
         let host = 
             WebHostBuilder()
-                .ConfigureServices(fun services -> services.AddSingleton(httpSend) |> ignore)
+                .ConfigureServices(fun services -> 
+                    services.AddSingleton(httpSend).AddSingleton(authenticationOptions)
+                    |> ignore)
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseStartup<Startup>()
