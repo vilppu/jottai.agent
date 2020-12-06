@@ -2,7 +2,7 @@
 
 module Application =
     open System
-    open DataTransferObject
+    open ApiObjects
     open System.Security.Cryptography
 
     let GenerateSecureToken() =         
@@ -52,19 +52,24 @@ module Application =
             do! Command.Execute httpSend command
         }    
     
-    let GetSensorState (deviceGroupId : string) : Async<DataTransferObject.SensorState list> = 
+    let GetSensorState (deviceGroupId : string) : Async<ApiObjects.SensorState list> = 
         async {
         
             let! statuses = SensorStateStorage.GetSensorStates deviceGroupId
-            let statuses = statuses |> ConvertSensortState.FromStorables
-            let result = statuses |> SensorStateToDataTransferObject
-            return result
+
+            return
+                statuses
+                |> FromStorables
+                |> ToApiObjects
         }
 
-    let GetSensorHistory (deviceGroupId : string) (sensorId : string) : Async<DataTransferObject.SensorHistory> =
+    let GetSensorHistory (deviceGroupId : string) (sensorId : string) : Async<ApiObjects.SensorHistory> =
         async {
             let! history = SensorHistoryStorage.GetSensorHistory deviceGroupId sensorId
-            let result = history |> ConvertSensorHistory.FromStorable |> SensorHistoryToDataTransferObject
+            let result =
+                history
+                |> FromStorable
+                |> ToApiObject
             return result
         }
     
@@ -80,8 +85,8 @@ module Application =
 
     let PostSensorData httpSend deviceGroupId (sensorData : SensorData) =
         async {
-            let changeSensorStates = sensorData |> Command.ToChangeSensorStateCommands (DeviceGroupId deviceGroupId)
-            for changeSensorState in changeSensorStates do
-                let command = Command.ChangeSensorState changeSensorState
-                do! Command.Execute httpSend command
+            let sensorStateUpdates = sensorData |> ToSensorStateUpdates (DeviceGroupId deviceGroupId)
+            let changeSensorStates = Command.From sensorStateUpdates
+            for changeSensorState in changeSensorStates do                
+                do! Command.Execute httpSend changeSensorState
         }

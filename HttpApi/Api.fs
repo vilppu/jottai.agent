@@ -4,7 +4,7 @@ open System.Net.Http
 open Microsoft.AspNetCore.Authorization
 open Microsoft.AspNetCore.Http
 open Microsoft.AspNetCore.Mvc
-open DataTransferObject
+open ApiObjects
 
 [<Route("api")>]
 type ApiController(httpSend : HttpRequestMessage -> Async<HttpResponseMessage>) = 
@@ -22,7 +22,7 @@ type ApiController(httpSend : HttpRequestMessage -> Async<HttpResponseMessage>) 
     [<Route("sensors")>]
     [<HttpGet>]
     [<Authorize(Policy = Roles.User)>]
-    member this.GetSensorState() : Async<DataTransferObject.SensorState list> = 
+    member this.GetSensorState() : Async<ApiObjects.SensorState list> = 
         async {
             return! Application.GetSensorState this.DeviceGroupId
         }
@@ -30,7 +30,7 @@ type ApiController(httpSend : HttpRequestMessage -> Async<HttpResponseMessage>) 
     [<Route("sensor/{sensorId}/history/")>]
     [<HttpGet>]
     [<Authorize(Policy = Roles.User)>]
-    member this.GetSensorHistory (sensorId : string) : Async<DataTransferObject.SensorHistory> =
+    member this.GetSensorHistory (sensorId : string) : Async<ApiObjects.SensorHistory> =
         async {
             return! Application.GetSensorHistory this.DeviceGroupId sensorId
         }

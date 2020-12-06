@@ -1,6 +1,7 @@
 namespace Jottai
 
-module internal ConvertSensortState =
+[<AutoOpen>]
+module internal ConvertStorableSensorState =
     open MongoDB.Bson
     open Microsoft.FSharp.Data.UnitSystems.SI.UnitSymbols   
     
@@ -28,19 +29,16 @@ module internal ConvertSensortState =
                 |> Seq.toList
                 |> List.map fromStorable
         statuses
-        
 
-    let FromSensorStateUpdate (update : SensorStateUpdate) (previousState : SensorStateStorage.StorableSensorState) : SensorState =                    
-            let measurement = DataTransferObject.Measurement update.Measurement
-
+    let FromSensorStateUpdate (update : SensorStateUpdate) (previousState : SensorStateStorage.StorableSensorState) : SensorState =
             let previousState =
                 if previousState :> obj |> isNull
                 then
-                    let defaultName = update.DeviceId.AsString + "." + measurement.Name
+                    let defaultName = update.DeviceId.AsString + "." + (update.Measurement |> Name)
                     SensorStateStorage.InitialState defaultName
                 else previousState
 
-            let hasChanged = measurement.Value <> previousState.MeasuredValue
+            let hasChanged = (update.Measurement |> Value) <> previousState.MeasuredValue
             let lastActive = update.Timestamp
             let lastUpdated =
                 if hasChanged
@@ -59,30 +57,26 @@ module internal ConvertSensortState =
 
     let ToStorable (sensorState : SensorState)
         : SensorStateStorage.StorableSensorState =
-    
-        let measurement = DataTransferObject.Measurement sensorState.Measurement
-
         { Id = ObjectId.Empty
           DeviceGroupId = sensorState.DeviceGroupId.AsString
           DeviceId = sensorState.DeviceId.AsString
           SensorId = sensorState.SensorId.AsString
           SensorName = sensorState.SensorName
-          MeasuredProperty = measurement.Name
-          MeasuredValue = measurement.Value
+          MeasuredProperty = sensorState.Measurement |> Name
+          MeasuredValue = sensorState.Measurement |> Value
           BatteryVoltage = (float)sensorState.BatteryVoltage
           SignalStrength = (float)sensorState.SignalStrength
           LastUpdated = sensorState.LastUpdated
           LastActive = sensorState.LastActive
         }
 
-    let UpdateToStorable (update : SensorStateUpdate) : SensorEventStorage.StorableSensorEvent  =
-            let measurement = DataTransferObject.Measurement update.Measurement
+    let UpdateToStorable (update : SensorStateUpdate) : SensorEventStorage.StorableSensorEvent  =            
             { Id = MongoDB.Bson.ObjectId.Empty
               DeviceGroupId =  update.DeviceGroupId.AsString
               DeviceId = update.DeviceId.AsString
               SensorId = update.SensorId.AsString
-              MeasuredProperty = measurement.Name
-              MeasuredValue = measurement.Value
+              MeasuredProperty = update.Measurement |> Name
+              MeasuredValue = update.Measurement |> Value
               Voltage = (float)update.BatteryVoltage
               SignalStrength = (float)update.SignalStrength
               Timestamp = update.Timestamp }

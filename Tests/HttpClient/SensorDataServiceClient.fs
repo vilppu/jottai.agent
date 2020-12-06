@@ -2,7 +2,7 @@
 
 [<AutoOpen>]
 module SensorDataServiceClient = 
-    open DataTransferObject
+    open ApiObjects
     
     let PostSensorData token (sensorData : SensorData) = 
         let apiUrl = "api/sensor-data"
@@ -15,7 +15,7 @@ module SensorDataServiceClient =
           { event = "sensor data"
             gatewayId = ""
             channel = ""
-            sensorId = deviceId
+            deviceId = deviceId
             data = []
             batteryVoltage = ""
             rssi = "" }

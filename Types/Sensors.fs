@@ -30,20 +30,6 @@ module Sensors =
         { SensorId : string
           MeasuredProperty : string
           Entries : SensorHistoryEntry list }
-   
-    let SensorHistoryToDataTransferObject (history : SensorHistory) : DataTransferObject.SensorHistory =
-        let entries =
-            history.Entries
-            |> List.map (fun entry ->
-                let sensorHistoryResultEntry : DataTransferObject.SensorHistoryEntry =
-                    { MeasuredValue = entry.MeasuredValue
-                      Timestamp = entry.Timestamp }
-                sensorHistoryResultEntry
-                )
-
-        { SensorId = history.SensorId
-          MeasuredProperty = history.MeasuredProperty
-          Entries = entries }
 
     type SensorState = 
         { SensorId : SensorId
@@ -64,21 +50,6 @@ module Sensors =
           BatteryVoltage : Measurement.Voltage
           SignalStrength : Measurement.Rssi
           Timestamp : System.DateTime }
-   
-    let SensorStateToDataTransferObject (statuses : SensorState list) : DataTransferObject.SensorState list = 
-        statuses
-        |> List.map (fun sensorState ->
-            let measurement = DataTransferObject.Measurement sensorState.Measurement
-            { DeviceGroupId = sensorState.DeviceGroupId.AsString
-              DeviceId = sensorState.DeviceId.AsString
-              SensorId = sensorState.SensorId.AsString
-              SensorName = sensorState.SensorName
-              MeasuredProperty = measurement.Name
-              MeasuredValue = measurement.Value
-              BatteryVoltage = float(sensorState.BatteryVoltage)
-              SignalStrength = sensorState.SignalStrength
-              LastUpdated = sensorState.LastUpdated
-              LastActive = sensorState.LastActive })
 
     let EmptySensorHistory : SensorHistory = 
         { SensorId = ""

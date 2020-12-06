@@ -1,65 +1,25 @@
-﻿namespace Jottai
+namespace Jottai
 
-module DataTransferObject =
-
+[<AutoOpen>]
+module internal ConvertSensorData =
     open System
-    open System.Text.RegularExpressions
-    open Microsoft.FSharp.Reflection
+    open System.Text.RegularExpressions    
     open Microsoft.FSharp.Data.UnitSystems.SI.UnitSymbols
-
-    type SensorDatum = 
-        { name : string
-          value : string
-          scale : int
-          formattedValue : string }
+    open ApiObjects
     
-    type SensorData = 
-        { event : string
-          gatewayId : string
-          channel : string
-          sensorId : string
-          data : SensorDatum list
-          batteryVoltage : string
-          rssi : string }
-
-    type GatewayEvent = 
+    type private GatewayEvent = 
         | GatewayUpEvent of SensorData
         | GatewayDownEvent of SensorData
         | GatewayActiveOnChannelEvent of SensorData
         | SensorUpEvent of SensorData
         | SensorDataEvent of SensorData
-          
-    type SensorHistoryEntry = 
-        { MeasuredValue : obj
-          Timestamp : System.DateTime }
     
-    type SensorHistory = 
-        { SensorId : string
-          MeasuredProperty : string
-          Entries : SensorHistoryEntry list }
-
-    type SensorState = 
-        { DeviceGroupId : string
-          DeviceId : string
-          SensorId : string
-          SensorName : string
-          MeasuredProperty : string
-          MeasuredValue : obj
-          BatteryVoltage : float
-          SignalStrength : float
-          LastUpdated : System.DateTime
-          LastActive : System.DateTime }
-    
-    type Measurement = 
-        { Name : string
-          Value : obj }
-
-    let MeasuredPropertyName (datum : SensorDatum) =
+    let private MeasuredPropertyName (datum : SensorDatum) : string =
         if String.IsNullOrEmpty(datum.name)
         then ""
         else datum.name.ToLower()
-
-    let private toRoundedNumericValue input = 
+    
+    let private toRoundedNumericValue input : float option = 
         match input with
         | null -> None
         | _ -> 
@@ -70,8 +30,8 @@ module DataTransferObject =
             match input with
             | FirstRegexGroup "(\d+(?:\.\d+)?)" value -> Some(System.Math.Round(float (value)))
             | _ -> None
-
-    let private toNumericValue input = 
+    
+    let private toNumericValue input : float option= 
         match input with
         | null -> None
         | _ -> 
@@ -82,9 +42,9 @@ module DataTransferObject =
             match input with
             | FirstRegexGroup "(\d+(?:\.\d+)?)" value -> Some(float (value))
             | _ -> None
+        
+    let private SensorDatumToMeasurement (datum : SensorDatum) : Measurement.Measurement option =
     
-    let SensorDatumToMeasurement (datum : SensorDatum) =
-
         match datum |> MeasuredPropertyName with
         | "rh" -> 
             match datum.formattedValue |> toRoundedNumericValue with
@@ -96,7 +56,7 @@ module DataTransferObject =
             | None -> None
         | "detect" | "presenceofwater" -> 
             Some(Measurement.PresenceOfWater(if datum.value = "1" then Measurement.Present
-                                 else Measurement.NotPresent))
+                                    else Measurement.NotPresent))
         | "contact" -> 
             Some(Measurement.Contact(if datum.value = "1" then Measurement.Open
                             else Measurement.Closed))
@@ -112,20 +72,20 @@ module DataTransferObject =
             | Some value -> Some(Measurement.Rssi(value))
             | None -> None
         | _ -> None
-    
-    let ToBatteryVoltage (sensorData : SensorData) : Measurement.Voltage = 
+        
+    let private ToBatteryVoltage (sensorData : SensorData) : Measurement.Voltage = 
         match sensorData.batteryVoltage |> toNumericValue with
         | Some value -> 
             value * 1.0<V>
         | _ -> 0.0<V>
-    
-    let ToRssi (sensorData : SensorData) : Measurement.Rssi= 
+        
+    let private ToRssi (sensorData : SensorData) : Measurement.Rssi= 
         match sensorData.rssi |> toNumericValue with
         | Some value -> 
             value
         | _ -> 0.0    
-    
-    let ToGatewayEvent(sensorData : SensorData) = 
+        
+    let private ToGatewayEvent(sensorData : SensorData) : GatewayEvent = 
         match sensorData.event with
         | "gateway up" -> GatewayUpEvent sensorData
         | "gateway down" -> GatewayDownEvent sensorData
@@ -133,40 +93,48 @@ module DataTransferObject =
         | "sensor up" -> SensorUpEvent sensorData
         | "sensor data" -> SensorDataEvent sensorData
         | _ -> failwith ("unknown sensor event: " + sensorData.event)
+    
+    let private measuredPropertyName (datum : SensorDatum) =
+        if System.String.IsNullOrEmpty(datum.name)
+        then ""
+        else datum.name.ToLower()
+    
+    let private toSensorStateUpdate
+        (deviceGroupId : DeviceGroupId)
+        (sensorData : SensorData)
+        (datum : SensorDatum)
+        (timestamp : System.DateTime)
+        : Option<SensorStateUpdate> =
+        
+        let measurementOption = SensorDatumToMeasurement datum
 
-    let Measurement (measurement : Measurement.Measurement) =
+        match measurementOption with
+        | Some measurement ->
+            let property = datum |> measuredPropertyName
+            let deviceId = DeviceId sensorData.deviceId
+            let sensorStateUpdate : SensorStateUpdate =
+                { SensorId = SensorId (deviceId.AsString + "." + property)
+                  DeviceGroupId = deviceGroupId
+                  DeviceId = deviceId
+                  Measurement = measurement
+                  BatteryVoltage = ToBatteryVoltage sensorData
+                  SignalStrength = ToRssi sensorData
+                  Timestamp = timestamp }
 
-        let storableMeasurementValue (measurement : Measurement.Measurement) =
-            match measurement with
-            | Measurement.Voltage voltage ->
-                float(voltage) :> obj
+            Some sensorStateUpdate
+        | None -> None
 
-            | Measurement.Rssi rssi ->
-                float(rssi) :> obj
-
-            | Measurement.Temperature temperature ->
-                float(temperature) :> obj
-
-            | Measurement.RelativeHumidity relativeHumidity ->
-                float(relativeHumidity) :> obj
-
-            | Measurement.PresenceOfWater presenceOfWater ->
-                match presenceOfWater with
-                | Measurement.NotPresent -> false :> obj
-                | Measurement.Present -> true :> obj
-
-            | Measurement.Contact contact ->
-                match contact with
-                | Measurement.Open -> false :> obj
-                | Measurement.Closed -> true :> obj
-
-            | Measurement.Measurement.Motion motion -> 
-                match motion with
-                | Measurement.NoMotion -> false :> obj
-                | Measurement.Motion -> true :> obj
-
-        match FSharpValue.GetUnionFields(measurement, measurement.GetType()) with
-        | unionCaseInfo, _ -> 
-            { Name = unionCaseInfo.Name
-              Value = measurement |> storableMeasurementValue }
- 
+    let private toChangeSensorStateCommands (deviceGroupId : DeviceGroupId) (sensorData : SensorData) timestamp : SensorStateUpdate list =
+        sensorData.data
+        |> Seq.toList
+        |> List.map (fun datum -> toSensorStateUpdate deviceGroupId sensorData datum timestamp)
+        |> List.choose (id)
+    
+    let ToSensorStateUpdates (deviceGroupId : DeviceGroupId) (sensorData : SensorData) : SensorStateUpdate list = 
+        let timestamp = System.DateTime.UtcNow
+        let gatewayEvent = ToGatewayEvent sensorData
+        match gatewayEvent with
+        | GatewayEvent.SensorDataEvent sensorData ->
+            toChangeSensorStateCommands deviceGroupId sensorData timestamp
+        | _ -> []
+  

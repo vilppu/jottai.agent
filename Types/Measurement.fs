@@ -31,6 +31,7 @@ module Measurement =
         | PresenceOfWater of PresenceOfWater
         | Contact of Contact
         | Motion of Motion
+        | Unsupported
 
     let From (measuredProperty : string) (measuredValue : obj) : Measurement =
         match measuredProperty with
@@ -51,3 +52,4 @@ module Measurement =
         | "Motion" ->
             if (measuredValue :?> bool) then Measurement.Motion NoMotion
             else Measurement.Motion NoMotion
+        | _ -> Unsupported

@@ -9,10 +9,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="FirebaseObjects.fs" />
     <Compile Include="Measurement.fs" />
-    <Compile Include="DataTransferObject.fs" />
     <Compile Include="Sensors.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DataTransferObjects\DataTransferObjects.fsproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Update="FSharp.Core" Version="5.0.0" />

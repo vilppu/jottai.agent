@@ -12,10 +12,12 @@
     <PackageReference Include="MongoDB.Driver" Version="2.11.3" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Firebase.fs" />
-    <Compile Include="Notification.fs" />
+    <Compile Include="MeasurementData.fs" />
+    <Compile Include="ConvertSensorData.fs" />
     <Compile Include="ConvertSensorHistory.fs" />
     <Compile Include="ConvertSensortState.fs" />
+    <Compile Include="Firebase.fs" />
+    <Compile Include="Notification.fs" />
     <Compile Include="Action.fs" />
     <Compile Include="Event.fs" />
     <Compile Include="Command.fs" />
@@ -25,6 +27,7 @@
     <PackageReference Update="FSharp.Core" Version="5.0.0" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\DataTransferObjects\DataTransferObjects.fsproj" />
     <ProjectReference Include="..\Storage\Storage.fsproj" />
     <ProjectReference Include="..\Types\Types.fsproj" />
   </ItemGroup>

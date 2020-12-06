@@ -1,5 +1,6 @@
 namespace Jottai
 
+[<AutoOpen>]
 module internal ConvertSensorHistory =
     open System.Collections.Generic
     open MongoDB.Bson
@@ -20,11 +21,10 @@ module internal ConvertSensorHistory =
           Timestamp = entry.Timestamp }
 
     let private updatedHistoryEntries (sensorState :  SensorState) (history : SensorHistory) =
-        let maxNumberOfEntries = 30
-        let measurement = DataTransferObject.Measurement sensorState.Measurement
+        let maxNumberOfEntries = 30        
         let newEntry  = 
-            { MeasuredValue = measurement.Value
-              Timestamp = sensorState.LastUpdated }
+          { MeasuredValue = sensorState.Measurement |> Value
+            Timestamp = sensorState.LastUpdated }
         let newHistory = newEntry :: history.Entries
         newHistory
         |> List.truncate maxNumberOfEntries
@@ -40,13 +40,38 @@ module internal ConvertSensorHistory =
         
     let ToStorable (sensorState : SensorState) (history : SensorHistory)
         : SensorHistoryStorage.StorableSensorHistory =
-        let measurement = DataTransferObject.Measurement sensorState.Measurement
         let updatedEntries = updatedHistoryEntries sensorState history
-        let storable : SensorHistoryStorage.StorableSensorHistory =
-            { Id = ObjectId.Empty
-              DeviceGroupId  = sensorState.DeviceGroupId.AsString
-              SensorId  = sensorState.SensorId.AsString
-              MeasuredProperty = measurement.Name
-              Entries = new List<SensorHistoryStorage.StorableSensorHistoryEntry>(updatedEntries) }            
-          
-        storable
+        
+        { Id = ObjectId.Empty
+          DeviceGroupId  = sensorState.DeviceGroupId.AsString
+          SensorId  = sensorState.SensorId.AsString
+          MeasuredProperty = sensorState.Measurement |> Name
+          Entries = new List<SensorHistoryStorage.StorableSensorHistoryEntry>(updatedEntries) }
+        
+    let ToApiObject (history : SensorHistory) : ApiObjects.SensorHistory =
+        let entries =
+            history.Entries
+            |> List.map (fun entry ->
+                let sensorHistoryResultEntry : ApiObjects.SensorHistoryEntry =
+                  { MeasuredValue = entry.MeasuredValue
+                    Timestamp = entry.Timestamp }
+                sensorHistoryResultEntry
+                )
+
+        { SensorId = history.SensorId
+          MeasuredProperty = history.MeasuredProperty
+          Entries = entries }
+        
+    let ToApiObjects (statuses : SensorState list) : ApiObjects.SensorState list = 
+        statuses
+        |> List.map (fun sensorState ->            
+            { DeviceGroupId = sensorState.DeviceGroupId.AsString
+              DeviceId = sensorState.DeviceId.AsString
+              SensorId = sensorState.SensorId.AsString
+              SensorName = sensorState.SensorName
+              MeasuredProperty = sensorState.Measurement |> Name
+              MeasuredValue = sensorState.Measurement |> Value
+              BatteryVoltage = float(sensorState.BatteryVoltage)
+              SignalStrength = sensorState.SignalStrength
+              LastUpdated = sensorState.LastUpdated
+              LastActive = sensorState.LastActive })
