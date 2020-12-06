@@ -28,7 +28,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DataTransferObjects\DataTransferObjects.fsproj" />
+    <ProjectReference Include="..\Models\Models.fsproj" />
     <ProjectReference Include="..\Storage\Storage.fsproj" />
-    <ProjectReference Include="..\Types\Types.fsproj" />
   </ItemGroup>
 </Project>
