@@ -1,6 +1,7 @@
 namespace Jottai
 
 module internal Action =
+    open System
 
     let GetSensorState (update : SensorStateUpdate) : Async<SensorState> =
         async {

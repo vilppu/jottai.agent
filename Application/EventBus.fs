@@ -13,3 +13,6 @@ module internal EventBus =
 
     let Publish (event : Event.Event) : unit =
         eventsSubject.OnNext event
+
+    let Disposable =
+        eventsSubject :> IDisposable

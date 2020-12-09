@@ -3,8 +3,9 @@
 [<AutoOpen>]
 module TestContext = 
     open System
-    open System.Net.Http 
-    open System.Threading.Tasks    
+    open System.Net.Http
+    open System.Threading
+    open System.Threading.Tasks
 
     [<assembly: Xunit.CollectionBehavior(DisableTestParallelization = true)>]
     do()
@@ -43,32 +44,45 @@ module TestContext =
                 SentHttpRequests.Add request
                 SentHttpRequestContents.Add requestContent
 
+                //if notificationSemaphore.CurrentCount > 0 then
+                //    notificationSemaphore.Release() |> ignore
+
                 let response = new HttpResponseMessage()
                 response.Content <- new StringContent("")
                 return response
             }
         SetupEmptyEnvironmentUsing httpSend
 
-    type Context() = 
+
+    type Context(notificationSemaphore : SemaphoreSlim) = 
         do
             SetupEmptyEnvironment()
-        
+            
+        member val subscription = Application.SensorStateChanges.Subscribe(fun _ ->
+            (if notificationSemaphore.CurrentCount = 0 then (notificationSemaphore.Release() |> ignore))
+        )
+
         member val DeviceGroupId = Application.GenerateSecureToken() with get, set
         member val AnotherDeviceGroupId = Application.GenerateSecureToken() with get, set        
         member val DeviceGroupToken = "DeviceGroupToken" with get, set
         member val AnotherDeviceGroupToken = "AnotherDeviceGroupToken" with get, set
         member val SensorToken = "SensorToken" with get, set
-        member val AnotherSensorToken = "AnotherSensorToken" with get, set
+        member val AnotherSensorToken = "AnotherSensorToken" with get, set        
+
+        member this.WaitForNotification() =
+            notificationSemaphore.Wait(TimeSpan.FromSeconds(1.0))            
+            |> ignore
+
         interface IDisposable with
-            member this.Dispose() = ()
+            member this.Dispose() =
+                this.subscription.Dispose()
+                notificationSemaphore.Dispose()
     
-    let SetupEmptyContext() = 
-        SetupEmptyEnvironment()
-        new Context()
-    
-    let SetupContext() = 
-        SetupEmptyEnvironment()
-        let context = new Context()
+    let SetupContext() =        
+        let notificationSemaphore = new SemaphoreSlim(1)
+        notificationSemaphore.Wait()
+
+        let context = new Context(notificationSemaphore)
         context.DeviceGroupId <- TestDeviceGroupId
         context.AnotherDeviceGroupId <- AnotherTestDeviceGroupId        
         context.DeviceGroupToken <- GenerateDeviceGroupAccessToken context.DeviceGroupId

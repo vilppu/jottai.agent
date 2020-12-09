@@ -92,4 +92,10 @@ module Application =
         }    
     
     let StartProcessingEvents httpSend : IDisposable =
-        EventHandler.SubscribeTo httpSend EventBus.Events
+        let subscribeTo = EventHandler.SubscribeTo httpSend SensorStateNotifications.Publish
+        subscribeTo EventBus.Events |> ignore
+        new System.Reactive.Disposables.CompositeDisposable(EventBus.Disposable, SensorStateNotifications.Disposable)
+        :> IDisposable
+
+    let SensorStateChanges =
+        SensorStateNotifications.SensorStates

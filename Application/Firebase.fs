@@ -80,4 +80,4 @@ module Firebase =
                     return noSubscriptionChanges
             else
                 return noSubscriptionChanges
-        }        
+        }

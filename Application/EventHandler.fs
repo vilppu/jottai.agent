@@ -5,7 +5,7 @@ module internal EventHandler =
     open System
     open FSharp.Control.Reactive
 
-    let handle httpSend (event : Event.Event) : Async<unit> =
+    let handle httpSend publish (event : Event.Event) : Async<unit> =
         async {
             match event with
             | Event.SubscribedToPushNotifications event ->
@@ -18,13 +18,14 @@ module internal EventHandler =
                 do! Action.StoreSensorState sensorState
                 do! Action.StoreSensorHistory sensorState sensorHistory
                 do! Action.SendNotifications httpSend sensorState
+                publish sensorState
 
             | Event.SensorNameChanged event ->
                 do! SensorStateStorage.StoreSensorName event.DeviceGroupId.AsString event.SensorId.AsString event.SensorName
         }
     
-    let SubscribeTo httpSend (events : IObservable<Event.Event>) : IDisposable =
-        let handle = handle httpSend
+    let SubscribeTo httpSend publish (events : IObservable<Event.Event>) : IDisposable =
+        let handle = handle httpSend publish
         events
         |> Observable.subscribe (fun event -> handle event |> Async.Start)
 

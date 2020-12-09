@@ -17,6 +17,7 @@
     <Compile Include="ConvertSensorData.fs" />
     <Compile Include="ConvertSensorHistory.fs" />
     <Compile Include="ConvertSensortState.fs" />
+    <Compile Include="SensorStateNotifications.fs" />
     <Compile Include="Firebase.fs" />
     <Compile Include="Notification.fs" />
     <Compile Include="Event.fs" />
