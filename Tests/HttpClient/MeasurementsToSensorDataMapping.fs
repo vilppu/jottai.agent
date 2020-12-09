@@ -10,68 +10,60 @@ module MeasurementsToSensorDataMapping =
             let value = float(temperature).ToString(CultureInfo.InvariantCulture)
             { name = "TEMPERATURE"
               value = ""
-              scale = 1
-              formattedValue = sprintf "%s C" value } : ApiObjects.SensorDatum
+              unit = ""
+              formattedValue = sprintf "%s C" value } : ApiObjects.DeviceDatum
         | Measurement.RelativeHumidity relativeHumidity -> 
             let value = float(relativeHumidity).ToString(CultureInfo.InvariantCulture)
             { name = "RH"
               value = ""
-              scale = 2
-              formattedValue = sprintf "%s %%" value } : ApiObjects.SensorDatum
+              unit = ""
+              formattedValue = sprintf "%s %%" value } : ApiObjects.DeviceDatum
         | Measurement.PresenceOfWater presenceOfWater -> 
             { name = "DETECT"
               value = 
                   if presenceOfWater = Measurement.Present then "1"
                   else "0"
-              scale = 0
-              formattedValue = "" } : ApiObjects.SensorDatum
+              unit = ""
+              formattedValue = "" } : ApiObjects.DeviceDatum
         | Measurement.Contact contact -> 
             let value = contact.ToString()
             { name = "CONTACT"
               value = 
                   if contact = Measurement.Open then "1"
                   else "0"
-              scale = 0
-              formattedValue = "" } : ApiObjects.SensorDatum
+              unit = ""
+              formattedValue = "" } : ApiObjects.DeviceDatum
         | Measurement.Measurement.Motion motion -> 
             let value = motion.ToString()
             { name = "pir"
               value = 
                   if motion = Measurement.Motion then "1"
                   else "0"
-              scale = 0
-              formattedValue = "" } : ApiObjects.SensorDatum
+              unit = ""
+              formattedValue = "" } : ApiObjects.DeviceDatum
         | Measurement.Voltage voltage ->
             let value = float(voltage).ToString(CultureInfo.InvariantCulture)
             { name = "voltage"
               value = value
-              scale = 2
-              formattedValue = "" } : ApiObjects.SensorDatum
+              unit = ""
+              formattedValue = "" } : ApiObjects.DeviceDatum
         | Measurement.Rssi rssi -> 
             let value = float(rssi).ToString(CultureInfo.InvariantCulture)
             { name = "rssi"
               value = value
-              scale = 0
-              formattedValue = "" } : ApiObjects.SensorDatum
-    
-    let EmptySensorDataEvent() = 
-        { event = "sensor data"
-          gatewayId = ""
-          channel = ""
-          deviceId = ""
-          data = []
-          batteryVoltage = ""
-          rssi = "" } : ApiObjects.SensorData
+              unit = ""
+              formattedValue = "" } : ApiObjects.DeviceDatum
     
     let SensorDataEventWithSensorId sensorId = 
-        { event = "sensor data"
+        { timestamp = ""
           gatewayId = ""
           channel = ""
           deviceId = sensorId
           data = []
+          availableCommands = []
           batteryVoltage = ""
-          rssi = "" } : ApiObjects.SensorData
+          rssi = "" } : ApiObjects.DeviceData
     
-    let WithMeasurement measurement sensorData =
-        { sensorData with data = [ toDatum measurement ] } : ApiObjects.SensorData
+    let WithMeasurement measurement deviceData =
+        { deviceData with data = [ toDatum measurement ] } : ApiObjects.DeviceData
 

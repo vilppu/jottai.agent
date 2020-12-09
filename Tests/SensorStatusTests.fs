@@ -185,12 +185,12 @@ module SensorStateTests =
         use context = SetupContext() 
         let example = Measurement.RelativeHumidity 78.0
         let (measurement, deviceId) = Fake.Measurement example
-        let sensorData =
+        let deviceData =
             { Fake.SomeSensorData with batteryVoltage = "3.4" }
             |> WithMeasurement(measurement)
 
         async { 
-            return! PostSensorData context.SensorToken sensorData
+            return! PostSensorData context.SensorToken deviceData
         }
         |> Async.RunSynchronously
         |> ignore
@@ -203,12 +203,12 @@ module SensorStateTests =
         use context = SetupContext() 
         let example = Measurement.RelativeHumidity 78.0
         let (measurement, deviceId) = Fake.Measurement example
-        let sensorData =
+        let deviceData =
             { Fake.SomeSensorData with rssi = "50.0" }
             |> WithMeasurement(measurement)
 
         async { 
-            return! PostSensorData context.SensorToken sensorData
+            return! PostSensorData context.SensorToken deviceData
         }
         |> Async.RunSynchronously
         |> ignore

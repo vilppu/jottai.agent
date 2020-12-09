@@ -6,7 +6,7 @@
 
   <ItemGroup>
     <Compile Include="Measurement.fs" />
-    <Compile Include="Sensors.fs" />
+    <Compile Include="Devices.fs" />
   </ItemGroup>
 
 </Project>

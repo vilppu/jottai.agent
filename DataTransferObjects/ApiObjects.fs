@@ -2,20 +2,25 @@
 
 module ApiObjects =
 
-    type SensorDatum = 
+    type DeviceDatum = 
         { name : string
-          value : string
-          scale : int
+          unit : string
+          value : string          
           formattedValue : string }
+          
+    type DeviceCommand = 
+        { id: string
+          name : string }
     
-    type SensorData = 
-        { event : string
-          gatewayId : string
+    type DeviceData = 
+        { gatewayId : string
           channel : string
           deviceId : string
-          data : SensorDatum list
+          data : DeviceDatum list
+          availableCommands : DeviceCommand list
           batteryVoltage : string
-          rssi : string }
+          rssi : string
+          timestamp : string }
           
     type SensorHistoryEntry = 
         { MeasuredValue : obj

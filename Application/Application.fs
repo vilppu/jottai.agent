@@ -83,9 +83,9 @@ module Application =
             do! Command.Execute httpSend command
         }
 
-    let PostSensorData httpSend deviceGroupId (sensorData : SensorData) =
+    let PostDeviceData httpSend deviceGroupId (deviceData : DeviceData) =
         async {
-            let sensorStateUpdates = sensorData |> ToSensorStateUpdates (DeviceGroupId deviceGroupId)
+            let sensorStateUpdates = deviceData |> ToSensorStateUpdates (DeviceGroupId deviceGroupId)
             let changeSensorStates = Command.From sensorStateUpdates
             for changeSensorState in changeSensorStates do                
                 do! Command.Execute httpSend changeSensorState

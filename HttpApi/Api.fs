@@ -46,8 +46,8 @@ type ApiController(httpSend : HttpRequestMessage -> Async<HttpResponseMessage>) 
     [<Route("sensor-data")>]
     [<HttpPost>]
     [<Authorize(Policy = Roles.Sensor)>]
-    member this.PostSensorData([<FromBody>]sensorData : SensorData) : Async<StatusCodeResult> =
+    member this.PostDeviceData([<FromBody>]deviceData : DeviceData) : Async<StatusCodeResult> =
         async {
-            return! Application.PostSensorData httpSend this.DeviceGroupId sensorData
+            return! Application.PostDeviceData httpSend this.DeviceGroupId deviceData
             return this.StatusCode(StatusCodes.Status201Created)                
         }

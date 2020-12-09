@@ -7,14 +7,7 @@ module internal ConvertSensorData =
     open Microsoft.FSharp.Data.UnitSystems.SI.UnitSymbols
     open ApiObjects
     
-    type private GatewayEvent = 
-        | GatewayUpEvent of SensorData
-        | GatewayDownEvent of SensorData
-        | GatewayActiveOnChannelEvent of SensorData
-        | SensorUpEvent of SensorData
-        | SensorDataEvent of SensorData
-    
-    let private MeasuredPropertyName (datum : SensorDatum) : string =
+    let private MeasuredPropertyName (datum : DeviceDatum) : string =
         if String.IsNullOrEmpty(datum.name)
         then ""
         else datum.name.ToLower()
@@ -43,7 +36,7 @@ module internal ConvertSensorData =
             | FirstRegexGroup "(\d+(?:\.\d+)?)" value -> Some(float (value))
             | _ -> None
         
-    let private SensorDatumToMeasurement (datum : SensorDatum) : Measurement.Measurement option =
+    let private SensorDatumToMeasurement (datum : DeviceDatum) : Measurement.Measurement option =
     
         match datum |> MeasuredPropertyName with
         | "rh" -> 
@@ -73,68 +66,54 @@ module internal ConvertSensorData =
             | None -> None
         | _ -> None
         
-    let private ToBatteryVoltage (sensorData : SensorData) : Measurement.Voltage = 
-        match sensorData.batteryVoltage |> toNumericValue with
+    let private ToBatteryVoltage (deviceData : DeviceData) : Measurement.Voltage = 
+        match deviceData.batteryVoltage |> toNumericValue with
         | Some value -> 
             value * 1.0<V>
         | _ -> 0.0<V>
         
-    let private ToRssi (sensorData : SensorData) : Measurement.Rssi= 
-        match sensorData.rssi |> toNumericValue with
+    let private ToRssi (deviceData : DeviceData) : Measurement.Rssi= 
+        match deviceData.rssi |> toNumericValue with
         | Some value -> 
             value
-        | _ -> 0.0    
-        
-    let private ToGatewayEvent(sensorData : SensorData) : GatewayEvent = 
-        match sensorData.event with
-        | "gateway up" -> GatewayUpEvent sensorData
-        | "gateway down" -> GatewayDownEvent sensorData
-        | "gateway active" -> GatewayActiveOnChannelEvent sensorData
-        | "sensor up" -> SensorUpEvent sensorData
-        | "sensor data" -> SensorDataEvent sensorData
-        | _ -> failwith ("unknown sensor event: " + sensorData.event)
+        | _ -> 0.0
     
-    let private measuredPropertyName (datum : SensorDatum) =
+    let private measuredPropertyName (datum : DeviceDatum) =
         if System.String.IsNullOrEmpty(datum.name)
         then ""
         else datum.name.ToLower()
     
     let private toSensorStateUpdate
         (deviceGroupId : DeviceGroupId)
-        (sensorData : SensorData)
-        (datum : SensorDatum)
-        (timestamp : System.DateTime)
+        (deviceData : DeviceData)
+        (datum : DeviceDatum)
         : Option<SensorStateUpdate> =
         
         let measurementOption = SensorDatumToMeasurement datum
+        let timestamp =
+            if String.IsNullOrWhiteSpace(deviceData.timestamp)
+            then DateTime.UtcNow
+            else DateTime.Parse(deviceData.timestamp)
 
         match measurementOption with
         | Some measurement ->
             let property = datum |> measuredPropertyName
-            let deviceId = DeviceId sensorData.deviceId
+            let deviceId = DeviceId deviceData.deviceId
             let sensorStateUpdate : SensorStateUpdate =
                 { SensorId = SensorId (deviceId.AsString + "." + property)
                   DeviceGroupId = deviceGroupId
                   DeviceId = deviceId
                   Measurement = measurement
-                  BatteryVoltage = ToBatteryVoltage sensorData
-                  SignalStrength = ToRssi sensorData
+                  BatteryVoltage = ToBatteryVoltage deviceData
+                  SignalStrength = ToRssi deviceData
                   Timestamp = timestamp }
 
             Some sensorStateUpdate
         | None -> None
-
-    let private toChangeSensorStateCommands (deviceGroupId : DeviceGroupId) (sensorData : SensorData) timestamp : SensorStateUpdate list =
-        sensorData.data
-        |> Seq.toList
-        |> List.map (fun datum -> toSensorStateUpdate deviceGroupId sensorData datum timestamp)
-        |> List.choose (id)
     
-    let ToSensorStateUpdates (deviceGroupId : DeviceGroupId) (sensorData : SensorData) : SensorStateUpdate list = 
-        let timestamp = System.DateTime.UtcNow
-        let gatewayEvent = ToGatewayEvent sensorData
-        match gatewayEvent with
-        | GatewayEvent.SensorDataEvent sensorData ->
-            toChangeSensorStateCommands deviceGroupId sensorData timestamp
-        | _ -> []
-  
+    let ToSensorStateUpdates (deviceGroupId : DeviceGroupId) (deviceData : DeviceData)
+        : SensorStateUpdate list =
+        deviceData.data
+        |> Seq.toList
+        |> List.map (fun datum -> toSensorStateUpdate deviceGroupId deviceData datum)
+        |> List.choose (id)

@@ -1,7 +1,7 @@
 namespace Jottai
 
 [<AutoOpen>]
-module Sensors =
+module Devices =
     open System
 
     type DeviceGroupId = 
