@@ -160,8 +160,7 @@ module SensorStateTests =
     let TellVoltage() = 
         use context = SetupContext()
         let example = Measurement.Voltage 3.4<V>
-        context |> WriteMeasurementSynchronously(Fake.Measurement example)
-        
+        context |> WriteMeasurementSynchronously(Fake.Measurement example)        
         let result = context |> GetExampleSensorState
         let entry = result.Head
 

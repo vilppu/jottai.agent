@@ -42,14 +42,14 @@ module Application =
         else
             audience
 
-    let PostSensorName httpSend deviceGroupId sensorId sensorName : Async<unit> = 
+    let PostSensorName deviceGroupId sensorId sensorName : Async<unit> = 
         async {    
             let changeSensorName : Command.ChangeSensorName =
                 { SensorId = SensorId sensorId
                   DeviceGroupId = DeviceGroupId deviceGroupId
                   SensorName = sensorName}
             let command = Command.ChangeSensorName changeSensorName
-            do! Command.Execute httpSend command
+            do! Command.Execute command
         }    
     
     let GetSensorState (deviceGroupId : string) : Async<ApiObjects.SensorState list> = 
@@ -73,20 +73,23 @@ module Application =
             return result
         }
     
-    let SubscribeToPushNotifications httpSend deviceGroupId (token : string) : Async<unit> = 
+    let SubscribeToPushNotifications deviceGroupId (token : string) : Async<unit> = 
         async {
             let subscription = Notification.Subscription token
             let subscribeToPushNotifications : Command.SubscribeToPushNotifications =
                 { DeviceGroupId = (DeviceGroupId deviceGroupId)
                   Subscription = subscription }
             let command = Command.SubscribeToPushNotifications subscribeToPushNotifications
-            do! Command.Execute httpSend command
+            do! Command.Execute command
         }
 
-    let PostDeviceData httpSend deviceGroupId (deviceData : DeviceData) =
+    let PostDeviceData deviceGroupId (deviceData : DeviceData) =
         async {
             let sensorStateUpdates = deviceData |> ToSensorStateUpdates (DeviceGroupId deviceGroupId)
             let changeSensorStates = Command.From sensorStateUpdates
             for changeSensorState in changeSensorStates do                
-                do! Command.Execute httpSend changeSensorState
-        }
+                do! Command.Execute changeSensorState
+        }    
+    
+    let StartProcessingEvents httpSend : IDisposable =
+        EventHandler.SubscribeTo httpSend EventBus.Events

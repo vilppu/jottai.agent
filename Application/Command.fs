@@ -60,9 +60,9 @@ module internal Command =
         | ChangeSensorState changeSensorState -> sensorStateChangedEvent changeSensorState
         | ChangeSensorName changeSensorName -> sensorNameChangedEvent changeSensorName       
   
-    let Execute httpSend (command : Command) =     
+    let Execute (command : Command) =     
         async {
             let event = createEventFromCommand command
-            do! Event.Store event
-            do! Event.Send httpSend event
+            do! Persistence.Store event
+            do EventBus.Publish event
         }

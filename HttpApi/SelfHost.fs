@@ -111,6 +111,7 @@ module SelfHost =
         (httpSend : HttpRequestMessage -> Async<HttpResponseMessage>)
         : Task = 
 
+        let eventProcessor = Application.StartProcessingEvents httpSend
         let url = GetUrl()
         let host = url.Scheme + Uri.SchemeDelimiter + url.Host + ":" + url.Port.ToString()
 

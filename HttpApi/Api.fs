@@ -16,7 +16,7 @@ type ApiController(httpSend : HttpRequestMessage -> Async<HttpResponseMessage>) 
     [<Authorize(Policy = Roles.User)>]
     member this.PostSensorName (sensorId : string) (sensorName : string) : Async<unit> = 
         async {
-            do! Application.PostSensorName httpSend this.DeviceGroupId sensorId sensorName
+            do! Application.PostSensorName this.DeviceGroupId sensorId sensorName
         }    
     
     [<Route("sensors")>]
@@ -40,7 +40,7 @@ type ApiController(httpSend : HttpRequestMessage -> Async<HttpResponseMessage>) 
     [<Authorize(Policy = Roles.User)>]
     member this.SubscribeToPushNotifications (token : string) : Async<unit> = 
         async {
-            return! Application.SubscribeToPushNotifications httpSend this.DeviceGroupId token
+            return! Application.SubscribeToPushNotifications this.DeviceGroupId token
         }
     
     [<Route("sensor-data")>]
@@ -48,6 +48,6 @@ type ApiController(httpSend : HttpRequestMessage -> Async<HttpResponseMessage>) 
     [<Authorize(Policy = Roles.Sensor)>]
     member this.PostDeviceData([<FromBody>]deviceData : DeviceData) : Async<StatusCodeResult> =
         async {
-            return! Application.PostDeviceData httpSend this.DeviceGroupId deviceData
+            return! Application.PostDeviceData this.DeviceGroupId deviceData
             return this.StatusCode(StatusCodes.Status201Created)                
         }
