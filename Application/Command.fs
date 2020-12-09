@@ -29,53 +29,40 @@ module internal Command =
         |> List.map (fun sensorStateUpdate -> ChangeSensorState sensorStateUpdate)
         |> List.map (fun changeSensorState -> Command.ChangeSensorState changeSensorState)
 
-    let private subscribedToPushNotificationsEvent (command : SubscribeToPushNotifications) =
-        async {
-            let event : Event.SubscribedToPushNotifications =
-                { DeviceGroupId = command.DeviceGroupId
-                  Subscription = command.Subscription }
-            return Event.SubscribedToPushNotifications event
-        }
+    let private subscribedToPushNotificationsEvent (command : SubscribeToPushNotifications) : Event.Event =
+        let event : Event.SubscribedToPushNotifications =
+            { DeviceGroupId = command.DeviceGroupId
+              Subscription = command.Subscription }
+        Event.SubscribedToPushNotifications event        
     
-    let private sensorStateChangedEvent (command : ChangeSensorState) =
-        async {
-            let sensorStateUpdate = command.SensorStateUpdate
-            let event : Event.SensorStateChanged =
-                { SensorId = sensorStateUpdate.SensorId
-                  DeviceGroupId = sensorStateUpdate.DeviceGroupId
-                  DeviceId = sensorStateUpdate.DeviceId
-                  Measurement = sensorStateUpdate.Measurement
-                  BatteryVoltage = sensorStateUpdate.BatteryVoltage
-                  SignalStrength = sensorStateUpdate.SignalStrength
-                  Timestamp = sensorStateUpdate.Timestamp }
+    let private sensorStateChangedEvent (command : ChangeSensorState) : Event.Event =   
+        let sensorStateUpdate = command.SensorStateUpdate
+        let event : Event.SensorStateChanged =
+            { SensorId = sensorStateUpdate.SensorId
+              DeviceGroupId = sensorStateUpdate.DeviceGroupId
+              DeviceId = sensorStateUpdate.DeviceId
+              Measurement = sensorStateUpdate.Measurement
+              BatteryVoltage = sensorStateUpdate.BatteryVoltage
+              SignalStrength = sensorStateUpdate.SignalStrength
+              Timestamp = sensorStateUpdate.Timestamp }
+        Event.SensorStateChanged event        
 
-            return Event.SensorStateChanged event
-        }
-
-    let private sensorNameChangedEvent (command : ChangeSensorName) =
+    let private sensorNameChangedEvent (command : ChangeSensorName) : Event.Event =
         let event : Event.SensorNameChanged =
             { SensorId = command.SensorId
               DeviceGroupId = command.DeviceGroupId
               SensorName = command.SensorName }
         Event.SensorNameChanged event
 
-    let private createEventFromCommand (command : Command) = 
-        async {
-            match command with
-            | SubscribeToPushNotifications subscribeToPushNotifications ->
-                return! subscribedToPushNotificationsEvent subscribeToPushNotifications 
-
-            | ChangeSensorState changeSensorState ->
-                return! sensorStateChangedEvent changeSensorState
-
-            | ChangeSensorName changeSensorName ->
-                return sensorNameChangedEvent changeSensorName
-       }
+    let private createEventFromCommand (command : Command) : Event.Event =
+        match command with
+        | SubscribeToPushNotifications subscribeToPushNotifications -> subscribedToPushNotificationsEvent subscribeToPushNotifications 
+        | ChangeSensorState changeSensorState -> sensorStateChangedEvent changeSensorState
+        | ChangeSensorName changeSensorName -> sensorNameChangedEvent changeSensorName       
   
     let Execute httpSend (command : Command) =     
         async {
-            let! event = createEventFromCommand command
+            let event = createEventFromCommand command
             do! Event.Store event
             do! Event.Send httpSend event
         }
- 
