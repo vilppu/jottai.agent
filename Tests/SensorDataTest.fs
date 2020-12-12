@@ -13,7 +13,7 @@ module SensorDataTest =
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode)
     
     [<Fact>]
-    let AgentCanHandleLotsOfRequests() = 
+    let AgentCanHandleLotsOfRequests() =
         use context = SetupContext()
         let timer = new System.Diagnostics.Stopwatch()
         let requestsPerBatch = 100

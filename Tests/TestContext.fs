@@ -4,7 +4,6 @@
 module TestContext = 
     open System
     open System.Net.Http
-    open System.Threading
     open System.Threading.Tasks
 
     [<assembly: Xunit.CollectionBehavior(DisableTestParallelization = true)>]
@@ -32,7 +31,7 @@ module TestContext =
     let SentHttpRequests = System.Collections.Generic.List<HttpRequestMessage>()
     let SentHttpRequestContents = System.Collections.Generic.List<string>()
 
-    let SetupEmptyEnvironment() =
+    let SetupEmptyEnvironment() =   
         SentHttpRequests.Clear()
         SentHttpRequestContents.Clear()
         let httpSend (request : HttpRequestMessage) : Async<HttpResponseMessage> =
@@ -44,9 +43,6 @@ module TestContext =
                 SentHttpRequests.Add request
                 SentHttpRequestContents.Add requestContent
 
-                //if notificationSemaphore.CurrentCount > 0 then
-                //    notificationSemaphore.Release() |> ignore
-
                 let response = new HttpResponseMessage()
                 response.Content <- new StringContent("")
                 return response
@@ -54,35 +50,23 @@ module TestContext =
         SetupEmptyEnvironmentUsing httpSend
 
 
-    type Context(notificationSemaphore : SemaphoreSlim) = 
+    type Context() = 
         do
             SetupEmptyEnvironment()
-            
-        member val subscription = Application.SensorStateChanges.Subscribe(fun _ ->
-            (if notificationSemaphore.CurrentCount = 0 then (notificationSemaphore.Release() |> ignore))
-        )
 
         member val DeviceGroupId = Application.GenerateSecureToken() with get, set
         member val AnotherDeviceGroupId = Application.GenerateSecureToken() with get, set        
         member val DeviceGroupToken = "DeviceGroupToken" with get, set
         member val AnotherDeviceGroupToken = "AnotherDeviceGroupToken" with get, set
         member val SensorToken = "SensorToken" with get, set
-        member val AnotherSensorToken = "AnotherSensorToken" with get, set        
-
-        member this.WaitForNotification() =
-            notificationSemaphore.Wait(TimeSpan.FromSeconds(1.0))            
-            |> ignore
+        member val AnotherSensorToken = "AnotherSensorToken" with get, set
 
         interface IDisposable with
             member this.Dispose() =
-                this.subscription.Dispose()
-                notificationSemaphore.Dispose()
+                ()
     
-    let SetupContext() =        
-        let notificationSemaphore = new SemaphoreSlim(1)
-        notificationSemaphore.Wait()
-
-        let context = new Context(notificationSemaphore)
+    let SetupContext () =        
+        let context = new Context()
         context.DeviceGroupId <- TestDeviceGroupId
         context.AnotherDeviceGroupId <- AnotherTestDeviceGroupId        
         context.DeviceGroupToken <- GenerateDeviceGroupAccessToken context.DeviceGroupId

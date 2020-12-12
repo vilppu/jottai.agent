@@ -22,7 +22,7 @@ module SensorStateTests =
         let newest = Measurement.RelativeHumidity 78.0
         context |> WriteMeasurementSynchronously(Fake.Measurement previous)
         context |> WriteMeasurementSynchronously(Fake.Measurement previous)
-        context |> WriteMeasurementSynchronously(Fake.Measurement newest)
+        context |> WriteMeasurementSynchronously(Fake.Measurement newest)        
 
         let result = context |> GetExampleSensorState
 
@@ -188,11 +188,7 @@ module SensorStateTests =
             { Fake.SomeSensorData with batteryVoltage = "3.4" }
             |> WithMeasurement(measurement)
 
-        async { 
-            return! PostSensorData context.SensorToken deviceData
-        }
-        |> Async.RunSynchronously
-        |> ignore
+        WriteDeviceDataSynchronously deviceData context
         
         let result = context |> GetExampleSensorState
         Assert.Equal(3.4, result.Head.BatteryVoltage)
@@ -206,11 +202,7 @@ module SensorStateTests =
             { Fake.SomeSensorData with rssi = "50.0" }
             |> WithMeasurement(measurement)
 
-        async { 
-            return! PostSensorData context.SensorToken deviceData
-        }
-        |> Async.RunSynchronously
-        |> ignore
+        WriteDeviceDataSynchronously deviceData context
         
         let result = context |> GetExampleSensorState
         Assert.Equal(50.0, result.Head.SignalStrength)

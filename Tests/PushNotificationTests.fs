@@ -2,9 +2,20 @@ namespace Jottai
 
 module PushNotificationTests = 
     open Xunit
+    open System.Diagnostics
 
-    let WaitForBackgroundProcessingToComplete() =
-        System.Threading.Tasks.Task.Delay(100) |> Async.AwaitTask
+    let waitForNotifications expectedNumberOfNotifications =
+        let stopwatch = new Stopwatch()
+        let maxWaitTimeInSeconds = 10.0
+
+        stopwatch.Start()
+
+        async {
+            while (SentHttpRequestContents.Count < expectedNumberOfNotifications) && (stopwatch.Elapsed.TotalSeconds < maxWaitTimeInSeconds) do
+                do!
+                System.Threading.Tasks.Task.Delay(100)
+                |> Async.AwaitTask
+        }
 
     let sentNotifications() =
         SentHttpRequestContents
@@ -23,7 +34,7 @@ module PushNotificationTests =
             context |> WriteMeasurementSynchronously(Fake.Measurement opened)
             context |> WriteMeasurementSynchronously(Fake.Measurement closed)
         
-            do! WaitForBackgroundProcessingToComplete()
+            do! waitForNotifications(2)
 
             Assert.Equal(2, SentHttpRequests.Count)
             Assert.Equal("https://fcm.googleapis.com/fcm/send", SentHttpRequests.[0].RequestUri.ToString())
@@ -40,7 +51,7 @@ module PushNotificationTests =
             context |> WriteMeasurementSynchronously(Fake.Measurement opened)        
             context |> WriteMeasurementSynchronously(Fake.Measurement opened)
 
-            do! WaitForBackgroundProcessingToComplete()
+            do! waitForNotifications(1)
 
             Assert.Equal(1, SentHttpRequests.Count)
         }
@@ -58,7 +69,7 @@ module PushNotificationTests =
             context |> WriteMeasurementSynchronously(Fake.Measurement notPresent)
             context |> WriteMeasurementSynchronously(Fake.Measurement present)
         
-            do! WaitForBackgroundProcessingToComplete()
+            do! waitForNotifications(3)
 
             Assert.Equal(3, SentHttpRequests.Count)
             Assert.Equal("https://fcm.googleapis.com/fcm/send", SentHttpRequests.[0].RequestUri.ToString())
@@ -75,7 +86,7 @@ module PushNotificationTests =
             context |> WriteMeasurementSynchronously(Fake.Measurement present)
             context |> WriteMeasurementSynchronously(Fake.Measurement present)
 
-            do! WaitForBackgroundProcessingToComplete()
+            do! waitForNotifications(1)
 
             Assert.Equal(1, SentHttpRequests.Count)
         }
@@ -93,7 +104,7 @@ module PushNotificationTests =
             context |> WriteMeasurementSynchronously(Fake.Measurement noMotion)
             context |> WriteMeasurementSynchronously(Fake.Measurement motion)
         
-            do! WaitForBackgroundProcessingToComplete()
+            do! waitForNotifications(3)
 
             Assert.Equal(3, SentHttpRequests.Count)
             Assert.Equal("https://fcm.googleapis.com/fcm/send", SentHttpRequests.[0].RequestUri.ToString())
@@ -110,7 +121,7 @@ module PushNotificationTests =
             context |> WriteMeasurementSynchronously(Fake.Measurement motion)
             context |> WriteMeasurementSynchronously(Fake.Measurement motion)
 
-            do! WaitForBackgroundProcessingToComplete()
+            do! waitForNotifications(1)
 
             Assert.Equal(1, SentHttpRequests.Count)
         }
@@ -118,16 +129,16 @@ module PushNotificationTests =
     [<Fact>]
     let SendSensorName() = 
         async {
-            use context = SetupContext()   
+            use context = SetupContext()
             let expectedName = "ExampleSensorName"
 
             context |> SetupToReceivePushNotifications
             
             context |> WriteMeasurementSynchronously(Fake.Measurement (Measurement.Contact Measurement.Open))
-            ChangeSensorName context.DeviceGroupToken "ExampleDevice.contact" expectedName |> Async.RunSynchronously
+            ChangeSensorName context.DeviceGroupToken "ExampleDevice.contact" expectedName
             context |> WriteMeasurementSynchronously(Fake.Measurement (Measurement.Contact Measurement.Closed))
 
-            do! WaitForBackgroundProcessingToComplete()
+            do! waitForNotifications(1)
 
             Assert.Equal(expectedName, sentNotifications().[1].data.deviceNotification.sensorName)
         }

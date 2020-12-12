@@ -10,10 +10,11 @@ module DeviceSettingsTest =
         let deviceId = "ExampleDevice"      
         context |> WriteMeasurementSynchronously(Fake.SomeMeasurementFromDevice deviceId)
 
-        let response = PostSensorName InvalidToken deviceId "ExampleName" |> Async.RunSynchronously
+        async {
+            let! response = PostSensorName InvalidToken deviceId "ExampleName"
 
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode)
-
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode)
+        }
         
     [<Fact>]
     let SensorNameCanBeChanged() = 
@@ -23,7 +24,7 @@ module DeviceSettingsTest =
         let sensorId = "ExampleDevice.temperature"
         context |> WriteMeasurementSynchronously(Fake.SomeMeasurementFromDevice deviceId)
 
-        ChangeSensorName context.DeviceGroupToken sensorId expectedName |> Async.RunSynchronously
+        ChangeSensorName context.DeviceGroupToken sensorId expectedName
 
         let result = context |> GetExampleSensorState
         let entry = result.Head
@@ -39,7 +40,7 @@ module DeviceSettingsTest =
         
         context |> WriteMeasurementSynchronously(Fake.SomeMeasurementFromDevice deviceId)
 
-        ChangeSensorName context.DeviceGroupToken sensorId expectedName |> Async.RunSynchronously
+        ChangeSensorName context.DeviceGroupToken sensorId expectedName
         
         context |> WriteMeasurementSynchronously(Fake.SomeMeasurementFromDevice deviceId)
 
@@ -56,11 +57,11 @@ module DeviceSettingsTest =
         
         context |> WriteMeasurementSynchronously(Fake.SomeMeasurementFromDevice deviceId)
 
-        ChangeSensorName context.DeviceGroupToken sensorId "SensorA" |> Async.RunSynchronously
+        ChangeSensorName context.DeviceGroupToken sensorId "SensorA"
         
         context |> WriteMeasurementSynchronously(Fake.SomeMeasurementFromDevice deviceId)
 
-        ChangeSensorName context.DeviceGroupToken sensorId "SensorB" |> Async.RunSynchronously
+        ChangeSensorName context.DeviceGroupToken sensorId "SensorB"
 
         let result = context |> GetExampleSensorState
         let entry = result.Head

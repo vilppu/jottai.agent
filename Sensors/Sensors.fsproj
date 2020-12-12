@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="ConvertSensorHistory.fs" />
+    <Compile Include="ConvertSensortState.fs" />
+    <Compile Include="Action.fs" />
+    <Compile Include="SensorEventHandler.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DataTransferObjects\DataTransferObjects.fsproj" />
+    <ProjectReference Include="..\Events\Events.fsproj" />
+    <ProjectReference Include="..\Models\Models.fsproj" />
+    <ProjectReference Include="..\Storage\Storage.fsproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="FSharp.Core" Version="5.0.0" />
+  </ItemGroup>
+
+</Project>

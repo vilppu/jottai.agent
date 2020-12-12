@@ -6,7 +6,10 @@
 
   <ItemGroup>
     <Compile Include="ApiObjects.fs" />
-    <Compile Include="FirebaseObjects.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="FSharp.Core" Version="5.0.0" />
   </ItemGroup>
 
 </Project>

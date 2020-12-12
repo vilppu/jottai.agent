@@ -5,10 +5,10 @@ module internal Persistence =
     let Store (event : Event.Event) : Async<unit> =
         async {
             match event with
-            | Event.SubscribedToPushNotifications _ -> ()
-            | Event.SensorStateChanged sensorStateChanged ->
-                if false then
-                    let sensorStateUpdate = sensorStateChanged |> Event.ToSensorStateUpdate
-                    do! Action.StoreSensorStateChangedEvent sensorStateUpdate
+            | Event.SensorStateChanged sensorStateChanged ->                
+                let sensorStateUpdate = sensorStateChanged |> Event.ToSensorStateUpdate                
+                let storableSensorEvent = UpdateToStorable sensorStateUpdate
+                do! SensorEventStorage.StoreSensorEvent storableSensorEvent                
             | Event.SensorNameChanged _ -> ()
+            | _ -> ()
         }

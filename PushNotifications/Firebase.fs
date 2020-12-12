@@ -1,6 +1,6 @@
 namespace Jottai
 
-module Firebase =
+module private Firebase =
     open System
     open System.Collections.Generic
     open System.Net.Http
@@ -70,7 +70,7 @@ module Firebase =
 
     }
     
-    let SendFirebaseMessages httpSend (subscriptions : List<string>) (pushNotification : FirebaseObjects.FirebasePushNotification) =
+    let private sendFirebaseMessages httpSend (subscriptions : List<string>) (pushNotification : FirebaseObjects.FirebasePushNotification) =
         async {
             let storedFirebaseKey = StoredFirebaseKey()
             if not(String.IsNullOrWhiteSpace(storedFirebaseKey)) then
@@ -80,4 +80,60 @@ module Firebase =
                     return noSubscriptionChanges
             else
                 return noSubscriptionChanges
+        }
+
+    type private DevicePushNotification =
+        { DeviceId : string
+          SensorName : string
+          MeasuredProperty : string
+          MeasuredValue : obj
+          Timestamp : DateTime }
+   
+    type private PushNotificationReason =
+        { SensorState : SensorState }
+        
+    let private sendFirebasePushNotifications httpSend reason =
+        async {
+            let measurement = reason.SensorState.Measurement
+            let sensorName = reason.SensorState.SensorName
+                
+            let deviceGroupId = reason.SensorState.DeviceGroupId
+            let! subscriptions = PushNotificationSubscriptionStorage.ReadPushNotificationSubscriptions deviceGroupId.AsString
+
+            let pushNotification : DevicePushNotification =
+                { DeviceId = reason.SensorState.DeviceId.AsString
+                  SensorName = sensorName
+                  MeasuredProperty = measurement |> Name
+                  MeasuredValue = measurement |> Value
+                  Timestamp = reason.SensorState.LastUpdated }
+                
+            let notification : FirebaseObjects.FirebaseDeviceNotificationContent =
+                { deviceId = pushNotification.DeviceId
+                  sensorName = pushNotification.SensorName
+                  measuredProperty = pushNotification.MeasuredProperty
+                  measuredValue = pushNotification.MeasuredValue
+                  timestamp = pushNotification.Timestamp }
+
+            let pushNotificationRequestData : FirebaseObjects.FirebasePushNotificationRequestData =
+                { deviceNotification = notification }
+
+            let pushNotification : FirebaseObjects.FirebasePushNotification =
+                { data = pushNotificationRequestData
+                  registration_ids = subscriptions }
+                      
+            let! subsriptionChanges = sendFirebaseMessages httpSend subscriptions pushNotification
+            do! PushNotificationSubscriptionStorage.RemoveRegistrations deviceGroupId.AsString subsriptionChanges.SubscriptionsToBeRemoved
+            do! PushNotificationSubscriptionStorage.AddRegistrations deviceGroupId.AsString subsriptionChanges.SubscriptionsToBeAdded
+        }
+
+    let private sendPushNotifications httpSend reason =
+        async {
+            do! sendFirebasePushNotifications httpSend reason
+        }
+        
+    let Send httpSend (sensorState : SensorState) : Async<unit>=
+        async {               
+            let reason : PushNotificationReason =
+                { SensorState = sensorState }
+            do! sendPushNotifications httpSend reason
         }

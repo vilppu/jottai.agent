@@ -5,8 +5,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Notification.fs" />
     <Compile Include="Measurement.fs" />
+    <Compile Include="MeasurementData.fs" />
     <Compile Include="Devices.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="FSharp.Core" Version="5.0.0" />
   </ItemGroup>
 
 </Project>

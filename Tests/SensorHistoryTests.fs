@@ -83,6 +83,7 @@ module SensorHistoryTests =
         let bigNumberOfEvents = expectedLimit * 2
         let deviceId = "device-1"
         let sensorId = deviceId + ".rh"
+
         for i in 1..bigNumberOfEvents do
             let measurement = Measurement.RelativeHumidity(float (i))
             context |> WriteMeasurementSynchronously(Fake.MeasurementFromDevice measurement deviceId)

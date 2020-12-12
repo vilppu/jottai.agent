@@ -53,6 +53,12 @@ module MeasurementsToSensorDataMapping =
               value = value
               unit = ""
               formattedValue = "" } : ApiObjects.DeviceDatum
+
+        | Measurement.Unsupported  ->
+            { name = ""
+              value = ""
+              unit = ""
+              formattedValue = "" } : ApiObjects.DeviceDatum
     
     let SensorDataEventWithSensorId sensorId = 
         { timestamp = ""

@@ -17,15 +17,9 @@
     <Compile Include="ConvertSensorData.fs" />
     <Compile Include="ConvertSensorHistory.fs" />
     <Compile Include="ConvertSensortState.fs" />
-    <Compile Include="SensorStateNotifications.fs" />
-    <Compile Include="Firebase.fs" />
-    <Compile Include="Notification.fs" />
-    <Compile Include="Event.fs" />
     <Compile Include="Action.fs" />
     <Compile Include="Persistence.fs" />
-    <Compile Include="EventBus.fs" />
     <Compile Include="Command.fs" />
-    <Compile Include="EventHandler.fs" />
     <Compile Include="Application.fs" />
   </ItemGroup>
   <ItemGroup>
@@ -33,7 +27,10 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DataTransferObjects\DataTransferObjects.fsproj" />
+    <ProjectReference Include="..\Events\Events.fsproj" />
     <ProjectReference Include="..\Models\Models.fsproj" />
+    <ProjectReference Include="..\PushNotifications\PushNotifications.fsproj" />
+    <ProjectReference Include="..\Sensors\Sensors.fsproj" />
     <ProjectReference Include="..\Storage\Storage.fsproj" />
   </ItemGroup>
 </Project>

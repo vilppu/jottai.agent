@@ -4,6 +4,7 @@ module Application =
     open System
     open ApiObjects
     open System.Security.Cryptography
+    open FSharp.Control.Reactive
 
     let GenerateSecureToken() =         
         let tokenBytes = Array.zeroCreate<byte> 16
@@ -92,10 +93,11 @@ module Application =
         }    
     
     let StartProcessingEvents httpSend : IDisposable =
-        let subscribeTo = EventHandler.SubscribeTo httpSend SensorStateNotifications.Publish
-        subscribeTo EventBus.Events |> ignore
-        new System.Reactive.Disposables.CompositeDisposable(EventBus.Disposable, SensorStateNotifications.Disposable)
-        :> IDisposable
+        let subscribeToSensorEvents = SensorEventHandler.SubscribeTo EventBus.Publish
+        let subscribeToPushNotificationEvents = PushNotificationEventHandler.SubscribeTo httpSend EventBus.Publish
+        EventBus.Disposable
+        |> Disposable.compose (subscribeToSensorEvents EventBus.Events)
+        |> Disposable.compose (subscribeToPushNotificationEvents EventBus.Events)
 
-    let SensorStateChanges =
-        SensorStateNotifications.SensorStates
+    let Events =
+        EventBus.Events

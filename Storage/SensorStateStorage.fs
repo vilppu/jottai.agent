@@ -2,9 +2,12 @@ namespace Jottai
 
 module SensorStateStorage =
     open System
+    open System.Threading
     open MongoDB.Bson
     open MongoDB.Bson.Serialization.Attributes
     open MongoDB.Driver
+    let sensorNameSemaphore = new SemaphoreSlim(1)
+    let sensorStateSemaphore = new SemaphoreSlim(1)
     
     [<CLIMutable>]
     [<BsonIgnoreExtraElements>]
@@ -48,15 +51,21 @@ module SensorStateStorage =
             Builders<StorableSensorState>.Update.Set((fun s -> s.SensorName), sensorName)
 
         async {
-            do! SensorsCollection.UpdateOneAsync<StorableSensorState>(filter, update)
-                |> Async.AwaitTask
-                |> Async.Ignore
+            do! sensorNameSemaphore.WaitAsync() |> Async.AwaitTask
+
+            try
+                do! SensorsCollection.UpdateOneAsync<StorableSensorState>(filter, update)
+                    |> Async.AwaitTask
+                    |> Async.Ignore
+                    
+            finally
+                sensorNameSemaphore.Release() |> ignore
         }    
 
     let StoreSensorState (sensorState : StorableSensorState) =
-    
+
         let filter = GetSensorExpression sensorState.DeviceGroupId sensorState.SensorId
-        
+    
         let update =
             Builders<StorableSensorState>.Update             
              .Set((fun s -> s.DeviceGroupId), sensorState.DeviceGroupId)
@@ -69,10 +78,18 @@ module SensorStateStorage =
              .Set((fun s -> s.SignalStrength), sensorState.SignalStrength)
              .Set((fun s -> s.LastUpdated), sensorState.LastUpdated)
              .Set((fun s -> s.LastActive), sensorState.LastActive)
-        
-        SensorsCollection.UpdateOneAsync<StorableSensorState>(filter, update, BsonStorage.Upsert)
-        :> System.Threading.Tasks.Task
-        |> Async.AwaitTask
+    
+        async {
+            do! sensorStateSemaphore.WaitAsync() |> Async.AwaitTask
+
+            try            
+                do! SensorsCollection.UpdateOneAsync<StorableSensorState>(filter, update, BsonStorage.Upsert)
+                    :> System.Threading.Tasks.Task
+                    |> Async.AwaitTask
+
+            finally
+                sensorStateSemaphore.Release() |> ignore
+        }
 
     let GetSensorState deviceGroupId sensorId : Async<StorableSensorState> =
         async {

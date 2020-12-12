@@ -1,6 +1,6 @@
 namespace Jottai
 
-module internal Event =
+module Event =
 
     type SubscribedToPushNotifications =
         { DeviceGroupId : DeviceGroupId
@@ -23,7 +23,9 @@ module internal Event =
     type Event =
         | SubscribedToPushNotifications of SubscribedToPushNotifications
         | SensorStateChanged of SensorStateChanged
-        | SensorNameChanged of SensorNameChanged    
+        | SensorNameChanged of SensorNameChanged
+        | SensorStateChangeCompleted of SensorState
+        | SensorNameChangeCompleted of SensorNameChanged
 
     let ToSensorStateUpdate (event : SensorStateChanged) : SensorStateUpdate = 
         { SensorId = event.SensorId
