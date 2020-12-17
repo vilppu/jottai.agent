@@ -6,8 +6,8 @@ module Http =
     open System.Net.Http.Headers
     open Newtonsoft.Json
     
-    let private getBaseUrl() = Environment.GetEnvironmentVariable("JOTTAI_BASE_URL")
-    let private httpClient = new HttpClient(BaseAddress = Uri(getBaseUrl()))
+    let private GetBaseUrl() = Environment.GetEnvironmentVariable("JOTTAI_BASE_URL")
+    let private HttpClient = new HttpClient(BaseAddress = Uri(GetBaseUrl()))
     
     let FailOnServerError(response : HttpResponseMessage) : HttpResponseMessage = 
         if (int response.StatusCode) >= 500 then
@@ -19,10 +19,10 @@ module Http =
         let json = JsonConvert.SerializeObject data
         async {            
             use requestMessage = new HttpRequestMessage(HttpMethod.Post, url)
-            use content = new StringContent(json, System.Text.Encoding.UTF8, "application/json")
+            use content = new StringContent(json, Text.Encoding.UTF8, "application/json")
             requestMessage.Content <- content
             requestMessage.Headers.Authorization <- AuthenticationHeaderValue("Bearer", token)
-            let! response = httpClient.SendAsync(requestMessage) |> Async.AwaitTask
+            let! response = HttpClient.SendAsync(requestMessage) |> Async.AwaitTask
             return response |> FailOnServerError
         }
     
@@ -30,8 +30,8 @@ module Http =
         async { 
             use requestMessage = new HttpRequestMessage(HttpMethod.Get, url)
             requestMessage.Headers.Add("Accept", "application/json")
-            requestMessage.Headers.Authorization <- AuthenticationHeaderValue("Bearer", token)
-            let! response = httpClient.SendAsync(requestMessage) |> Async.AwaitTask
+            requestMessage.Headers.Authorization <- AuthenticationHeaderValue("Bearer", token)            
+            let! response = HttpClient.SendAsync(requestMessage) |> Async.AwaitTask
             return response |> FailOnServerError
         }
     

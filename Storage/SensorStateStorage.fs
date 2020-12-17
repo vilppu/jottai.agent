@@ -22,8 +22,8 @@ module SensorStateStorage =
           mutable MeasuredValue : obj
           mutable BatteryVoltage : float
           mutable SignalStrength : float
-          mutable LastUpdated : DateTime
-          mutable LastActive : DateTime }
+          mutable LastUpdated : DateTimeOffset
+          mutable LastActive : DateTimeOffset }
 
     let private SensorsCollectionName = "Sensors"
 
@@ -123,8 +123,8 @@ module SensorStateStorage =
           MeasuredValue = null
           BatteryVoltage = 0.0
           SignalStrength = 0.0
-          LastUpdated = DateTime.UtcNow
-          LastActive = DateTime.UtcNow }
+          LastUpdated = DateTimeOffset.UtcNow
+          LastActive = DateTimeOffset.UtcNow }
         
     let Drop() =
         BsonStorage.Database.DropCollection(SensorsCollectionName)

@@ -8,7 +8,7 @@ module FirebaseObjects =
           sensorName : string
           measuredProperty : string
           measuredValue : obj
-          timestamp : System.DateTime }
+          timestamp : System.DateTimeOffset }
 
     [<CLIMutable>]
     type FirebasePushNotificationRequestData = 

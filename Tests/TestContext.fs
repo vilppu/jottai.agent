@@ -4,6 +4,7 @@
 module TestContext = 
     open System
     open System.Net.Http
+    open System.Security.Cryptography
     open System.Threading.Tasks
 
     [<assembly: Xunit.CollectionBehavior(DisableTestParallelization = true)>]
@@ -15,7 +16,7 @@ module TestContext =
     let TestDeviceGroupId = "TestDeviceGroup"
     let AnotherTestDeviceGroupId = "AnotherTestDeviceGroupId"
 
-    let SetupEmptyEnvironmentUsing httpSend = 
+    let private SetupEmptyEnvironmentUsing httpSend = 
         Environment.SetEnvironmentVariable("JOTTAI_BASE_URL", "http://127.0.0.1:18888/jottai/")
         Environment.SetEnvironmentVariable("JOTTAI_MONGODB_DATABASE", "Jottai_Test")
         Environment.SetEnvironmentVariable("JOTTAI_TOKEN_SECRET", "fake-token-secret")
@@ -24,14 +25,15 @@ module TestContext =
         SensorEventStorage.Drop AnotherTestDeviceGroupId
         SensorStateStorage.Drop()
         SensorHistoryStorage.Drop()
+        DevicePropertyStorage.Drop()
     
         if serverTask |> isNull then
             serverTask <- CreateHttpServer Options.UseSigninKey httpSend
 
-    let SentHttpRequests = System.Collections.Generic.List<HttpRequestMessage>()
-    let SentHttpRequestContents = System.Collections.Generic.List<string>()
+    let SentHttpRequests = Collections.Generic.List<HttpRequestMessage>()
+    let SentHttpRequestContents = Collections.Generic.List<string>()
 
-    let SetupEmptyEnvironment() =   
+    let private SetupEmptyEnvironment() =   
         SentHttpRequests.Clear()
         SentHttpRequestContents.Clear()
         let httpSend (request : HttpRequestMessage) : Async<HttpResponseMessage> =
@@ -50,12 +52,19 @@ module TestContext =
         SetupEmptyEnvironmentUsing httpSend
 
 
+
+    let private GenerateSecureToken() =         
+        let tokenBytes = Array.zeroCreate<byte> 16
+        RandomNumberGenerator.Create().GetBytes tokenBytes
+        let tokenWithDashes = BitConverter.ToString tokenBytes
+        tokenWithDashes.Replace("-", "")
+
     type Context() = 
         do
             SetupEmptyEnvironment()
 
-        member val DeviceGroupId = Application.GenerateSecureToken() with get, set
-        member val AnotherDeviceGroupId = Application.GenerateSecureToken() with get, set        
+        member val DeviceGroupId = GenerateSecureToken() with get, set
+        member val AnotherDeviceGroupId = GenerateSecureToken() with get, set        
         member val DeviceGroupToken = "DeviceGroupToken" with get, set
         member val AnotherDeviceGroupToken = "AnotherDeviceGroupToken" with get, set
         member val SensorToken = "SensorToken" with get, set

@@ -5,14 +5,14 @@ module EventBus =
     open System
     open FSharp.Control.Reactive
 
-    let private eventsSubject =
+    let private EventsSubject =
         Subject<Event.Event>.broadcast
 
     let Events : IObservable<Event.Event> =
-        eventsSubject :> IObservable<Event.Event>
+        EventsSubject :> IObservable<Event.Event>
 
     let Publish (event : Event.Event) : unit =
-        eventsSubject.OnNext event
+        EventsSubject.OnNext event
         
     let Disposable =
-        eventsSubject :> IDisposable
+        EventsSubject :> IDisposable

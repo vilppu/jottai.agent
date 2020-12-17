@@ -16,6 +16,22 @@ module SelfHost =
     open Microsoft.IdentityModel.Tokens
     open Newtonsoft.Json.Serialization
     open Options
+        
+    let private Authority() : string =
+        let authority = Environment.GetEnvironmentVariable("JOTTAI_AUTHORITY")
+        if authority |> isNull then
+            eprintfn "Environment variable JOTTAI_AUTHORITY is not set."
+            String.Empty
+        else
+            authority
+                
+    let private Audience() : string =
+        let audience = Environment.GetEnvironmentVariable("JOTTAI_AUDIENCE")
+        if audience |> isNull then
+            eprintfn "Environment variable JOTTAI_AUDIENCE is not set."
+            String.Empty
+        else
+            audience
 
     let private GetUrl() : Uri =
         
@@ -81,13 +97,13 @@ module SelfHost =
             let configureSensorPolicy =
                 let builder =
                     fun (policy : AuthorizationPolicyBuilder) ->
-                        policy.Requirements.Add(PermissionRequirement(Roles.Sensor))
+                        policy.Requirements.Add(PermissionRequirement(Roles.Device))
                 new Action<AuthorizationPolicyBuilder>(builder)
             
             services.AddAuthorization(fun options ->
                 options.AddPolicy(Roles.Administrator, configureAdminPolicy)
                 options.AddPolicy(Roles.User, configureUserPolicy)
-                options.AddPolicy(Roles.Sensor, configureSensorPolicy)
+                options.AddPolicy(Roles.Device, configureSensorPolicy)
             ) |> ignore
 
             services
@@ -99,8 +115,8 @@ module SelfHost =
                    | UseSigninKey _ ->
                         options.TokenValidationParameters <- SigninKeyValidationParameters
                    | UseAuthrority _ ->
-                        options.Authority <- Application.Authority()
-                        options.Audience <- Application.Audience())
+                        options.Authority <- Authority()
+                        options.Audience <- Audience())
                 |> ignore
 
             services.AddSingleton<IAuthorizationHandler, PermissionHandler>()

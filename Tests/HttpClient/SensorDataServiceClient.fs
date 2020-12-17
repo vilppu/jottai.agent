@@ -4,10 +4,10 @@
 module SensorDataServiceClient = 
     open ApiObjects
     
-    let PostSensorData token (deviceData : DeviceData) = 
-        let apiUrl = "api/sensor-data"
+    let PostDevicData token (deviceData : DeviceData) = 
+        let apiUrl = "api/device-data"
         async {
-            return! Http.Post token apiUrl deviceData            
+            return! Http.Post token apiUrl deviceData
         }
 
     let PostMeasurement token deviceId (measurement : Measurement.Measurement) =        
@@ -16,11 +16,13 @@ module SensorDataServiceClient =
             gatewayId = ""
             channel = ""
             deviceId = deviceId
+            deviceName = ""
+            manufacturerName = ""
             data = []
-            availableCommands = []
             batteryVoltage = ""
-            rssi = "" }
-        let event = deviceData |> WithMeasurement(measurement)
+            rssi = "" } 
+            |> WithMeasurement(measurement)
+        
         async { 
-            return! PostSensorData token event 
+            return! PostDevicData token deviceData 
         }

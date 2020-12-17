@@ -4,19 +4,6 @@ module PushNotificationTests =
     open Xunit
     open System.Diagnostics
 
-    let waitForNotifications expectedNumberOfNotifications =
-        let stopwatch = new Stopwatch()
-        let maxWaitTimeInSeconds = 10.0
-
-        stopwatch.Start()
-
-        async {
-            while (SentHttpRequestContents.Count < expectedNumberOfNotifications) && (stopwatch.Elapsed.TotalSeconds < maxWaitTimeInSeconds) do
-                do!
-                System.Threading.Tasks.Task.Delay(100)
-                |> Async.AwaitTask
-        }
-
     let sentNotifications() =
         SentHttpRequestContents
         |> Seq.map (fun request -> request |> Newtonsoft.Json.JsonConvert.DeserializeObject<FirebaseObjects.FirebasePushNotification>)
@@ -31,10 +18,8 @@ module PushNotificationTests =
 
             context |> SetupToReceivePushNotifications
 
-            context |> WriteMeasurementSynchronously(Fake.Measurement opened)
-            context |> WriteMeasurementSynchronously(Fake.Measurement closed)
-        
-            do! waitForNotifications(2)
+            context |> WriteMeasurement(Fake.Measurement opened) |> WaitUntilPushNotificationsAreSent
+            context |> WriteMeasurement(Fake.Measurement closed) |> WaitUntilPushNotificationsAreSent
 
             Assert.Equal(2, SentHttpRequests.Count)
             Assert.Equal("https://fcm.googleapis.com/fcm/send", SentHttpRequests.[0].RequestUri.ToString())
@@ -48,10 +33,8 @@ module PushNotificationTests =
 
             context |> SetupToReceivePushNotifications
 
-            context |> WriteMeasurementSynchronously(Fake.Measurement opened)        
-            context |> WriteMeasurementSynchronously(Fake.Measurement opened)
-
-            do! waitForNotifications(1)
+            context |> WriteMeasurement(Fake.Measurement opened) |> WaitUntilPushNotificationsAreSent
+            context |> WriteMeasurement(Fake.Measurement opened) |> WaitUntilPushNotificationsAreSent
 
             Assert.Equal(1, SentHttpRequests.Count)
         }
@@ -65,11 +48,9 @@ module PushNotificationTests =
 
             context |> SetupToReceivePushNotifications
         
-            context |> WriteMeasurementSynchronously(Fake.Measurement present)
-            context |> WriteMeasurementSynchronously(Fake.Measurement notPresent)
-            context |> WriteMeasurementSynchronously(Fake.Measurement present)
-        
-            do! waitForNotifications(3)
+            context |> WriteMeasurement(Fake.Measurement present) |> WaitUntilPushNotificationsAreSent
+            context |> WriteMeasurement(Fake.Measurement notPresent) |> WaitUntilPushNotificationsAreSent
+            context |> WriteMeasurement(Fake.Measurement present) |> WaitUntilPushNotificationsAreSent
 
             Assert.Equal(3, SentHttpRequests.Count)
             Assert.Equal("https://fcm.googleapis.com/fcm/send", SentHttpRequests.[0].RequestUri.ToString())
@@ -83,10 +64,8 @@ module PushNotificationTests =
 
             context |> SetupToReceivePushNotifications
 
-            context |> WriteMeasurementSynchronously(Fake.Measurement present)
-            context |> WriteMeasurementSynchronously(Fake.Measurement present)
-
-            do! waitForNotifications(1)
+            context |> WriteMeasurement(Fake.Measurement present) |> WaitUntilPushNotificationsAreSent
+            context |> WriteMeasurement(Fake.Measurement present) |> WaitUntilPushNotificationsAreSent
 
             Assert.Equal(1, SentHttpRequests.Count)
         }
@@ -100,11 +79,9 @@ module PushNotificationTests =
 
             context |> SetupToReceivePushNotifications
         
-            context |> WriteMeasurementSynchronously(Fake.Measurement motion)
-            context |> WriteMeasurementSynchronously(Fake.Measurement noMotion)
-            context |> WriteMeasurementSynchronously(Fake.Measurement motion)
-        
-            do! waitForNotifications(3)
+            context |> WriteMeasurement(Fake.Measurement motion) |> WaitUntilPushNotificationsAreSent
+            context |> WriteMeasurement(Fake.Measurement noMotion) |> WaitUntilPushNotificationsAreSent
+            context |> WriteMeasurement(Fake.Measurement motion)|> WaitUntilPushNotificationsAreSent
 
             Assert.Equal(3, SentHttpRequests.Count)
             Assert.Equal("https://fcm.googleapis.com/fcm/send", SentHttpRequests.[0].RequestUri.ToString())
@@ -118,10 +95,8 @@ module PushNotificationTests =
 
             context |> SetupToReceivePushNotifications
 
-            context |> WriteMeasurementSynchronously(Fake.Measurement motion)
-            context |> WriteMeasurementSynchronously(Fake.Measurement motion)
-
-            do! waitForNotifications(1)
+            context |> WriteMeasurement(Fake.Measurement motion) |> WaitUntilPushNotificationsAreSent
+            context |> WriteMeasurement(Fake.Measurement motion) |> WaitUntilPushNotificationsAreSent
 
             Assert.Equal(1, SentHttpRequests.Count)
         }
@@ -134,11 +109,9 @@ module PushNotificationTests =
 
             context |> SetupToReceivePushNotifications
             
-            context |> WriteMeasurementSynchronously(Fake.Measurement (Measurement.Contact Measurement.Open))
+            context |> WriteMeasurement(Fake.Measurement (Measurement.Contact Measurement.Open)) |> WaitUntilPushNotificationsAreSent
             ChangeSensorName context.DeviceGroupToken "ExampleDevice.contact" expectedName
-            context |> WriteMeasurementSynchronously(Fake.Measurement (Measurement.Contact Measurement.Closed))
-
-            do! waitForNotifications(1)
+            context|> WriteMeasurement(Fake.Measurement (Measurement.Contact Measurement.Closed)) |> WaitUntilPushNotificationsAreSent
 
             Assert.Equal(expectedName, sentNotifications().[1].data.deviceNotification.sensorName)
         }

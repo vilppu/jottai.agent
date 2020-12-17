@@ -5,30 +5,30 @@ module internal ConvertSensorHistory =
     open System.Collections.Generic
     open MongoDB.Bson
 
-    let private toEntry (entry : SensorHistoryStorage.StorableSensorHistoryEntry) : SensorHistoryEntry =
+    let private ToEntry (entry : SensorHistoryStorage.StorableSensorHistoryEntry) : SensorHistoryEntry =
         let measuredValue = entry.MeasuredValue
         { MeasuredValue = measuredValue
           Timestamp = entry.Timestamp.ToUniversalTime() }
           
-    let private toHistoryEntries (stored : SensorHistoryStorage.StorableSensorHistory) : SensorHistoryEntry list =
+    let private ToHistoryEntries (stored : SensorHistoryStorage.StorableSensorHistory) : SensorHistoryEntry list =
          stored.Entries
          |> List.ofSeq
-         |> List.map toEntry
+         |> List.map ToEntry
     
-    let private entryToStorable (entry : SensorHistoryEntry) : SensorHistoryStorage.StorableSensorHistoryEntry =
+    let private EntryToStorable (entry : SensorHistoryEntry) : SensorHistoryStorage.StorableSensorHistoryEntry =
         { Id = ObjectId.Empty
           MeasuredValue = entry.MeasuredValue
           Timestamp = entry.Timestamp }
 
-    let private updatedHistoryEntries (sensorState :  SensorState) (history : SensorHistory) =
+    let private UpdatedHistoryEntries (sensorState :  SensorState) (history : SensorHistory) =
         let maxNumberOfEntries = 30        
         let newEntry  = 
-          { MeasuredValue = sensorState.Measurement |> Value
+          { MeasuredValue = sensorState.Measurement |> Measurement.Value
             Timestamp = sensorState.LastUpdated }
         let newHistory = newEntry :: history.Entries
         newHistory
         |> List.truncate maxNumberOfEntries
-        |> List.map entryToStorable
+        |> List.map EntryToStorable
 
     let FromStorable(stored : SensorHistoryStorage.StorableSensorHistory) : SensorHistory =
         if stored :> obj |> isNull then
@@ -36,16 +36,16 @@ module internal ConvertSensorHistory =
         else
             { SensorId = stored.SensorId
               MeasuredProperty= stored.MeasuredProperty
-              Entries = stored |> toHistoryEntries }
+              Entries = stored |> ToHistoryEntries }
         
     let ToStorable (sensorState : SensorState) (history : SensorHistory)
         : SensorHistoryStorage.StorableSensorHistory =
-        let updatedEntries = updatedHistoryEntries sensorState history
+        let updatedEntries = UpdatedHistoryEntries sensorState history
         
         { Id = ObjectId.Empty
           DeviceGroupId  = sensorState.DeviceGroupId.AsString
           SensorId  = sensorState.SensorId.AsString
-          MeasuredProperty = sensorState.Measurement |> Name
+          MeasuredProperty = sensorState.Measurement |> Measurement.Name
           Entries = new List<SensorHistoryStorage.StorableSensorHistoryEntry>(updatedEntries) }
  
 

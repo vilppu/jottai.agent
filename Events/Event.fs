@@ -13,7 +13,7 @@ module Event =
           Measurement : Measurement.Measurement
           BatteryVoltage : Measurement.Voltage
           SignalStrength : Measurement.Rssi
-          Timestamp : System.DateTime }
+          Timestamp : System.DateTimeOffset }
 
     type SensorNameChanged = 
         { SensorId : SensorId
@@ -22,10 +22,15 @@ module Event =
 
     type Event =
         | SubscribedToPushNotifications of SubscribedToPushNotifications
+        | PushNotificationSubscriptionStored of SubscribedToPushNotifications
+        | PushNotificationsSent of SensorState
         | SensorStateChanged of SensorStateChanged
+        | SensorStateStored of SensorState
         | SensorNameChanged of SensorNameChanged
-        | SensorStateChangeCompleted of SensorState
-        | SensorNameChangeCompleted of SensorNameChanged
+        | SensorNameStored of SensorNameChanged
+        | DevicePropertyAvailable of DeviceProperty
+        | DevicePropertyStored of DeviceProperty
+        | DevicePropertyChangeRequested of DevicePropertyChangeRequest
 
     let ToSensorStateUpdate (event : SensorStateChanged) : SensorStateUpdate = 
         { SensorId = event.SensorId

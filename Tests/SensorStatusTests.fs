@@ -11,7 +11,7 @@ module SensorStateTests =
         use context = SetupContext()
         context.DeviceGroupToken <- InvalidToken
 
-        let response = context |> GetExampleSensorStateResponse
+        let response = context |> SensorStateResponse
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode)
     
@@ -24,7 +24,7 @@ module SensorStateTests =
         context |> WriteMeasurementSynchronously(Fake.Measurement previous)
         context |> WriteMeasurementSynchronously(Fake.Measurement newest)        
 
-        let result = context |> GetExampleSensorState
+        let result = context |> SensorState
 
         Assert.Equal(1, result.Length)
         Assert.Equal(78.0, result.Head.MeasuredValue :?> float)
@@ -35,7 +35,7 @@ module SensorStateTests =
         let deviceId = "ExampleDevice"
         context |> WriteMeasurementSynchronously(Fake.SomeMeasurementFromDevice deviceId)
 
-        let result = context |> GetExampleSensorState
+        let result = context |> SensorState
         let entry = result.Head
 
         Assert.Equal(deviceId, entry.DeviceId)
@@ -46,10 +46,10 @@ module SensorStateTests =
         let example = Measurement.RelativeHumidity 78.0
         context |> WriteMeasurementSynchronously(Fake.Measurement example)
 
-        let result = context |> GetExampleSensorState
+        let result = context |> SensorState
         let entry = result.Head
 
-        Assert.True((System.DateTime.UtcNow - entry.LastActive).TotalMinutes < 1.0)
+        Assert.True((System.DateTimeOffset.UtcNow - entry.LastActive).TotalMinutes < 1.0)
 
     [<Fact>]
     let TellTheLastUpdatedTimestamp() = 
@@ -57,10 +57,10 @@ module SensorStateTests =
         let example = Measurement.RelativeHumidity 78.0
         context |> WriteMeasurementSynchronously(Fake.Measurement example)
 
-        let result = context |> GetExampleSensorState
+        let result = context |> SensorState
         let entry = result.Head
 
-        Assert.True((System.DateTime.UtcNow - entry.LastUpdated).TotalMinutes < 1.0)
+        Assert.True((System.DateTimeOffset.UtcNow - entry.LastUpdated).TotalMinutes < 1.0)
 
     [<Fact>]
     let TellTheLatestMeasurementFromEachKnownSensor() = 
@@ -69,7 +69,7 @@ module SensorStateTests =
         context |> WriteMeasurementSynchronously(Fake.SomeMeasurementFromDevice "device-2")
         context |> WriteMeasurementSynchronously(Fake.SomeMeasurementFromDevice "device-3")
 
-        let result = context |> GetExampleSensorState
+        let result = context |> SensorState
 
         Assert.Equal(3, result.Length)
     
@@ -81,7 +81,7 @@ module SensorStateTests =
         context |> WriteMeasurementSynchronously(Fake.Measurement example)
         context |> WriteMeasurementSynchronously(Fake.Measurement anotherExample)
 
-        let result = context |> GetExampleSensorState
+        let result = context |> SensorState
 
         Assert.Equal(2, result.Length)
     
@@ -92,7 +92,7 @@ module SensorStateTests =
         context |> WriteMeasurementSynchronously(Measurement.Temperature 25.5<C> |> Fake.Measurement)
 
         context.DeviceGroupToken <- context.AnotherDeviceGroupToken
-        let result = context |> GetExampleSensorState
+        let result = context |> SensorState
 
         Assert.Empty(result)  
   
@@ -102,7 +102,7 @@ module SensorStateTests =
         let example = Measurement.Temperature 25.0<C>
         context |> WriteMeasurementSynchronously(Fake.Measurement example)
         
-        let result = context |> GetExampleSensorState
+        let result = context |> SensorState
         let entry = result.Head
 
         Assert.Equal("Temperature", entry.MeasuredProperty)
@@ -114,7 +114,7 @@ module SensorStateTests =
         let example = Measurement.RelativeHumidity 78.0
         context |> WriteMeasurementSynchronously(Fake.Measurement example)
         
-        let result = context |> GetExampleSensorState
+        let result = context |> SensorState
         let entry = result.Head
 
         Assert.Equal("RelativeHumidity", entry.MeasuredProperty)
@@ -126,7 +126,7 @@ module SensorStateTests =
         let example = Measurement.PresenceOfWater Measurement.Present
         context |> WriteMeasurementSynchronously(Fake.Measurement example)
         
-        let result = context |> GetExampleSensorState
+        let result = context |> SensorState
         let entry = result.Head
 
         Assert.Equal("PresenceOfWater", entry.MeasuredProperty)
@@ -138,7 +138,7 @@ module SensorStateTests =
         let example = Measurement.Contact Measurement.Open
         context |> WriteMeasurementSynchronously(Fake.Measurement example)
         
-        let result = context |> GetExampleSensorState
+        let result = context |> SensorState
         let entry = result.Head
 
         Assert.Equal("Contact", entry.MeasuredProperty)
@@ -150,7 +150,7 @@ module SensorStateTests =
         let example = Measurement.Contact Measurement.Closed
         context |> WriteMeasurementSynchronously(Fake.Measurement example)
         
-        let result = context |> GetExampleSensorState
+        let result = context |> SensorState
         let entry = result.Head
 
         Assert.Equal("Contact", entry.MeasuredProperty)
@@ -161,7 +161,7 @@ module SensorStateTests =
         use context = SetupContext()
         let example = Measurement.Voltage 3.4<V>
         context |> WriteMeasurementSynchronously(Fake.Measurement example)        
-        let result = context |> GetExampleSensorState
+        let result = context |> SensorState
         let entry = result.Head
 
         Assert.Equal("Voltage", entry.MeasuredProperty)
@@ -173,7 +173,7 @@ module SensorStateTests =
         let example = Measurement.Rssi 3.4
         context |> WriteMeasurementSynchronously(Fake.Measurement example)
         
-        let result = context |> GetExampleSensorState
+        let result = context |> SensorState
         let entry = result.Head
 
         Assert.Equal("Rssi", entry.MeasuredProperty)
@@ -185,12 +185,12 @@ module SensorStateTests =
         let example = Measurement.RelativeHumidity 78.0
         let (measurement, deviceId) = Fake.Measurement example
         let deviceData =
-            { Fake.SomeSensorData with batteryVoltage = "3.4" }
+            { Fake.DeviceData with batteryVoltage = "3.4" }
             |> WithMeasurement(measurement)
 
         WriteDeviceDataSynchronously deviceData context
         
-        let result = context |> GetExampleSensorState
+        let result = context |> SensorState
         Assert.Equal(3.4, result.Head.BatteryVoltage)
 
     [<Fact>]
@@ -199,12 +199,12 @@ module SensorStateTests =
         let example = Measurement.RelativeHumidity 78.0
         let (measurement, deviceId) = Fake.Measurement example
         let deviceData =
-            { Fake.SomeSensorData with rssi = "50.0" }
+            { Fake.DeviceData with rssi = "50.0" }
             |> WithMeasurement(measurement)
 
         WriteDeviceDataSynchronously deviceData context
         
-        let result = context |> GetExampleSensorState
+        let result = context |> SensorState
         Assert.Equal(50.0, result.Head.SignalStrength)
   
     [<Fact>]
@@ -213,8 +213,7 @@ module SensorStateTests =
         let example = Measurement.Temperature 25.0<C>
         context |> WriteMeasurementSynchronously(Fake.Measurement example)
         
-        let result = context |> GetExampleSensorState
+        let result = context |> SensorState
         let entry = result.Head
         
         Assert.Equal("ExampleDevice.Temperature", entry.SensorName)
-    

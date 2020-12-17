@@ -26,7 +26,7 @@ module PushNotificationSubscriptionStorage =
     let Drop() =
         BsonStorage.Database.DropCollection(PushNotificationSubscriptionCollectionName)
     
-    let private removePushNotificationSubscriptions (deviceGroupId : string) (tokens : string list)=
+    let private RemovePushNotificationSubscriptions (deviceGroupId : string) (tokens : string list)=
         let deviceGroupId = deviceGroupId
         let collection = PushNotificationSubscriptionCollection
         let stored = collection.Find<StorablePushNotificationSubscriptions>(fun x -> x.DeviceGroupId = deviceGroupId)
@@ -83,7 +83,7 @@ module PushNotificationSubscriptionStorage =
     let RemoveRegistrations (deviceGroupId : string) (tokens : string list) =
         async {
             if not(tokens.IsEmpty) then
-                return! removePushNotificationSubscriptions deviceGroupId tokens
+                return! RemovePushNotificationSubscriptions deviceGroupId tokens
             else
                 return ()
         }

@@ -2,15 +2,7 @@
 
 module Application =
     open System
-    open ApiObjects
-    open System.Security.Cryptography
     open FSharp.Control.Reactive
-
-    let GenerateSecureToken() =         
-        let tokenBytes = Array.zeroCreate<byte> 16
-        RandomNumberGenerator.Create().GetBytes tokenBytes
-        let tokenWithDashes = BitConverter.ToString tokenBytes
-        tokenWithDashes.Replace("-", "")
         
     let HasTokenSecret =
         let tokenSecret = Environment.GetEnvironmentVariable("JOTTAI_TOKEN_SECRET")
@@ -18,30 +10,6 @@ module Application =
             false
         else
             true
-
-    let TokenSecret() : string =
-        let tokenSecret = Environment.GetEnvironmentVariable("JOTTAI_TOKEN_SECRET")
-        if tokenSecret |> isNull then
-            eprintfn "Environment variable JOTTAI_TOKEN_SECRET is not set."
-            String.Empty
-        else
-            tokenSecret
-        
-    let Authority() : string =
-        let authority = Environment.GetEnvironmentVariable("JOTTAI_AUTHORITY")
-        if authority |> isNull then
-            eprintfn "Environment variable JOTTAI_AUTHORITY is not set."
-            String.Empty
-        else
-            authority
-                
-    let Audience() : string =
-        let audience = Environment.GetEnvironmentVariable("JOTTAI_AUDIENCE")
-        if audience |> isNull then
-            eprintfn "Environment variable JOTTAI_AUDIENCE is not set."
-            String.Empty
-        else
-            audience
 
     let PostSensorName deviceGroupId sensorId sensorName : Async<unit> = 
         async {    
@@ -53,15 +21,14 @@ module Application =
             do! Command.Execute command
         }    
     
-    let GetSensorState (deviceGroupId : string) : Async<ApiObjects.SensorState list> = 
-        async {
-        
+    let GetSensorStates (deviceGroupId : string) : Async<ApiObjects.SensorState list> = 
+        async {        
             let! statuses = SensorStateStorage.GetSensorStates deviceGroupId
 
             return
                 statuses
-                |> FromStorables
-                |> ToApiObjects
+                |> ConvertSensorState.FromStorables
+                |> ConvertSensorState.ToApiObjects
         }
 
     let GetSensorHistory (deviceGroupId : string) (sensorId : string) : Async<ApiObjects.SensorHistory> =
@@ -69,11 +36,21 @@ module Application =
             let! history = SensorHistoryStorage.GetSensorHistory deviceGroupId sensorId
             let result =
                 history
-                |> FromStorable
-                |> ToApiObject
+                |> ConvertSensorHistory.FromStorable
+                |> ConvertSensorHistory.ToApiObject
+            return result
+        }   
+   
+    let GetDeviceProperties (deviceGroupId : string) : Async<ApiObjects.DevicePropertyState list> =
+        async {
+            let! commands = DevicePropertyStorage.GetDeviceProperties deviceGroupId
+            let result =
+                commands
+                |> ConvertDeviceProperty.FromStorables
+                |> ConvertDeviceProperty.ToApiObjects
             return result
         }
-    
+
     let SubscribeToPushNotifications deviceGroupId (token : string) : Async<unit> = 
         async {
             let subscription = Notification.Subscription token
@@ -84,20 +61,53 @@ module Application =
             do! Command.Execute command
         }
 
-    let PostDeviceData deviceGroupId (deviceData : DeviceData) =
+    let PostDeviceData deviceGroupId (deviceData : ApiObjects.DeviceData) =
         async {
-            let sensorStateUpdates = deviceData |> ToSensorStateUpdates (DeviceGroupId deviceGroupId)
-            let changeSensorStates = Command.From sensorStateUpdates
-            for changeSensorState in changeSensorStates do                
-                do! Command.Execute changeSensorState
-        }    
+            for command in Commands.FromDeviceData deviceGroupId deviceData do                
+                do! Command.Execute command
+        }
+
+    let PostDevicePropertyValue
+        (deviceGroupId : string)
+        (gatewayId : string)
+        (deviceId : string)
+        (propertyId : string)
+        (propertyType : string)
+        (propertyValue : string)
+        : Async<unit> =
+        async {
+            match Command.FromDeviceProperty deviceGroupId gatewayId deviceId propertyId propertyType propertyValue with
+            | Some command -> do! Command.Execute command
+            | _ -> ()
+        }
+
+    let GetDevicePropertyChangeRequest (deviceGroupId : string) : Async<ApiObjects.DevicePropertyChangeRequest option> =
+        async {
+            let deviceGroupId = DeviceGroupId deviceGroupId
+
+            let! devicePropertyChangeRequest =
+                WaitForDevicePropertyChangeRequestedEvent.For deviceGroupId
+
+            let result =
+                match devicePropertyChangeRequest with
+                | Some devicePropertyChangeRequest ->
+                    devicePropertyChangeRequest
+                    |> ConvertDevicePropertyChangeRequest.ToApiObject
+                    |> Some
+                | None -> None 
+
+            return result
+        }
     
     let StartProcessingEvents httpSend : IDisposable =
-        let subscribeToSensorEvents = SensorEventHandler.SubscribeTo EventBus.Publish
-        let subscribeToPushNotificationEvents = PushNotificationEventHandler.SubscribeTo httpSend EventBus.Publish
+        let sensorEventSubscription = SensorEventHandler.SubscribeTo EventBus.Publish
+        let devicePropertyEventSubscription = DevicePropertyEventHandler.SubscribeTo EventBus.Publish
+        let pushNotificationEventSubscription = PushNotificationEventHandler.SubscribeTo httpSend EventBus.Publish
+
         EventBus.Disposable
-        |> Disposable.compose (subscribeToSensorEvents EventBus.Events)
-        |> Disposable.compose (subscribeToPushNotificationEvents EventBus.Events)
+        |> Disposable.compose (sensorEventSubscription EventBus.Events)
+        |> Disposable.compose (devicePropertyEventSubscription EventBus.Events)
+        |> Disposable.compose (pushNotificationEventSubscription EventBus.Events)
 
     let Events =
         EventBus.Events

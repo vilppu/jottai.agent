@@ -10,7 +10,7 @@ module SensorHistoryTests =
         use context = SetupContext()
         context.DeviceGroupToken <- InvalidToken
 
-        let response = context |> GetExampleSensorHistoryResponse "device-1.rh"
+        let response = context |> SensorHistoryResponse "device-1.rh"
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode)
     
@@ -23,7 +23,7 @@ module SensorHistoryTests =
 
         context |> WriteMeasurementSynchronously(Fake.MeasurementFromDevice example deviceId)
 
-        let result = context |> GetExampleSensorHistory sensorId
+        let result = context |> SensorHistory sensorId
         let entry = result.Entries.Head
         
         Assert.Equal("RelativeHumidity", result.MeasuredProperty)
@@ -40,7 +40,7 @@ module SensorHistoryTests =
         context |> WriteMeasurementSynchronously(Fake.MeasurementFromDevice (Measurement.RelativeHumidity 80.0) deviceId)
         context |> WriteMeasurementSynchronously(Fake.MeasurementFromDevice (Measurement.RelativeHumidity 79.0) deviceId)
 
-        let result = context |> GetExampleSensorHistory sensorId
+        let result = context |> SensorHistory sensorId
         let entry = result.Entries.Head      
         
         Assert.Equal(79.0, entry.MeasuredValue :?> float)
@@ -54,10 +54,10 @@ module SensorHistoryTests =
 
         context |> WriteMeasurementSynchronously(Fake.MeasurementFromDevice example deviceId)
 
-        let result = context |> GetExampleSensorHistory sensorId
+        let result = context |> SensorHistory sensorId
         let entry = result.Entries.Head
 
-        Assert.True((System.DateTime.UtcNow - entry.Timestamp).TotalMinutes < 1.0)
+        Assert.True((System.DateTimeOffset.UtcNow - entry.Timestamp).TotalMinutes < 1.0)
 
     [<Fact>]
     let DeviceSpecificMeasurementHistory() = 
@@ -70,7 +70,7 @@ module SensorHistoryTests =
         context |> WriteMeasurementSynchronously(Fake.MeasurementFromDevice example deviceId)
         context |> WriteMeasurementSynchronously(Fake.MeasurementFromDevice anotherExample deviceId)
 
-        let result = context |> GetExampleSensorHistory sensorId
+        let result = context |> SensorHistory sensorId
         
         Assert.Equal(2, result.Entries.Length)
     
@@ -89,7 +89,7 @@ module SensorHistoryTests =
             context |> WriteMeasurementSynchronously(Fake.MeasurementFromDevice measurement deviceId)
         context |> WriteMeasurementSynchronously(Fake.MeasurementFromDevice latest deviceId)
 
-        let result = context |> GetExampleSensorHistory sensorId
+        let result = context |> SensorHistory sensorId
 
         Assert.Equal(expectedLimit, result.Entries.Length)
         Assert.Equal(expectedValue, result.Entries.Head.MeasuredValue :?> float)
@@ -107,7 +107,7 @@ module SensorHistoryTests =
         context |> WriteMeasurementSynchronously(Fake.MeasurementFromDevice (Measurement.RelativeHumidity 81.0) deviceId)
         context |> WriteMeasurementSynchronously(Fake.MeasurementFromDevice (Measurement.RelativeHumidity 82.0) deviceId)
         
-        let result = context |> GetExampleSensorHistory sensorId
+        let result = context |> SensorHistory sensorId
         
         Assert.Equal(5, result.Entries.Length)
 
@@ -123,7 +123,7 @@ module SensorHistoryTests =
         context |> WriteMeasurementSynchronously(Fake.MeasurementFromDevice measurement deviceId)
         context |> WriteMeasurementSynchronously(Fake.MeasurementFromDevice measurement deviceId)
         
-        let result = context |> GetExampleSensorHistory sensorId
+        let result = context |> SensorHistory sensorId
         
         Assert.Equal(1, result.Entries.Length)
 
@@ -137,7 +137,7 @@ module SensorHistoryTests =
         context |> WriteMeasurementSynchronously(Fake.MeasurementFromDevice example deviceId)
         context |> WriteMeasurementSynchronously(Fake.MeasurementFromDevice anotherExample "device-2")
         
-        let result = context |> GetExampleSensorHistory sensorId
+        let result = context |> SensorHistory sensorId
         
         Assert.Equal(1, result.Entries.Length)
     
@@ -153,6 +153,6 @@ module SensorHistoryTests =
         context |> WriteMeasurementSynchronously(Fake.MeasurementFromDevice example deviceId)
 
         context.DeviceGroupToken <- savedDeviceGroupToken
-        let result =  context |> GetExampleSensorHistory sensorId
+        let result =  context |> SensorHistory sensorId
         
         Assert.Equal(1, result.Entries.Length)

@@ -24,11 +24,13 @@
   <ItemGroup>
     <Compile Include="Fake.fs" />
     <Compile Include="HttpClient\Http.fs" />
-    <Compile Include="HttpClient\DeviceSettingsClient.fs" />
-    <Compile Include="HttpClient\MeasurementsToSensorDataMapping.fs" />
+    <Compile Include="HttpClient\DevicePropertyToDeviceDataMapping.fs" />
+    <Compile Include="HttpClient\MeasurementsToDeviceDataMapping.fs" />
     <Compile Include="HttpClient\PushNotificationClient.fs" />
+    <Compile Include="HttpClient\DeviceSettingsClient.fs" />
     <Compile Include="HttpClient\SensorDataServiceClient.fs" />
     <Compile Include="HttpClient\SensorStatusesClient.fs" />
+    <Compile Include="HttpClient\DevicePropertyClient.fs" />
     <Compile Include="TestContext.fs" />
     <Compile Include="TestHelpers.fs" />
     <Compile Include="SensorHistoryTests.fs" />
@@ -37,6 +39,7 @@
     <Compile Include="SensorDataTest.fs" />
     <Compile Include="TokenTests.fs" />
     <Compile Include="DeviceSettingsTests.fs" />
+    <Compile Include="DevicePropertyTests.fs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Update="FSharp.Core" Version="5.0.0" />

@@ -7,7 +7,7 @@ module internal Persistence =
             match event with
             | Event.SensorStateChanged sensorStateChanged ->                
                 let sensorStateUpdate = sensorStateChanged |> Event.ToSensorStateUpdate                
-                let storableSensorEvent = UpdateToStorable sensorStateUpdate
+                let storableSensorEvent = ConvertSensorStateUpdate.ToStorable sensorStateUpdate
                 do! SensorEventStorage.StoreSensorEvent storableSensorEvent                
             | Event.SensorNameChanged _ -> ()
             | _ -> ()

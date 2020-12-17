@@ -26,7 +26,7 @@ module DeviceSettingsTest =
 
         ChangeSensorName context.DeviceGroupToken sensorId expectedName
 
-        let result = context |> GetExampleSensorState
+        let result = context |> SensorState
         let entry = result.Head
         Assert.Equal(expectedName, entry.SensorName)
     
@@ -44,7 +44,7 @@ module DeviceSettingsTest =
         
         context |> WriteMeasurementSynchronously(Fake.SomeMeasurementFromDevice deviceId)
 
-        let result = context |> GetExampleSensorState
+        let result = context |> SensorState
         let entry = result.Head
         Assert.Equal(expectedName, entry.SensorName)
     
@@ -63,6 +63,6 @@ module DeviceSettingsTest =
 
         ChangeSensorName context.DeviceGroupToken sensorId "SensorB"
 
-        let result = context |> GetExampleSensorState
+        let result = context |> SensorState
         let entry = result.Head
         Assert.Equal("SensorB", entry.SensorName)

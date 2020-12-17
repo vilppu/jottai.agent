@@ -5,8 +5,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Event.fs" />
-    <Compile Include="EventBus.fs" />
+    <Compile Include="ConvertDeviceProperty.fs" />
+    <Compile Include="Action.fs" />
+    <Compile Include="DevicePropertyEventHandler.fs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -14,7 +15,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\DataTransferObjects\DataTransferObjects.fsproj" />
+    <ProjectReference Include="..\Events\Events.fsproj" />
     <ProjectReference Include="..\Models\Models.fsproj" />
+    <ProjectReference Include="..\Storage\Storage.fsproj" />
   </ItemGroup>
 
   <ItemGroup>

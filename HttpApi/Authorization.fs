@@ -17,12 +17,20 @@ module Authorization =
         [<Literal>]
         let Administrator = "RequiresMasterToken"
         [<Literal>]
-        let User = "RequiresDeviceGroupToken"
+        let User = "RequiresSensorToken"
         [<Literal>]
-        let Sensor = "RequiresSensorToken"
+        let Device = "RequiresSensorToken"
+
+    let private TokenSecret() : string =
+        let tokenSecret = Environment.GetEnvironmentVariable("JOTTAI_TOKEN_SECRET")
+        if tokenSecret |> isNull then
+            eprintfn "Environment variable JOTTAI_TOKEN_SECRET is not set."
+            String.Empty
+        else
+            tokenSecret
     
     let SigningKey : SymmetricSecurityKey =
-        let tokenSecret = Application.TokenSecret()
+        let tokenSecret = TokenSecret()
         let tokenSecretBytes = Encoding.ASCII.GetBytes(tokenSecret)
         let signingKey = SymmetricSecurityKey(tokenSecretBytes)
         signingKey
@@ -61,7 +69,7 @@ module Authorization =
         BuildRoleToken Roles.User deviceGroupId
     
     let GenerateSensorAccessToken deviceGroupId = 
-        BuildRoleToken Roles.Sensor deviceGroupId
+        BuildRoleToken Roles.Device deviceGroupId
 
     type PermissionRequirement(role) = 
         interface IAuthorizationRequirement
@@ -69,10 +77,16 @@ module Authorization =
     
     type PermissionHandler() = 
         inherit AuthorizationHandler<PermissionRequirement>()
-        override __.HandleRequirementAsync(context : AuthorizationHandlerContext, requirement : PermissionRequirement) = 
+        override __.HandleRequirementAsync(context : AuthorizationHandlerContext, requirement : PermissionRequirement) =
+
             let isInRequiredRole = context.User.IsInRole requirement.Permission
+
+            //let isInRequiredRole =
+            //    context.User.Claims
+            //        .Where(fun claim -> claim.Type = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role" || claim.Type = "role")
+            //        .Any(fun roleClaim -> roleClaim.Value = requirement.Permission)
            
             if isInRequiredRole then
                 context.Succeed requirement
                 
-            System.Threading.Tasks.Task.FromResult(0) :> System.Threading.Tasks.Task
+            Threading.Tasks.Task.FromResult(0) :> Threading.Tasks.Task

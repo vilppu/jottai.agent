@@ -7,7 +7,7 @@
   <ItemGroup>
     <Compile Include="Notification.fs" />
     <Compile Include="Measurement.fs" />
-    <Compile Include="MeasurementData.fs" />
+    <Compile Include="DeviceProperty.fs" />
     <Compile Include="Devices.fs" />
   </ItemGroup>
 

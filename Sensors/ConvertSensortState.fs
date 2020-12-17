@@ -1,18 +1,17 @@
 namespace Jottai
 
-[<AutoOpen>]
-module internal ConvertStorableSensorState =
+module internal ConvertSensorState =
     open MongoDB.Bson
 
     let FromSensorStateUpdate (update : SensorStateUpdate) (previousState : SensorStateStorage.StorableSensorState) : SensorState =
             let previousState =
                 if previousState :> obj |> isNull
                 then
-                    let defaultName = update.DeviceId.AsString + "." + (update.Measurement |> Name)
+                    let defaultName = update.DeviceId.AsString + "." + (update.Measurement |> Measurement.Name)
                     SensorStateStorage.InitialState defaultName
                 else previousState
 
-            let hasChanged = (update.Measurement |> Value) <> previousState.MeasuredValue
+            let hasChanged = (update.Measurement |> Measurement.Value) <> previousState.MeasuredValue
             let lastActive = update.Timestamp
             let lastUpdated =
                 if hasChanged
@@ -36,8 +35,8 @@ module internal ConvertStorableSensorState =
           DeviceId = sensorState.DeviceId.AsString
           SensorId = sensorState.SensorId.AsString
           SensorName = sensorState.SensorName
-          MeasuredProperty = sensorState.Measurement |> Name
-          MeasuredValue = sensorState.Measurement |> Value
+          MeasuredProperty = sensorState.Measurement |> Measurement.Name
+          MeasuredValue = sensorState.Measurement |> Measurement.Value
           BatteryVoltage = (float)sensorState.BatteryVoltage
           SignalStrength = (float)sensorState.SignalStrength
           LastUpdated = sensorState.LastUpdated

@@ -11,6 +11,7 @@
     <Compile Include="SensorHistoryStorage.fs" />
     <Compile Include="SensorStateStorage.fs" />
     <Compile Include="SensorEventStorage.fs" />
+    <Compile Include="DevicePropertyStorage.fs" />
   </ItemGroup>
 
   <ItemGroup>

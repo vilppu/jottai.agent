@@ -16,7 +16,7 @@ module SensorEventStorage =
           MeasuredValue : obj
           Voltage : float
           SignalStrength : float
-          Timestamp : DateTime }
+          Timestamp : DateTimeOffset }
     
     let SensorEvents (deviceGroupId : string) =
         let collectionName = "SensorEvents." + deviceGroupId

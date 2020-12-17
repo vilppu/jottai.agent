@@ -12,15 +12,15 @@ module private Firebase =
         { SubscriptionsToBeRemoved : string list
           SubscriptionsToBeAdded : string list }
 
-    let noSubscriptionChanges =
+    let SoSubscriptionChanges =
         { SubscriptionsToBeRemoved = []
           SubscriptionsToBeAdded = [] }
 
-    let private shouldBeRemoved (result : FirebaseObjects.FirebaseResult * String) =
+    let private ShouldBeRemoved (result : FirebaseObjects.FirebaseResult * String) =
         let (firebaseResult, subscription) = result
         not(String.IsNullOrWhiteSpace(firebaseResult.registration_id)) || firebaseResult.error = "InvalidRegistration"
     
-    let private getSubscriptionChanges (subscriptions : string seq) (firebaseResponse : FirebaseObjects.FirebaseResponse)
+    let private GetSubscriptionChanges (subscriptions : string seq) (firebaseResponse : FirebaseObjects.FirebaseResponse)
         : Async<SubscriptionChanges> =
 
         async {         
@@ -29,7 +29,7 @@ module private Firebase =
 
             let subscriptionsToBeRemoved =
                 results
-                |> List.filter shouldBeRemoved
+                |> List.filter ShouldBeRemoved
                 |> List.map (fun result ->                        
                     let (firebaseResult, subscription) = result
                     subscription)
@@ -44,7 +44,7 @@ module private Firebase =
                   SubscriptionsToBeAdded = subscriptionsToBeAdded }
         }
           
-    let private sendMessages (httpSend : HttpRequestMessage -> Async<HttpResponseMessage>) (subscriptions : List<string>) (pushNotification : FirebaseObjects.FirebasePushNotification)
+    let private SendMessages (httpSend : HttpRequestMessage -> Async<HttpResponseMessage>) (subscriptions : List<string>) (pushNotification : FirebaseObjects.FirebasePushNotification)
         : Async<SubscriptionChanges> =
 
         async {
@@ -64,22 +64,22 @@ module private Firebase =
             let firebaseResponse = JsonConvert.DeserializeObject<FirebaseObjects.FirebaseResponse> responseJson
 
             if not(firebaseResponse :> obj |> isNull) then
-                return! getSubscriptionChanges subscriptions firebaseResponse
+                return! GetSubscriptionChanges subscriptions firebaseResponse
             else
-                return noSubscriptionChanges
+                return SoSubscriptionChanges
 
     }
     
-    let private sendFirebaseMessages httpSend (subscriptions : List<string>) (pushNotification : FirebaseObjects.FirebasePushNotification) =
+    let private SendFirebaseMessages httpSend (subscriptions : List<string>) (pushNotification : FirebaseObjects.FirebasePushNotification) =
         async {
             let storedFirebaseKey = StoredFirebaseKey()
             if not(String.IsNullOrWhiteSpace(storedFirebaseKey)) then
                 if subscriptions.Count > 0 then
-                    return! sendMessages httpSend subscriptions pushNotification 
+                    return! SendMessages httpSend subscriptions pushNotification 
                 else
-                    return noSubscriptionChanges
+                    return SoSubscriptionChanges
             else
-                return noSubscriptionChanges
+                return SoSubscriptionChanges
         }
 
     type private DevicePushNotification =
@@ -87,12 +87,12 @@ module private Firebase =
           SensorName : string
           MeasuredProperty : string
           MeasuredValue : obj
-          Timestamp : DateTime }
+          Timestamp : DateTimeOffset }
    
     type private PushNotificationReason =
         { SensorState : SensorState }
         
-    let private sendFirebasePushNotifications httpSend reason =
+    let private SendFirebasePushNotifications httpSend reason =
         async {
             let measurement = reason.SensorState.Measurement
             let sensorName = reason.SensorState.SensorName
@@ -103,8 +103,8 @@ module private Firebase =
             let pushNotification : DevicePushNotification =
                 { DeviceId = reason.SensorState.DeviceId.AsString
                   SensorName = sensorName
-                  MeasuredProperty = measurement |> Name
-                  MeasuredValue = measurement |> Value
+                  MeasuredProperty = measurement |> Measurement.Name
+                  MeasuredValue = measurement |> Measurement.Value
                   Timestamp = reason.SensorState.LastUpdated }
                 
             let notification : FirebaseObjects.FirebaseDeviceNotificationContent =
@@ -121,19 +121,19 @@ module private Firebase =
                 { data = pushNotificationRequestData
                   registration_ids = subscriptions }
                       
-            let! subsriptionChanges = sendFirebaseMessages httpSend subscriptions pushNotification
+            let! subsriptionChanges = SendFirebaseMessages httpSend subscriptions pushNotification
             do! PushNotificationSubscriptionStorage.RemoveRegistrations deviceGroupId.AsString subsriptionChanges.SubscriptionsToBeRemoved
             do! PushNotificationSubscriptionStorage.AddRegistrations deviceGroupId.AsString subsriptionChanges.SubscriptionsToBeAdded
         }
 
-    let private sendPushNotifications httpSend reason =
+    let private SendPushNotifications httpSend reason =
         async {
-            do! sendFirebasePushNotifications httpSend reason
+            do! SendFirebasePushNotifications httpSend reason
         }
         
     let Send httpSend (sensorState : SensorState) : Async<unit>=
         async {               
             let reason : PushNotificationReason =
                 { SensorState = sensorState }
-            do! sendPushNotifications httpSend reason
+            do! SendPushNotifications httpSend reason
         }

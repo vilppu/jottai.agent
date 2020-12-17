@@ -14,7 +14,7 @@ module SensorHistoryStorage =
         { [<BsonIgnoreIfDefault>]
           Id : ObjectId
           MeasuredValue : obj
-          Timestamp : DateTime }
+          Timestamp : DateTimeOffset }
 
     [<CLIMutable>]
     [<BsonIgnoreExtraElements>]
@@ -27,15 +27,15 @@ module SensorHistoryStorage =
           MeasuredProperty : string
           Entries : List<StorableSensorHistoryEntry> }
 
-    let private sensorHistoryCollectionName = "SensorHistory"
+    let private SensorHistoryCollectionName = "SensorHistory"
 
-    let private sensorHistoryCollection = 
-        BsonStorage.Database.GetCollection<StorableSensorHistory> sensorHistoryCollectionName
+    let private SensorHistoryCollection = 
+        BsonStorage.Database.GetCollection<StorableSensorHistory> SensorHistoryCollectionName
         |> BsonStorage.WithDescendingIndex "DeviceGroupId"        
         |> BsonStorage.WithDescendingIndex "DeviceId"
         |> BsonStorage.WithDescendingIndex "MeasuredProperty"
     
-    let private filterHistoryBy (deviceGroupId : string) (sensorId : string) =
+    let private FilterHistoryBy (deviceGroupId : string) (sensorId : string) =
         let sensorId = sensorId
         let deviceGroupId = deviceGroupId
         let expr = Lambda.Create<StorableSensorHistory>(fun x -> x.DeviceGroupId = deviceGroupId && x.SensorId = sensorId)
@@ -44,19 +44,19 @@ module SensorHistoryStorage =
     let GetSensorHistory (deviceGroupId : string) (sensorId : string)
         : Async<StorableSensorHistory> =
         async {
-            let filter = filterHistoryBy deviceGroupId sensorId
+            let filter = FilterHistoryBy deviceGroupId sensorId
             let! history =
-                sensorHistoryCollection.Find<StorableSensorHistory>(filter).FirstOrDefaultAsync<StorableSensorHistory>()
+                SensorHistoryCollection.Find<StorableSensorHistory>(filter).FirstOrDefaultAsync<StorableSensorHistory>()
                 |> Async.AwaitTask
             return history
         }
         
     let UpsertSensorHistory (history : StorableSensorHistory) =       
           
-        let filter = filterHistoryBy history.DeviceGroupId history.SensorId
+        let filter = FilterHistoryBy history.DeviceGroupId history.SensorId
         
-        sensorHistoryCollection.ReplaceOneAsync<StorableSensorHistory>(filter, history, BsonStorage.Replace)
+        SensorHistoryCollection.ReplaceOneAsync<StorableSensorHistory>(filter, history, BsonStorage.Replace)
         |> Async.AwaitTask
         |> Async.Ignore
     
-    let Drop() = BsonStorage.Database.DropCollection(sensorHistoryCollectionName)
+    let Drop() = BsonStorage.Database.DropCollection(SensorHistoryCollectionName)

@@ -3,28 +3,38 @@
 module ApiObjects =
 
     type DeviceDatum = 
-        { name : string
-          unit : string
-          value : string          
-          formattedValue : string }
-          
-    type DeviceCommand = 
-        { id: string
-          name : string }
+        { propertyId : string
+          propertyTypeId : string
+          propertyName : string
+          propertyDescription : string
+          protocol : string
+          unitOfMeasurement : string
+          valueType : string
+          value : string
+          formattedValue : string
+          minimumValue: string
+          maximumValue: string }
     
     type DeviceData = 
         { gatewayId : string
           channel : string
           deviceId : string
+          manufacturerName : string
+          deviceName : string
           data : DeviceDatum list
-          availableCommands : DeviceCommand list
           batteryVoltage : string
           rssi : string
           timestamp : string }
-          
+
+    type DevicePropertyChangeRequest = 
+        { GatewayId : string
+          DeviceId : string
+          PropertyId : string          
+          PropertyValue : string }
+
     type SensorHistoryEntry = 
         { MeasuredValue : obj
-          Timestamp : System.DateTime }
+          Timestamp : System.DateTimeOffset }
     
     type SensorHistory = 
         { SensorId : string
@@ -40,9 +50,22 @@ module ApiObjects =
           MeasuredValue : obj
           BatteryVoltage : float
           SignalStrength : float
-          LastUpdated : System.DateTime
-          LastActive : System.DateTime }
-    
+          LastUpdated : System.DateTimeOffset
+          LastActive : System.DateTimeOffset }
+
+    type DevicePropertyState = 
+        { DeviceGroupId : string
+          GatewayId : string
+          DeviceId : string
+          PropertyId : string
+          PropertyType : string
+          PropertyName : string
+          PropertyDescription : string
+          PropertyValue : obj
+          Protocol : string
+          LastUpdated : System.DateTimeOffset
+          LastActive : System.DateTimeOffset }
+
     type Measurement = 
         { Name : string
           Value : obj }

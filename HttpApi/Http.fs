@@ -1,12 +1,11 @@
 namespace Jottai
 
 module Http = 
-    open System.Net.Http
     
-    let private httpClient = new HttpClient()
+    let private HttpClient = new System.Net.Http.HttpClient()
 
-    let Send (request : HttpRequestMessage) : Async<HttpResponseMessage> =
+    let Send (request : System.Net.Http.HttpRequestMessage) : Async<System.Net.Http.HttpResponseMessage> =
         async {
-            let! response = httpClient.SendAsync request |> Async.AwaitTask
+            let! response = HttpClient.SendAsync request |> Async.AwaitTask
             return response 
         }
