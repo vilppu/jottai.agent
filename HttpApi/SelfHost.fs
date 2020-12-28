@@ -67,8 +67,7 @@ module SelfHost =
                     options
                      .AllowAnyOrigin()
                      .AllowAnyMethod()
-                     .AllowAnyHeader()
-                     .AllowCredentials()|> ignore)
+                     .AllowAnyHeader() |> ignore)
                 .UseRouting()
                 .UseAuthorization()
                 .UseEndpoints(fun endpoints -> endpoints.MapControllers() |> ignore)                
