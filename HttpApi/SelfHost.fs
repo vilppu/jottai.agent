@@ -63,6 +63,12 @@ module SelfHost =
             app
                 .UsePathBase(new Microsoft.AspNetCore.Http.PathString(GetUrl().PathAndQuery))
                 .UseAuthentication()
+                .UseCors(fun options ->
+                    options
+                     .AllowAnyOrigin()
+                     .AllowAnyMethod()
+                     .AllowAnyHeader()
+                     .AllowCredentials()|> ignore)
                 .UseRouting()
                 .UseAuthorization()
                 .UseEndpoints(fun endpoints -> endpoints.MapControllers() |> ignore)                
@@ -78,6 +84,7 @@ module SelfHost =
                 .AddLogging(fun options -> options.AddConsole().AddDebug |> ignore)
                  |> ignore
             services
+                .AddCors()
                 .AddControllers()
                 .AddNewtonsoftJson(configureJsonAction)
                 |> ignore
