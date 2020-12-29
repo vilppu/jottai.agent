@@ -4,7 +4,6 @@
 module TestContext = 
     open System
     open System.Net.Http
-    open System.Security.Cryptography
     open System.Threading.Tasks
 
     [<assembly: Xunit.CollectionBehavior(DisableTestParallelization = true)>]
@@ -51,20 +50,12 @@ module TestContext =
             }
         SetupEmptyEnvironmentUsing httpSend
 
-
-    let private GenerateSecureToken() =         
-        let tokenBytes = Array.zeroCreate<byte> 16
-        RandomNumberGenerator.Create().GetBytes tokenBytes
-        let tokenWithDashes = BitConverter.ToString tokenBytes
-        let token = tokenWithDashes.Replace("-", "").ToLower()
-        token
-
     type Context() = 
         do
             SetupEmptyEnvironment()
 
-        member val DeviceGroupId = GenerateSecureToken() with get, set
-        member val AnotherDeviceGroupId = GenerateSecureToken() with get, set        
+        member val DeviceGroupId = Application.GenerateDeviceGroupId() with get, set
+        member val AnotherDeviceGroupId = Application.GenerateDeviceGroupId() with get, set        
         member val DeviceGroupToken = "DeviceGroupToken" with get, set
         member val AnotherDeviceGroupToken = "AnotherDeviceGroupToken" with get, set
         member val SensorToken = "SensorToken" with get, set

@@ -11,6 +11,11 @@ type ApiController () =
     member private this.DeviceGroupId =
         let deviceGroupId = GetDeviceGroupId this.User
         deviceGroupId
+
+    [<Route("device-group-id/new")>]
+    [<HttpPost>]
+    member this.NewGenerateDeviceGroupId() =
+        Application.GenerateDeviceGroupId()
     
     [<Route("sensor/{sensorId}/name/{sensorName}")>]
     [<HttpPost>]

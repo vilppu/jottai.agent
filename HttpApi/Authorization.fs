@@ -19,7 +19,7 @@ module Authorization =
         [<Literal>]
         let User = "user"
         [<Literal>]
-        let Device = "device"
+        let Device = "user"
 
     let private TokenSecret() : string =
         let tokenSecret = Environment.GetEnvironmentVariable("JOTTAI_TOKEN_SECRET")
@@ -46,18 +46,23 @@ module Authorization =
         |> List.map (fun header -> 
                header.Value
                |> Seq.toList
-               |> Seq.head)   
+               |> Seq.head) 
 
-    let GetDeviceGroupId(user : ClaimsPrincipal) = 
+    let GetDeviceGroupIdClaims(user : ClaimsPrincipal) = 
         user.Claims
           .Where(fun claim -> claim.Type = "https://jottai.eu/claims/device-group-id")
-          .Select(fun claim -> claim.Value)
-          .DefaultIfEmpty("")
-          .Single()
+          .Where(fun claim -> not (String.IsNullOrWhiteSpace(claim.Value)))
+        |> Seq.toList
+
+    let GetDeviceGroupId(user : ClaimsPrincipal) = 
+        let deviceGroupIdClaim =
+            GetDeviceGroupIdClaims(user)
+            |> Seq.exactlyOne
+        deviceGroupIdClaim.Value
 
     let BuildRoleToken role deviceGroupId = 
         let roleClaim = Claim(ClaimTypes.Role, role)
-        let deviceGroupIdClaim = Claim("DeviceGroupId", deviceGroupId)
+        let deviceGroupIdClaim = Claim("https://jottai.eu/claims/device-group-id", deviceGroupId)
         let claimsIdentity = ClaimsIdentity([roleClaim; deviceGroupIdClaim], "Jottai")
         let securityTokenDescriptor = SecurityTokenDescriptor()
         securityTokenDescriptor.Subject <- claimsIdentity
@@ -84,8 +89,9 @@ module Authorization =
         override __.HandleRequirementAsync(context : AuthorizationHandlerContext, requirement : PermissionRequirement) =
 
             let isInRequiredRole = context.User.IsInRole requirement.Permission
+            let hasDeviceGroupIdClaim = GetDeviceGroupIdClaims(context.User).Length = 1
            
-            if isInRequiredRole then
+            if isInRequiredRole && hasDeviceGroupIdClaim then
                 context.Succeed requirement
                 
             Threading.Tasks.Task.FromResult(0) :> Threading.Tasks.Task

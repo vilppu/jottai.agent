@@ -10,6 +10,13 @@ module Application =
             false
         else
             true
+    
+    let GenerateDeviceGroupId() : string =
+        let tokenBytes = Array.zeroCreate<byte> 16
+        System.Security.Cryptography.RandomNumberGenerator.Create().GetBytes tokenBytes
+        let tokenWithDashes = BitConverter.ToString tokenBytes
+        let token = tokenWithDashes.Replace("-", "").ToLower()
+        token
 
     let PostSensorName deviceGroupId sensorId sensorName : Async<unit> = 
         async {    
