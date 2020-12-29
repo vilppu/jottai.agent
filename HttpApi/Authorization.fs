@@ -15,11 +15,11 @@ module Authorization =
         [<Literal>]
         let None = "None"
         [<Literal>]
-        let Administrator = "RequiresMasterToken"
+        let Administrator = "administrator"
         [<Literal>]
-        let User = "RequiresSensorToken"
+        let User = "user"
         [<Literal>]
-        let Device = "RequiresSensorToken"
+        let Device = "device"
 
     let private TokenSecret() : string =
         let tokenSecret = Environment.GetEnvironmentVariable("JOTTAI_TOKEN_SECRET")
@@ -49,7 +49,11 @@ module Authorization =
                |> Seq.head)   
 
     let GetDeviceGroupId(user : ClaimsPrincipal) = 
-        user.Claims.Single(fun claim -> claim.Type = "DeviceGroupId" || claim.Type = "https://agent.jottai.net/device-group-id").Value
+        user.Claims
+          .Where(fun claim -> claim.Type = "https://jottai.eu/claims/device-group-id")
+          .Select(fun claim -> claim.Value)
+          .DefaultIfEmpty("")
+          .Single()
 
     let BuildRoleToken role deviceGroupId = 
         let roleClaim = Claim(ClaimTypes.Role, role)
@@ -62,13 +66,13 @@ module Authorization =
         let token = tokenHandler.CreateEncodedJwt(securityTokenDescriptor)
         token   
         
-    let GenerateMasterAccessToken() =
+    let GenerateAdministratorToken() =
         BuildRoleToken Roles.Administrator ""
 
-    let GenerateDeviceGroupAccessToken deviceGroupId = 
+    let GenerateUserToken deviceGroupId = 
         BuildRoleToken Roles.User deviceGroupId
     
-    let GenerateSensorAccessToken deviceGroupId = 
+    let GenerateDeviceToken deviceGroupId = 
         BuildRoleToken Roles.Device deviceGroupId
 
     type PermissionRequirement(role) = 
@@ -80,11 +84,6 @@ module Authorization =
         override __.HandleRequirementAsync(context : AuthorizationHandlerContext, requirement : PermissionRequirement) =
 
             let isInRequiredRole = context.User.IsInRole requirement.Permission
-
-            //let isInRequiredRole =
-            //    context.User.Claims
-            //        .Where(fun claim -> claim.Type = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role" || claim.Type = "role")
-            //        .Any(fun roleClaim -> roleClaim.Value = requirement.Permission)
            
             if isInRequiredRole then
                 context.Succeed requirement
