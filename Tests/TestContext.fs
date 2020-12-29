@@ -52,12 +52,12 @@ module TestContext =
         SetupEmptyEnvironmentUsing httpSend
 
 
-
     let private GenerateSecureToken() =         
         let tokenBytes = Array.zeroCreate<byte> 16
         RandomNumberGenerator.Create().GetBytes tokenBytes
         let tokenWithDashes = BitConverter.ToString tokenBytes
-        tokenWithDashes.Replace("-", "")
+        let token = tokenWithDashes.Replace("-", "").ToLower()
+        token
 
     type Context() = 
         do
@@ -78,8 +78,8 @@ module TestContext =
         let context = new Context()
         context.DeviceGroupId <- TestDeviceGroupId
         context.AnotherDeviceGroupId <- AnotherTestDeviceGroupId        
-        context.DeviceGroupToken <- GenerateDeviceGroupAccessToken context.DeviceGroupId
-        context.AnotherDeviceGroupToken <- GenerateDeviceGroupAccessToken context.AnotherDeviceGroupId
-        context.SensorToken <- GenerateSensorAccessToken context.DeviceGroupId
-        context.AnotherSensorToken <- GenerateSensorAccessToken context.AnotherDeviceGroupId
+        context.DeviceGroupToken <- GenerateUserToken context.DeviceGroupId
+        context.AnotherDeviceGroupToken <- GenerateUserToken context.AnotherDeviceGroupId
+        context.SensorToken <- GenerateDeviceToken context.DeviceGroupId
+        context.AnotherSensorToken <- GenerateDeviceToken context.AnotherDeviceGroupId
         context

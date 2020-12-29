@@ -8,7 +8,9 @@ open ApiObjects
 [<Route("api")>]
 type ApiController () = 
     inherit Controller()
-    member private this.DeviceGroupId = GetDeviceGroupId this.User
+    member private this.DeviceGroupId =
+        let deviceGroupId = GetDeviceGroupId this.User
+        deviceGroupId
     
     [<Route("sensor/{sensorId}/name/{sensorName}")>]
     [<HttpPost>]
@@ -52,7 +54,7 @@ type ApiController () =
 
     [<Route("gateway/{gatewayId}/device/{deviceId}/property/{propertyId}/{propertyType}/{propertyValue}")>]
     [<HttpPost>]
-    [<Authorize(Policy = Roles.User)>]
+    [<Authorize(Policy = Roles.Device)>]
     member this.PostDevicePropertyValue
         (gatewayId : string)
         (deviceId : string)
