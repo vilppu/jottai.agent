@@ -22,7 +22,7 @@ module ZWavePlus =
             else System.DateTimeOffset.Parse(deviceData.timestamp)
 
         let commandType = datum.propertyTypeId |> ToCommandType
-        let isOn, valueIsBoolean = System.Boolean.TryParse(datum.value)
+        let valueIsBoolean, isOn = System.Boolean.TryParse(datum.value)
 
         match (commandType, valueIsBoolean) with
             | (Some commandType, true) ->
@@ -34,7 +34,7 @@ module ZWavePlus =
                       PropertyType = commandType
                       PropertyName = PropertyName datum.propertyName
                       PropertyDescription = PropertyDescription datum.propertyDescription
-                      PropertyValue = if isOn then DeviceProperty.BinarySwitch DeviceProperty.On else DeviceProperty.BinarySwitch DeviceProperty.On
+                      PropertyValue = if isOn then DeviceProperty.BinarySwitch DeviceProperty.On else DeviceProperty.BinarySwitch DeviceProperty.Off
                       Protocol = ZWavePlus
                       LastUpdated = timestamp
                       LastActive = timestamp }

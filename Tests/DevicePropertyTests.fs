@@ -57,7 +57,85 @@ module DevicePropertyTest =
         Assert.Equal(expectedProtocol, result.Head.Protocol)
         Assert.Equal(expectedTimestamp, result.Head.LastUpdated)
         Assert.Equal(expectedTimestamp, result.Head.LastActive)
-    
+        
+    [<Fact>]
+    let DevicePropertyValueWillBeOverriddenByNewValues() = 
+        use context = SetupContext()
+        
+        let initialDeviceDatum = {
+            Fake.ZWavePlusDevicePropertyDatum with
+                value = "True"
+        }
+
+        let initialDeviceData = { 
+            Fake.DeviceData with
+                data = [initialDeviceDatum]
+            }
+        
+        let updatedDeviceDatum = {
+            Fake.ZWavePlusDevicePropertyDatum with
+                value = "False"
+        }
+
+        let updatedDeviceData = { 
+            Fake.DeviceData with
+                data = [updatedDeviceDatum]
+            }
+
+        PostDevicData context.SensorToken initialDeviceData
+        |> WaitUntilDevicePropertyIsUpdated
+
+        PostDevicData context.SensorToken updatedDeviceData
+        |> WaitUntilDevicePropertyIsUpdated
+
+        let result = context |> DeviceProperties
+
+        Assert.Equal(1, result.Length)
+        Assert.Equal(false :> obj, result.Head.PropertyValue)
+        
+    [<Fact>]
+    let ZWavePlusBinarySwitchOn() = 
+        use context = SetupContext()
+        
+        let deviceDatum = {
+            Fake.ZWavePlusDevicePropertyDatum with
+                value = "True"
+        }
+
+        let deviceData = { 
+            Fake.DeviceData with
+                data = [deviceDatum]
+            }
+        PostDevicData context.SensorToken deviceData
+        |> WaitUntilDevicePropertyIsUpdated
+
+        let result = context |> DeviceProperties
+
+        Assert.Equal(1, result.Length)
+        Assert.Equal(true :> obj, result.Head.PropertyValue)
+        
+    [<Fact>]
+    let ZWavePlusBinarySwitchOff() = 
+        use context = SetupContext()
+        
+        let deviceDatum = {
+            Fake.ZWavePlusDevicePropertyDatum with
+                value = "False"
+        }
+
+        let deviceData = { 
+            Fake.DeviceData with
+                data = [deviceDatum]
+            }
+
+        PostDevicData context.SensorToken deviceData
+        |> WaitUntilDevicePropertyIsUpdated
+
+        let result = context |> DeviceProperties
+
+        Assert.Equal(1, result.Length)
+        Assert.Equal(false :> obj, result.Head.PropertyValue)
+
     [<Fact>]
     let DoNotUpdateSensorStateFromDevicePropertyThatIsNotSensor() = 
         use context = SetupContext()        
