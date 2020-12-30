@@ -3,14 +3,74 @@
 open Microsoft.AspNetCore.Authorization
 open Microsoft.AspNetCore.Http
 open Microsoft.AspNetCore.Mvc
+open Newtonsoft.Json
+open System
+open System.Collections.Generic
+open System.Net
+open System.Net.Http
 open ApiObjects
 
 [<Route("api")>]
-type ApiController () = 
+type ApiController (httpSend : HttpRequestMessage -> Async<HttpResponseMessage>) = 
     inherit Controller()
     member private this.DeviceGroupId =
         let deviceGroupId = GetDeviceGroupId this.User
         deviceGroupId
+
+    [<Route("user/tokens/refresh-token/{code}/{redirectUri}")>]
+    [<HttpPost>]
+    member this.GetRefreshToken (code : string) (redirectUri : string) : Async<ActionResult> = 
+        async {
+            let url = sprintf "%soauth/token" (Application.Authority())
+            use request = new HttpRequestMessage(HttpMethod.Post, url)
+            let values = [
+                KeyValuePair.Create("grant_type", "authorization_code")
+                KeyValuePair.Create("client_id", Application.ClientId())
+                KeyValuePair.Create("code",code)
+                KeyValuePair.Create("redirect_uri", WebUtility.UrlDecode(redirectUri))
+                ]
+
+            request.Content <- new FormUrlEncodedContent(values |> List.toSeq)
+            
+            use! response = httpSend request
+
+            if response.IsSuccessStatusCode then
+                let! json = response.Content.ReadAsStringAsync() |> Async.AwaitTask
+                let tokenResponse = JsonConvert.DeserializeObject<OAuthObjects.TokenResponse>(json)
+                return this.Json({ RefreshToken = tokenResponse.refresh_token }) :> ActionResult
+            else
+                return this.StatusCode(int response.StatusCode) :> ActionResult                
+        }
+
+    [<Route("user/tokens/access-token/{refreshToken}/{redirectUri}")>]
+    [<HttpPost>]
+    member this.GetAccessToken (refreshToken : string) (redirectUri : string) : Async<ActionResult> = 
+        async {
+            let url = sprintf "%soauth/token" (Application.Authority())
+            use request = new HttpRequestMessage(HttpMethod.Post, url)
+            let values = [
+                KeyValuePair.Create("grant_type", "refresh_token")
+                KeyValuePair.Create("client_id", Application.ClientId())
+                KeyValuePair.Create("refresh_token", refreshToken)
+                KeyValuePair.Create("redirect_uri", WebUtility.UrlDecode(redirectUri))
+                ]
+
+            request.Content <- new FormUrlEncodedContent(values |> List.toSeq)
+            
+            use! response = httpSend request
+
+            if response.IsSuccessStatusCode then
+                let! json = response.Content.ReadAsStringAsync() |> Async.AwaitTask
+                let tokenResponse = JsonConvert.DeserializeObject<OAuthObjects.TokenResponse>(json)
+                let acccessToken = tokenResponse.access_token
+                let jwtSecurityTokenHandler = new IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler()                
+                let token = jwtSecurityTokenHandler.ReadToken(acccessToken) :?> IdentityModel.Tokens.Jwt.JwtSecurityToken
+                let expires = DateTimeOffset (DateTime.SpecifyKind(token.ValidTo, DateTimeKind.Utc))
+                return this.Json({ AccessToken = acccessToken
+                                   Expires = expires }) :> ActionResult
+            else
+                return this.StatusCode(int response.StatusCode) :> ActionResult       
+        }
 
     [<Route("device-group-id/new")>]
     [<HttpPost>]
@@ -23,7 +83,7 @@ type ApiController () =
     member this.PostSensorName (sensorId : string) (sensorName : string) : Async<unit> = 
         async {
             do! Application.PostSensorName this.DeviceGroupId sensorId sensorName
-        }    
+        }
     
     [<Route("sensors")>]
     [<HttpGet>]

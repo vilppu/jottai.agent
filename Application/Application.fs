@@ -9,8 +9,32 @@ module Application =
         if tokenSecret |> isNull then
             false
         else
-            true
+            true    
     
+    let Authority() : string =
+        let authority = Environment.GetEnvironmentVariable("JOTTAI_AUTHORITY")
+        if authority |> isNull then
+            eprintfn "Environment variable JOTTAI_AUTHORITY is not set."
+            String.Empty
+        else
+            authority
+            
+    let Audience() : string =
+        let audience = Environment.GetEnvironmentVariable("JOTTAI_AUDIENCE")
+        if audience |> isNull then
+            eprintfn "Environment variable JOTTAI_AUDIENCE is not set."
+            String.Empty
+        else
+            audience
+            
+    let ClientId() : string =
+        let clientId = Environment.GetEnvironmentVariable("JOTTAI_CLIENT_ID")
+        if clientId |> isNull then
+            eprintfn "Environment variable JOTTAI_CLIENT_ID is not set."
+            String.Empty
+        else
+            clientId
+
     let GenerateDeviceGroupId() : string =
         let tokenBytes = Array.zeroCreate<byte> 16
         System.Security.Cryptography.RandomNumberGenerator.Create().GetBytes tokenBytes

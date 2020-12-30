@@ -2,6 +2,13 @@
 
 module ApiObjects =
 
+    type RefreshToken = 
+        { RefreshToken : string }
+
+    type AccessToken = 
+        { AccessToken : string
+          Expires : System.DateTimeOffset }
+
     type DeviceDatum = 
         { propertyId : string
           propertyTypeId : string

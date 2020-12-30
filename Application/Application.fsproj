@@ -13,6 +13,7 @@
     <PackageReference Include="MongoDB.Driver" Version="2.11.3" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="OAuthObjects.fs" />
     <Compile Include="ZWavePlus.fs" />
     <Compile Include="WaitForObservable.fs" />
     <Compile Include="ConvertDeviceData.fs" />

@@ -16,22 +16,6 @@ module SelfHost =
     open Microsoft.IdentityModel.Tokens
     open Newtonsoft.Json.Serialization
     open Options
-        
-    let private Authority() : string =
-        let authority = Environment.GetEnvironmentVariable("JOTTAI_AUTHORITY")
-        if authority |> isNull then
-            eprintfn "Environment variable JOTTAI_AUTHORITY is not set."
-            String.Empty
-        else
-            authority
-                
-    let private Audience() : string =
-        let audience = Environment.GetEnvironmentVariable("JOTTAI_AUDIENCE")
-        if audience |> isNull then
-            eprintfn "Environment variable JOTTAI_AUDIENCE is not set."
-            String.Empty
-        else
-            audience
 
     let private GetUrl() : Uri =
         
@@ -63,11 +47,11 @@ module SelfHost =
             app
                 .UsePathBase(new Microsoft.AspNetCore.Http.PathString(GetUrl().PathAndQuery))
                 .UseAuthentication()
-                //.UseCors(fun options ->
-                //    options
-                //     .AllowAnyOrigin()
-                //     .AllowAnyMethod()
-                //     .AllowAnyHeader() |> ignore)
+                .UseCors(fun options ->
+                    options
+                     .AllowAnyOrigin()
+                     .AllowAnyMethod()
+                     .AllowAnyHeader() |> ignore)
                 .UseRouting()
                 .UseAuthorization()
                 .UseEndpoints(fun endpoints -> endpoints.MapControllers() |> ignore)                
@@ -83,7 +67,7 @@ module SelfHost =
                 .AddLogging(fun options -> options.AddConsole().AddDebug |> ignore)
                  |> ignore
             services
-                //.AddCors()
+                .AddCors()
                 .AddControllers()
                 .AddNewtonsoftJson(configureJsonAction)
                 |> ignore
@@ -121,8 +105,8 @@ module SelfHost =
                    | UseSigninKey _ ->
                         options.TokenValidationParameters <- SigninKeyValidationParameters
                    | UseAuthrority _ ->
-                        options.Authority <- Authority()
-                        options.Audience <- Audience())
+                        options.Authority <- Application.Authority()
+                        options.Audience <- Application.Audience())
                 |> ignore
 
             services.AddSingleton<IAuthorizationHandler, PermissionHandler>()
