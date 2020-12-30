@@ -1,15 +1,4 @@
 
-<a href="https://travis-ci.org/vilppu/jottai.agent"><img src="https://travis-ci.org/vilppu/jottai.agent.svg?branch=master"></a>
+<a href="https://travis-ci.com/github/vilppu/jottai.agent"><img src="https://travis-ci.com/vilppu/jottai.agent.svg?branch=main"></a>
 
-HTTP based IoT agent that listens for sensor events and stores them to database.
-
-Features:
-- Storing sensor status snapshot
-- Storing sensor history snapshot
-- Event sourcing based storage
-- HTTP API to access current sensor statuses
-- HTTP API to access sensor history
-- User notifications (Google Firebase)
-- API KEY authorization
-- JSON web token based authentication and authorization
-
+Cloud agent for accessing devices connected to internet.
