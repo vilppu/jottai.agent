@@ -3,9 +3,11 @@
 open Microsoft.AspNetCore.Authorization
 open Microsoft.AspNetCore.Http
 open Microsoft.AspNetCore.Mvc
+open Microsoft.Net.Http.Headers
 open Newtonsoft.Json
 open System
 open System.Collections.Generic
+open System.Linq
 open System.Net
 open System.Net.Http
 open ApiObjects
@@ -21,55 +23,29 @@ type ApiController (httpSend : HttpRequestMessage -> Async<HttpResponseMessage>)
     [<HttpPost>]
     member this.GetRefreshToken (code : string) (redirectUri : string) : Async<ActionResult> = 
         async {
-            let url = sprintf "%soauth/token" (Application.Authority())
-            use request = new HttpRequestMessage(HttpMethod.Post, url)
-            let values = [
-                KeyValuePair.Create("grant_type", "authorization_code")
-                KeyValuePair.Create("client_id", Application.ClientId())
-                KeyValuePair.Create("code",code)
-                KeyValuePair.Create("redirect_uri", WebUtility.UrlDecode(redirectUri))
-                ]
-
-            request.Content <- new FormUrlEncodedContent(values |> List.toSeq)
-            
-            use! response = httpSend request
-
-            if response.IsSuccessStatusCode then
-                let! json = response.Content.ReadAsStringAsync() |> Async.AwaitTask
-                let tokenResponse = JsonConvert.DeserializeObject<OAuthObjects.TokenResponse>(json)
-                return this.Json({ RefreshToken = tokenResponse.refresh_token }) :> ActionResult
-            else
-                return this.StatusCode(int response.StatusCode) :> ActionResult                
+            let! refreshToken = Authentication.GetRefreshToken httpSend code redirectUri
+            match refreshToken with
+            | Some refreshToken -> return this.Json(refreshToken) :> ActionResult
+            | None _ -> return this.StatusCode(int HttpStatusCode.BadRequest) :> ActionResult                
         }
 
     [<Route("user/tokens/access-token/{refreshToken}/{redirectUri}")>]
     [<HttpPost>]
     member this.GetAccessToken (refreshToken : string) (redirectUri : string) : Async<ActionResult> = 
         async {
-            let url = sprintf "%soauth/token" (Application.Authority())
-            use request = new HttpRequestMessage(HttpMethod.Post, url)
-            let values = [
-                KeyValuePair.Create("grant_type", "refresh_token")
-                KeyValuePair.Create("client_id", Application.ClientId())
-                KeyValuePair.Create("refresh_token", refreshToken)
-                KeyValuePair.Create("redirect_uri", WebUtility.UrlDecode(redirectUri))
-                ]
+            let! accessToken = Authentication.GetAccessToken httpSend refreshToken redirectUri
+            match accessToken with
+            | Some accessToken -> return this.Json(accessToken) :> ActionResult
+            | None _ -> return this.StatusCode(int HttpStatusCode.BadRequest) :> ActionResult                
+        }
 
-            request.Content <- new FormUrlEncodedContent(values |> List.toSeq)
-            
-            use! response = httpSend request
-
-            if response.IsSuccessStatusCode then
-                let! json = response.Content.ReadAsStringAsync() |> Async.AwaitTask
-                let tokenResponse = JsonConvert.DeserializeObject<OAuthObjects.TokenResponse>(json)
-                let acccessToken = tokenResponse.access_token
-                let jwtSecurityTokenHandler = new IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler()                
-                let token = jwtSecurityTokenHandler.ReadToken(acccessToken) :?> IdentityModel.Tokens.Jwt.JwtSecurityToken
-                let expires = DateTimeOffset (DateTime.SpecifyKind(token.ValidTo, DateTimeKind.Utc))
-                return this.Json({ AccessToken = acccessToken
-                                   Expires = expires }) :> ActionResult
-            else
-                return this.StatusCode(int response.StatusCode) :> ActionResult       
+    [<Route("user/tokens/store/refresh-token/{refreshToken}")>]
+    [<HttpPost>]
+    [<Authorize(Policy = Roles.User)>]
+    member this.StoreRefreshToken (refreshToken : string) : Async<ActionResult> = 
+        async {
+            do! Authentication.StoreRefreshToken httpSend (this.User) (refreshToken)
+            return this.StatusCode(int HttpStatusCode.OK) :> ActionResult            
         }
 
     [<Route("device-group-id/new")>]

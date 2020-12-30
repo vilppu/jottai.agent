@@ -25,9 +25,11 @@
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.8.0" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="OAuthObjects.fs" />
     <Compile Include="Options.fs" />
     <Compile Include="Http.fs" />
     <Compile Include="Authorization.fs" />
+    <Compile Include="Authentication.fs" />
     <Compile Include="Api.fs" />
     <Compile Include="SelfHost.fs" />
     <Compile Include="Program.fs" />

@@ -34,6 +34,30 @@ module Application =
             String.Empty
         else
             clientId
+    
+    let ManagementClientId() : string =
+        let authority = Environment.GetEnvironmentVariable("JOTTAI_MANAGEMENT_CLIENT_ID")
+        if authority |> isNull then
+            eprintfn "Environment variable JOTTAI_MANAGEMENT_CLIENT_ID is not set."
+            String.Empty
+        else
+            authority
+    
+    let ManagementClientSecret() : string =
+        let authority = Environment.GetEnvironmentVariable("JOTTAI_MANAGEMENT_CLIENT_SECRET")
+        if authority |> isNull then
+            eprintfn "Environment variable JOTTAI_MANAGEMENT_CLIENT_SECRET is not set."
+            String.Empty
+        else
+            authority
+    
+    let ManagementAudience() : string =
+        let authority = Environment.GetEnvironmentVariable("JOTTAI_MANAGEMENT_AUDIENCE")
+        if authority |> isNull then
+            eprintfn "Environment variable JOTTAI_MANAGEMENT_AUDIENCE is not set."
+            String.Empty
+        else
+            authority
 
     let GenerateDeviceGroupId() : string =
         let tokenBytes = Array.zeroCreate<byte> 16

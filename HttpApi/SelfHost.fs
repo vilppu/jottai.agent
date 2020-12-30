@@ -64,8 +64,15 @@ module SelfHost =
             let configureJsonAction = new Action<MvcNewtonsoftJsonOptions>(configureJson)            
             
             services
-                .AddLogging(fun options -> options.AddConsole().AddDebug |> ignore)
-                 |> ignore
+                .AddLogging(fun options ->
+                options
+                  .AddConsole()
+                  .SetMinimumLevel(LogLevel.Warning)
+                  .AddFilter("Microsoft", LogLevel.Warning)
+                  .AddFilter("System", LogLevel.Warning)
+                  .AddFilter("Engine", LogLevel.Warning)
+                  |> ignore)
+                  |> ignore
             services
                 .AddCors()
                 .AddControllers()
