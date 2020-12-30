@@ -201,6 +201,8 @@ module DevicePropertyTest =
                 PollDevicePropertyChangeRequest context.SensorToken
                 |> Async.StartChild
 
+            do! Async.Sleep (System.TimeSpan.FromMilliseconds 100.0)
+
             PostDevicData context.SensorToken deviceData
             |> WaitUntilDevicePropertyIsUpdated
 
