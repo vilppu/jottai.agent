@@ -40,7 +40,7 @@ module DevicePropertyTest =
                 timestamp = expectedTimestamp.ToString("o")
             }
 
-        PostDevicData context.SensorToken deviceData
+        PostDeviceData context.SensorToken deviceData
         |> WaitUntilDevicePropertyIsUpdated
 
         let result = context |> DeviceProperties
@@ -82,10 +82,10 @@ module DevicePropertyTest =
                 data = [updatedDeviceDatum]
             }
 
-        PostDevicData context.SensorToken initialDeviceData
+        PostDeviceData context.SensorToken initialDeviceData
         |> WaitUntilDevicePropertyIsUpdated
 
-        PostDevicData context.SensorToken updatedDeviceData
+        PostDeviceData context.SensorToken updatedDeviceData
         |> WaitUntilDevicePropertyIsUpdated
 
         let result = context |> DeviceProperties
@@ -106,7 +106,7 @@ module DevicePropertyTest =
             Fake.DeviceData with
                 data = [deviceDatum]
             }
-        PostDevicData context.SensorToken deviceData
+        PostDeviceData context.SensorToken deviceData
         |> WaitUntilDevicePropertyIsUpdated
 
         let result = context |> DeviceProperties
@@ -128,7 +128,7 @@ module DevicePropertyTest =
                 data = [deviceDatum]
             }
 
-        PostDevicData context.SensorToken deviceData
+        PostDeviceData context.SensorToken deviceData
         |> WaitUntilDevicePropertyIsUpdated
 
         let result = context |> DeviceProperties
@@ -146,7 +146,7 @@ module DevicePropertyTest =
                 data = [deviceDatum]
             }
 
-        PostDevicData context.SensorToken deviceData
+        PostDeviceData context.SensorToken deviceData
         |> WaitUntilDevicePropertyIsUpdated
         
         let result = context |> SensorState
@@ -167,7 +167,7 @@ module DevicePropertyTest =
                 data = [deviceDatum]
             }
 
-        PostDevicData context.SensorToken deviceData |> Async.RunSynchronously |> ignore
+        PostDeviceData context.SensorToken deviceData |> Async.RunSynchronously |> ignore
 
         let result = context |> DeviceProperties
 
@@ -203,7 +203,7 @@ module DevicePropertyTest =
 
             do! Async.Sleep (System.TimeSpan.FromMilliseconds 100.0)
 
-            PostDevicData context.SensorToken deviceData
+            PostDeviceData context.SensorToken deviceData
             |> WaitUntilDevicePropertyIsUpdated
 
             PostDevicePropertyValue context.SensorToken gatewayId deviceId propertyId propertyType propertyValue
@@ -213,4 +213,50 @@ module DevicePropertyTest =
             let! result = devicePropertyChangeRequest
         
             Assert.Equal("False" :> obj, result.PropertyValue)
+        }
+    
+    [<Fact>]
+    let SwitchZWavePlusBinarySwitchOn() = 
+        use context = SetupContext()        
+        
+        let propertyType = "BinarySwitch"
+        let propertyValue = "True"
+
+        async {
+            let! devicePropertyChangeRequest =
+                PollDevicePropertyChangeRequest context.SensorToken
+                |> Async.StartChild
+
+            do! Async.Sleep (System.TimeSpan.FromMilliseconds 100.0)
+
+            PostDevicePropertyValue context.SensorToken "1" "2" "3" propertyType propertyValue
+            |> Async.RunSynchronously
+            |> ignore
+
+            let! result = devicePropertyChangeRequest
+        
+            Assert.Equal(propertyValue :> obj, result.PropertyValue)
+        }
+    
+    [<Fact>]
+    let SwitchZWavePlusBinarySwitchOff() = 
+        use context = SetupContext()        
+        
+        let propertyType = "BinarySwitch"
+        let propertyValue = "False"
+
+        async {
+            let! devicePropertyChangeRequest =
+                PollDevicePropertyChangeRequest context.SensorToken
+                |> Async.StartChild
+
+            do! Async.Sleep (System.TimeSpan.FromMilliseconds 100.0)
+
+            PostDevicePropertyValue context.SensorToken "1" "2" "3" propertyType propertyValue
+            |> Async.RunSynchronously
+            |> ignore
+
+            let! result = devicePropertyChangeRequest
+        
+            Assert.Equal(propertyValue :> obj, result.PropertyValue)
         }

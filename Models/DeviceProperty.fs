@@ -20,7 +20,8 @@ module DeviceProperty =
     let FromString (propertyName : string) (propertyValue : string) : DeviceProperty option =        
         match propertyName with
         | "BinarySwitch" ->
-            match System.Boolean.TryParse propertyValue with
+            let valueIsBoolean, isOn = System.Boolean.TryParse(propertyValue)
+            match (valueIsBoolean, isOn) with
             | (true, propertyValue) ->            
                 if propertyValue
                 then BinarySwitch On |> Some

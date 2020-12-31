@@ -4,7 +4,7 @@
 module SensorDataServiceClient = 
     open ApiObjects
     
-    let PostDevicData token (deviceData : DeviceData) = 
+    let PostDeviceData token (deviceData : DeviceData) = 
         let apiUrl = "api/device-data"
         async {
             return! Http.Post token apiUrl deviceData
@@ -24,5 +24,5 @@ module SensorDataServiceClient =
             |> WithMeasurement(measurement)
         
         async { 
-            return! PostDevicData token deviceData 
+            return! PostDeviceData token deviceData 
         }

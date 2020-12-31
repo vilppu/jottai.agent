@@ -146,6 +146,7 @@ module Application =
             let result =
                 match devicePropertyChangeRequest with
                 | Some devicePropertyChangeRequest ->
+                    printf "DevicePropertyChangeRequest %s" (devicePropertyChangeRequest.PropertyValue |> DeviceProperty.ValueAsString)
                     devicePropertyChangeRequest
                     |> ConvertDevicePropertyChangeRequest.ToApiObject
                     |> Some
