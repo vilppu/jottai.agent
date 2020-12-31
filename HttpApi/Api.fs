@@ -37,10 +37,9 @@ type ApiController (httpSend : HttpRequestMessage -> Async<HttpResponseMessage>)
     [<Route("user/tokens/refresh-token/store/")>]
     [<HttpPost>]
     [<Authorize(Policy = Roles.User)>]
-    member this.StoreRefreshToken ([<FromBody>] token : RefreshToken) : Async<ActionResult> = 
+    member this.StoreRefreshToken ([<FromBody>] token : RefreshToken) : Async<unit> = 
         async {
-            do! Authentication.StoreRefreshToken httpSend (this.User) (token.RefreshToken)
-            return this.StatusCode(int HttpStatusCode.OK) :> ActionResult            
+            do! Authentication.StoreRefreshToken httpSend (this.User) (token.RefreshToken)                  
         }
 
     [<Route("device-group-id/new")>]
@@ -51,10 +50,9 @@ type ApiController (httpSend : HttpRequestMessage -> Async<HttpResponseMessage>)
     [<Route("sensor/{sensorId}/name/{sensorName}")>]
     [<HttpPost>]
     [<Authorize(Policy = Roles.User)>]
-    member this.PostSensorName (sensorId : string) (sensorName : string) : Async<StatusCodeResult> = 
+    member this.PostSensorName (sensorId : string) (sensorName : string) : Async<unit> = 
         async {
             do! Application.PostSensorName this.DeviceGroupId sensorId sensorName
-            return this.StatusCode(StatusCodes.Status202Accepted)   
         }
     
     [<Route("sensors")>]
@@ -90,10 +88,9 @@ type ApiController (httpSend : HttpRequestMessage -> Async<HttpResponseMessage>)
         (propertyId : string)
         (propertyType : string)
         (propertyValue : string)
-        : Async<StatusCodeResult> =
+        : Async<unit> =
         async {
-            do! Application.PostDevicePropertyValue this.DeviceGroupId gatewayId deviceId propertyId propertyType propertyValue
-            return this.StatusCode(StatusCodes.Status202Accepted)   
+            do! Application.PostDevicePropertyValue this.DeviceGroupId gatewayId deviceId propertyId propertyType propertyValue              
         }
     
     [<Route("gateway/{gatewayId}/device/{deviceId}/property/{propertyId}/{propertyType}/name/{propertyName}")>]
@@ -105,10 +102,9 @@ type ApiController (httpSend : HttpRequestMessage -> Async<HttpResponseMessage>)
         (propertyId : string)
         (propertyType : string)
         (propertyName : string)
-        : Async<StatusCodeResult> = 
+        : Async<unit> = 
         async {
-            do! Application.PostDevicePropertyName this.DeviceGroupId gatewayId deviceId propertyId propertyType propertyName
-            return this.StatusCode(StatusCodes.Status202Accepted)   
+            do! Application.PostDevicePropertyName this.DeviceGroupId gatewayId deviceId propertyId propertyType propertyName            
         }
     
     [<Route("push-notifications/subscribe/{token}")>]
