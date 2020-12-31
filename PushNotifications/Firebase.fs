@@ -90,22 +90,39 @@ module private Firebase =
           Timestamp : DateTimeOffset }
    
     type private PushNotificationReason =
-        { SensorState : SensorState }
+        | SensorStatePushNotification of SensorState
+        | DevicePropertyStatePushNotification of DevicePropertyState
+
+    let private DeviceGroupId reason =
+        match reason with
+        | SensorStatePushNotification state -> state.DeviceGroupId
+        | DevicePropertyStatePushNotification state -> state.DeviceGroupId
+
+    let private PushNotification reason =
+        match reason with
+        | SensorStatePushNotification state ->
+            let pushNotification : DevicePushNotification =
+                { DeviceId = state.DeviceId.AsString
+                  SensorName = state.SensorName.AsString
+                  MeasuredProperty = state.Measurement |> Measurement.Name
+                  MeasuredValue = state.Measurement |> Measurement.Value
+                  Timestamp = state.LastUpdated }
+            pushNotification
+        | DevicePropertyStatePushNotification state ->            
+            let pushNotification : DevicePushNotification =
+                { DeviceId = state.DeviceId.AsString
+                  SensorName = state.PropertyName.AsString
+                  MeasuredProperty = state.PropertyValue |> DeviceProperty.Name
+                  MeasuredValue = state.PropertyValue |> DeviceProperty.Value
+                  Timestamp = state.LastUpdated }
+            pushNotification
         
     let private SendFirebasePushNotifications httpSend reason =
-        async {
-            let measurement = reason.SensorState.Measurement
-            let sensorName = reason.SensorState.SensorName
-                
-            let deviceGroupId = reason.SensorState.DeviceGroupId
+        async {                
+            let deviceGroupId =  DeviceGroupId reason
             let! subscriptions = PushNotificationSubscriptionStorage.ReadPushNotificationSubscriptions deviceGroupId.AsString
 
-            let pushNotification : DevicePushNotification =
-                { DeviceId = reason.SensorState.DeviceId.AsString
-                  SensorName = sensorName.AsString
-                  MeasuredProperty = measurement |> Measurement.Name
-                  MeasuredValue = measurement |> Measurement.Value
-                  Timestamp = reason.SensorState.LastUpdated }
+            let pushNotification = PushNotification reason
                 
             let notification : FirebaseObjects.FirebaseDeviceNotificationContent =
                 { deviceId = pushNotification.DeviceId
@@ -131,9 +148,14 @@ module private Firebase =
             do! SendFirebasePushNotifications httpSend reason
         }
         
-    let Send httpSend (sensorState : SensorState) : Async<unit>=
+    let SendSensorStateNotification httpSend (state : SensorState) : Async<unit>=
         async {               
-            let reason : PushNotificationReason =
-                { SensorState = sensorState }
+            let reason : PushNotificationReason = SensorStatePushNotification state
+            do! SendPushNotifications httpSend reason
+        }        
+        
+    let SendDevicePropertyStateNotification httpSend (state : DevicePropertyState) : Async<unit>=
+        async {               
+            let reason : PushNotificationReason = DevicePropertyStatePushNotification state
             do! SendPushNotifications httpSend reason
         }

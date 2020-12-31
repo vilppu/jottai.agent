@@ -129,6 +129,9 @@ module PushNotificationTests =
             PostDeviceData context.DeviceToken { Fake.DeviceData with data = [switcthOff] }
             |> WaitUntilPushNotificationsAreSent
 
+            PostDeviceData context.DeviceToken { Fake.DeviceData with data = [switcthOff] }
+            |> WaitUntilPushNotificationsAreSent
+
             Assert.Equal(2, SentHttpRequests.Count)
             Assert.Equal("https://fcm.googleapis.com/fcm/send", SentHttpRequests.[0].RequestUri.ToString())
         }

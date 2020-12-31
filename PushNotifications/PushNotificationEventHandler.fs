@@ -13,8 +13,12 @@ module PushNotificationEventHandler =
                 publish (Event.PushNotificationSubscriptionStored subscribed)
 
             | Event.SensorStateStored sensorState ->
-                do! Action.SendNotifications httpSend sensorState
-                publish (Event.PushNotificationsSent sensorState)
+                do! Action.SendSensorStateNotifications httpSend sensorState
+                publish Event.PushNotificationsSent
+
+            | Event.DevicePropertyStored devicePropertyState ->
+                do! Action.SendDevicePropertyStateNotifications httpSend devicePropertyState
+                publish Event.PushNotificationsSent
 
             | _ -> ()
         }

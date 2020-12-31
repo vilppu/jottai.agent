@@ -49,7 +49,7 @@ module Event =
     type Event =
         | SubscribedToPushNotifications of SubscribedToPushNotifications
         | PushNotificationSubscriptionStored of SubscribedToPushNotifications
-        | PushNotificationsSent of SensorState
+        | PushNotificationsSent
         | SensorStateChanged of SensorStateChanged
         | SensorStateStored of SensorState
         | SensorNameChanged of SensorNameChanged
