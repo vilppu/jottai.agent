@@ -3,11 +3,6 @@
 open Microsoft.AspNetCore.Authorization
 open Microsoft.AspNetCore.Http
 open Microsoft.AspNetCore.Mvc
-open Microsoft.Net.Http.Headers
-open Newtonsoft.Json
-open System
-open System.Collections.Generic
-open System.Linq
 open System.Net
 open System.Net.Http
 open ApiObjects
@@ -19,32 +14,32 @@ type ApiController (httpSend : HttpRequestMessage -> Async<HttpResponseMessage>)
         let deviceGroupId = GetDeviceGroupId this.User
         deviceGroupId
 
-    [<Route("user/tokens/refresh-token/{code}/{redirectUri}")>]
+    [<Route("user/tokens/refresh-token/")>]
     [<HttpPost>]
-    member this.GetRefreshToken (code : string) (redirectUri : string) : Async<ActionResult> = 
+    member this.GetRefreshToken ([<FromBody>]request : RefreshTokenRequest) : Async<ActionResult> = 
         async {
-            let! refreshToken = Authentication.GetRefreshToken httpSend code redirectUri
+            let! refreshToken = Authentication.GetRefreshToken httpSend request.Code request.RedirectUri
             match refreshToken with
             | Some refreshToken -> return this.Json(refreshToken) :> ActionResult
             | None _ -> return this.StatusCode(int HttpStatusCode.BadRequest) :> ActionResult                
         }
 
-    [<Route("user/tokens/access-token/{refreshToken}/{redirectUri}")>]
+    [<Route("user/tokens/access-token/")>]
     [<HttpPost>]
-    member this.GetAccessToken (refreshToken : string) (redirectUri : string) : Async<ActionResult> = 
+    member this.GetAccessToken ([<FromBody>]request : AccessTokenRequest) : Async<ActionResult> = 
         async {
-            let! accessToken = Authentication.GetAccessToken httpSend refreshToken redirectUri
+            let! accessToken = Authentication.GetAccessToken httpSend request.RefreshToken request.RedirectUri
             match accessToken with
             | Some accessToken -> return this.Json(accessToken) :> ActionResult
             | None _ -> return this.StatusCode(int HttpStatusCode.BadRequest) :> ActionResult                
         }
 
-    [<Route("user/tokens/store/refresh-token/{refreshToken}")>]
+    [<Route("user/tokens/refresh-token/store/")>]
     [<HttpPost>]
     [<Authorize(Policy = Roles.User)>]
-    member this.StoreRefreshToken (refreshToken : string) : Async<ActionResult> = 
+    member this.StoreRefreshToken ([<FromBody>] token : RefreshToken) : Async<ActionResult> = 
         async {
-            do! Authentication.StoreRefreshToken httpSend (this.User) (refreshToken)
+            do! Authentication.StoreRefreshToken httpSend (this.User) (token.RefreshToken)
             return this.StatusCode(int HttpStatusCode.OK) :> ActionResult            
         }
 
