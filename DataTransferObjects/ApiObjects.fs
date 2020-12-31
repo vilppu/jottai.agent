@@ -2,6 +2,14 @@
 
 module ApiObjects =
 
+    type RefreshTokenRequest = 
+        { Code : string
+          RedirectUri : string }
+
+    type AccessTokenRequest = 
+        { RefreshToken : string
+          RedirectUri : string }
+
     type RefreshToken = 
         { RefreshToken : string }
 

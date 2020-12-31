@@ -95,5 +95,5 @@ module Authentication =
             request.Content <- content
             request.Headers.TryAddWithoutValidation("Authorization", sprintf "Bearer %s" token) |> ignore
             use! response = httpSend request
-            return ()
+            response.EnsureSuccessStatusCode() |> ignore
         }
