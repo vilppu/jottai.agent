@@ -28,10 +28,10 @@ type ApiController (httpSend : HttpRequestMessage -> Async<HttpResponseMessage>)
     [<HttpPost>]
     member this.GetAccessToken ([<FromBody>]request : AccessTokenRequest) : Async<ActionResult> = 
         async {
-            let! accessToken = Authentication.GetAccessToken httpSend request.RefreshToken request.RedirectUri
+            let! accessToken = Authentication.GetAccessToken httpSend request.RefreshToken ""
             match accessToken with
             | Some accessToken -> return this.Json(accessToken) :> ActionResult
-            | None _ -> return this.StatusCode(int HttpStatusCode.BadRequest) :> ActionResult                
+            | None _ -> return this.StatusCode(int HttpStatusCode.BadRequest) :> ActionResult
         }
 
     [<Route("user/tokens/refresh-token/store/")>]

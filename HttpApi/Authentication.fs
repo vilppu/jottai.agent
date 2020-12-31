@@ -38,7 +38,7 @@ module Authentication =
                 KeyValuePair.Create("grant_type", "authorization_code")
                 KeyValuePair.Create("client_id", Application.ClientId())
                 KeyValuePair.Create("code",code)
-                KeyValuePair.Create("redirect_uri", WebUtility.UrlDecode(redirectUri))
+                KeyValuePair.Create("redirect_uri", redirectUri)
                 ]
 
             request.Content <- new FormUrlEncodedContent(values |> List.toSeq)
@@ -61,7 +61,7 @@ module Authentication =
                 KeyValuePair.Create("grant_type", "refresh_token")
                 KeyValuePair.Create("client_id", Application.ClientId())
                 KeyValuePair.Create("refresh_token", refreshToken)
-                KeyValuePair.Create("redirect_uri", WebUtility.UrlDecode(redirectUri))
+                KeyValuePair.Create("redirect_uri", redirectUri)
                 ]
 
             request.Content <- new FormUrlEncodedContent(values |> List.toSeq)

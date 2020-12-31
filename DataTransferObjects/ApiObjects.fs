@@ -7,8 +7,7 @@ module ApiObjects =
           RedirectUri : string }
 
     type AccessTokenRequest = 
-        { RefreshToken : string
-          RedirectUri : string }
+        { RefreshToken : string }
 
     type RefreshToken = 
         { RefreshToken : string }
