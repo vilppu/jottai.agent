@@ -65,7 +65,7 @@ module TestHelpers =
         |> WaitUntilSensorStateIsChanged
         
     let WriteDeviceDataSynchronously deviceData (context : Context) : unit =        
-        PostDevicData (context.SensorToken) deviceData
+        PostDeviceData (context.SensorToken) deviceData
         |> WaitUntilSensorStateIsChanged
     
     let SensorStateResponse (context : Context) =

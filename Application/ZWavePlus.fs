@@ -26,6 +26,10 @@ module ZWavePlus =
 
         match (commandType, valueIsBoolean) with
             | (Some commandType, true) ->
+                let propertyValue =
+                  if isOn
+                  then DeviceProperty.BinarySwitch DeviceProperty.On
+                  else DeviceProperty.BinarySwitch DeviceProperty.Off
                 let deviceProperty : DeviceProperty =
                     { DeviceGroupId = deviceGroupId
                       GatewayId = GatewayId deviceData.gatewayId
@@ -34,7 +38,7 @@ module ZWavePlus =
                       PropertyType = commandType
                       PropertyName = PropertyName datum.propertyName
                       PropertyDescription = PropertyDescription datum.propertyDescription
-                      PropertyValue = if isOn then DeviceProperty.BinarySwitch DeviceProperty.On else DeviceProperty.BinarySwitch DeviceProperty.Off
+                      PropertyValue = propertyValue
                       Protocol = ZWavePlus
                       LastUpdated = timestamp
                       LastActive = timestamp }

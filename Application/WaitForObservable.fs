@@ -9,14 +9,17 @@ module internal WaitForObservable =
 
     let ThatPasses filter observable =
         async {
+            printf "ThatPasses"
             use waiter = new SemaphoreSlim(0)            
             let result = Subject.behavior (None)
  
             use _ = 
                 observable  
                 |> Observable.subscribe(fun event ->
+                    printf "->"
                     match event |> filter with
                     | Some event ->
+                        printf "Some event"
                         waiter.Release() |> ignore
                         result.OnNext (event |> Some)
                     | _ -> ()
@@ -27,5 +30,6 @@ module internal WaitForObservable =
                 |> Async.AwaitTask
                 |> Async.Ignore
 
+            printf "return result.Value"
             return result.Value
         }

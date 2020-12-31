@@ -99,6 +99,7 @@ type ApiController (httpSend : HttpRequestMessage -> Async<HttpResponseMessage>)
         (propertyValue : string)
         : Async<StatusCodeResult> =
         async {
+            printf "PostDevicePropertyValue"
             do! Application.PostDevicePropertyValue this.DeviceGroupId gatewayId deviceId propertyId propertyType propertyValue
             return this.StatusCode(StatusCodes.Status202Accepted)   
         }
@@ -125,6 +126,7 @@ type ApiController (httpSend : HttpRequestMessage -> Async<HttpResponseMessage>)
     [<Authorize(Policy = Roles.Device)>]
     member this.GetDevicePropertyChangeRequest() : Async<ActionResult> =
         async {
+            printf "GetDevicePropertyChangeRequest"
             let! devicePropertyChangeRequest = Application.GetDevicePropertyChangeRequest this.DeviceGroupId
             let result =
                 match devicePropertyChangeRequest with
