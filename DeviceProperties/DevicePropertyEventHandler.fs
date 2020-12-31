@@ -8,13 +8,16 @@ module DevicePropertyEventHandler =
     let handle publish (event : Event.Event) : Async<unit> =
         async {
             match event with
-            | Event.DevicePropertyAvailable deviceProperty ->
-                do! Action.StoreDeviceProperty deviceProperty
-                publish (Event.DevicePropertyStored deviceProperty)
+            | Event.DevicePropertyChanged event ->
+                let devicePropertyUpdate = event |> Event.ToDevicePropertyUpdate
+                let! devicePropertyState = Action.GetDevicePropertyState devicePropertyUpdate
 
-            | Event.DevicePropertyNameChangeRequested event ->
+                do! Action.StoreDeviceProperty devicePropertyState
+                publish (Event.DevicePropertyStored devicePropertyState)
+
+            | Event.DevicePropertyNameChanged event ->
                 do! DevicePropertyStorage.StoreDevicePropertyName event.DeviceGroupId.AsString event.GatewayId.AsString event.DeviceId.AsString event.PropertyId.AsString event.PropertyName.AsString
-                publish (Event.DevicePropertyNameChanged event)
+                publish (Event.DevicePropertyNameStored event)
             | _ -> ()
         }
     

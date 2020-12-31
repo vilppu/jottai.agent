@@ -7,7 +7,7 @@ module internal Commands =
             SensorStateUpdate = sensorStateUpdate
         }
 
-    let private ChangeDeviceProperty (deviceProperty : DeviceProperty) : Command.SetDevicePropertyAvailable =
+    let private ChangeDeviceProperty (deviceProperty : DevicePropertyUpdate) : Command.ChangeDevicePropertyState =
         {
             DeviceProperty = deviceProperty
         }
@@ -17,10 +17,10 @@ module internal Commands =
         |> List.map (fun sensorStateUpdate -> ChangeSensorState sensorStateUpdate)
         |> List.map (fun changeSensorState -> Command.ChangeSensorState changeSensorState)
     
-    let private FromDeviceProperties (deviceProperties : DeviceProperty list) : Command.Command list =
+    let private FromDevicePropertyUpdates (deviceProperties : DevicePropertyUpdate list) : Command.Command list =
         deviceProperties
         |> List.map (fun deviceProperty -> ChangeDeviceProperty deviceProperty)
-        |> List.map (fun changeDeviceProperty -> Command.SetDevicePropertyAvailable changeDeviceProperty)
+        |> List.map (fun changeDeviceProperty -> Command.ChangeDevicePropertyState changeDeviceProperty)
 
     let FromDeviceData deviceGroupId (deviceData : ApiObjects.DeviceData) : Command.Command list =
 
@@ -31,8 +31,8 @@ module internal Commands =
             
         let deviceProperties =
             deviceData
-            |> ConvertDeviceData.ToDeviceProperties (DeviceGroupId deviceGroupId)
-            |> FromDeviceProperties
+            |> ConvertDeviceData.ToDevicePropertyUpdates (DeviceGroupId deviceGroupId)
+            |> FromDevicePropertyUpdates
             
         sensorStateUpdates
         |> List.append deviceProperties

@@ -11,7 +11,7 @@ module SensorEventHandler =
             | Event.SensorStateChanged event ->
                 let sensorStateUpdate = event |> Event.ToSensorStateUpdate
                 let! sensorState = Action.GetSensorState sensorStateUpdate
-                let! sensorHistory = Action.GetSensorHistory sensorStateUpdate               
+                let! sensorHistory = Action.GetSensorHistory sensorStateUpdate
                 do! Action.StoreSensorState sensorState
                 do! Action.StoreSensorHistory sensorState sensorHistory
                 publish (Event.SensorStateStored sensorState)

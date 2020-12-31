@@ -114,11 +114,11 @@ module internal ConvertDeviceData =
             | "Z-Wave Plus" -> ZWavePlus |> Some            
             | _ -> None
     
-    let private ToDeviceProperty
+    let private ToDevicePropertyUpdate
         (deviceGroupId : DeviceGroupId)
         (deviceData : ApiObjects.DeviceData)
         (deviceDatum : ApiObjects.DeviceDatum)
-        : Option<DeviceProperty> =
+        : Option<DevicePropertyUpdate> =
 
         let protocol = 
             deviceDatum.protocol |> ToDeviceProtocol
@@ -126,7 +126,7 @@ module internal ConvertDeviceData =
         match protocol with
         | Some protocol ->
             match protocol with
-            | ZWavePlus -> ZWavePlus.ToDeviceProperty deviceGroupId deviceData deviceDatum            
+            | ZWavePlus -> ZWavePlus.ToDevicePropertyUpdate deviceGroupId deviceData deviceDatum            
         | _ -> None
 
     let ToSensorStateUpdates (deviceGroupId : DeviceGroupId) (deviceData : ApiObjects.DeviceData)
@@ -142,8 +142,8 @@ module internal ConvertDeviceData =
         |> List.choose (id)
         
     
-    let ToDeviceProperties (deviceGroupId : DeviceGroupId) (deviceData : ApiObjects.DeviceData)
-        : DeviceProperty list =
+    let ToDevicePropertyUpdates (deviceGroupId : DeviceGroupId) (deviceData : ApiObjects.DeviceData)
+        : DevicePropertyUpdate list =
         let data = 
             match deviceData.data :> obj with
             | null -> list.Empty
@@ -151,5 +151,5 @@ module internal ConvertDeviceData =
 
         data
         |> Seq.toList
-        |> List.map (fun deviceDatum -> ToDeviceProperty deviceGroupId deviceData deviceDatum)
+        |> List.map (fun deviceDatum -> ToDevicePropertyUpdate deviceGroupId deviceData deviceDatum)
         |> List.choose (id)

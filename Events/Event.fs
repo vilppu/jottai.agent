@@ -20,6 +20,18 @@ module Event =
           DeviceGroupId : DeviceGroupId
           SensorName : SensorName }
 
+    type DevicePropertyChanged =
+        { DeviceGroupId : DeviceGroupId
+          GatewayId : GatewayId
+          DeviceId : DeviceId
+          PropertyId : PropertyId
+          PropertyType : PropertyType
+          PropertyName : PropertyName
+          PropertyDescription : PropertyDescription
+          PropertyValue : DeviceProperty.DeviceProperty
+          Protocol : DeviceProtocol
+          Timestamp : System.DateTimeOffset }
+
     type DevicePropertyChangeRequest =
         { DeviceGroupId : DeviceGroupId
           GatewayId : GatewayId
@@ -27,7 +39,7 @@ module Event =
           PropertyId : PropertyId          
           PropertyValue : DeviceProperty.DeviceProperty }
 
-    type DevicePropertyNameChangeRequest =
+    type DevicePropertyNameChanged =
         { DeviceGroupId : DeviceGroupId
           GatewayId : GatewayId
           DeviceId : DeviceId
@@ -42,12 +54,12 @@ module Event =
         | SensorStateStored of SensorState
         | SensorNameChanged of SensorNameChanged
         | SensorNameStored of SensorNameChanged
-        | DevicePropertyAvailable of DeviceProperty
-        | DevicePropertyStored of DeviceProperty
-        | DevicePropertyChangeRequested of DevicePropertyChangeRequest        
-        | DevicePropertyNameChangeRequested of DevicePropertyNameChangeRequest
-        | DevicePropertyNameChanged of DevicePropertyNameChangeRequest
+        | DevicePropertyChanged of DevicePropertyChanged
+        | DevicePropertyStored of DevicePropertyState
+        | DevicePropertyChangeRequested of DevicePropertyChangeRequest
         | PollingDevicePropertyChangeRequests
+        | DevicePropertyNameChanged of DevicePropertyNameChanged
+        | DevicePropertyNameStored of DevicePropertyNameChanged
 
     let ToSensorStateUpdate (event : SensorStateChanged) : SensorStateUpdate = 
         { SensorId = event.SensorId
@@ -56,4 +68,16 @@ module Event =
           Measurement = event.Measurement
           BatteryVoltage = event.BatteryVoltage
           SignalStrength = event.SignalStrength
+          Timestamp = event.Timestamp }
+
+    let ToDevicePropertyUpdate (event : DevicePropertyChanged) : DevicePropertyUpdate = 
+        { DeviceGroupId = event.DeviceGroupId
+          GatewayId = event.GatewayId
+          DeviceId = event.DeviceId
+          PropertyId = event.PropertyId
+          PropertyType = event.PropertyType
+          PropertyName = event.PropertyName
+          PropertyDescription = event.PropertyDescription
+          PropertyValue = event.PropertyValue
+          Protocol = event.Protocol
           Timestamp = event.Timestamp }

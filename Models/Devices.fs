@@ -129,7 +129,7 @@ module Devices =
           MeasuredProperty = ""
           Entries = List.empty }
 
-    type DeviceProperty =
+    type DevicePropertyState =
         { DeviceGroupId : DeviceGroupId
           GatewayId : GatewayId
           DeviceId : DeviceId
@@ -141,3 +141,15 @@ module Devices =
           Protocol : DeviceProtocol
           LastUpdated : System.DateTimeOffset 
           LastActive : System.DateTimeOffset }
+
+    type DevicePropertyUpdate =
+        { DeviceGroupId : DeviceGroupId
+          GatewayId : GatewayId
+          DeviceId : DeviceId
+          PropertyId : PropertyId
+          PropertyType : PropertyType
+          PropertyName : PropertyName
+          PropertyDescription : PropertyDescription
+          PropertyValue : DeviceProperty.DeviceProperty
+          Protocol : DeviceProtocol
+          Timestamp : System.DateTimeOffset }

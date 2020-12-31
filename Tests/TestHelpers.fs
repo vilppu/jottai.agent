@@ -70,7 +70,7 @@ module TestHelpers =
         use waiter = new SemaphoreSlim(0)
         use subscription = Application.Events.Subscribe(fun event ->
             match event with
-            | Event.DevicePropertyNameChanged _ -> waiter.Release() |> ignore
+            | Event.DevicePropertyNameStored _ -> waiter.Release() |> ignore
             | _ -> ()
             )
     

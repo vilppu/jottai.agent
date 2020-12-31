@@ -14,10 +14,10 @@ module internal Command =
           DeviceGroupId : DeviceGroupId
           SensorName : SensorName }
 
-    type SetDevicePropertyAvailable =
-        { DeviceProperty : DeviceProperty }
+    type ChangeDevicePropertyState =
+        { DeviceProperty : DevicePropertyUpdate }
 
-    type ChangeDevicePropertyValue =
+    type RequestToChangeDevicePropertyValue =
         { DeviceGroupId : DeviceGroupId
           GatewayId : GatewayId
           DeviceId : DeviceId
@@ -35,17 +35,17 @@ module internal Command =
         | SubscribeToPushNotifications of SubscribeToPushNotifications
         | ChangeSensorState of ChangeSensorState
         | ChangeSensorName of ChangeSensorName
-        | SetDevicePropertyAvailable of SetDevicePropertyAvailable
-        | ChangeDevicePropertyValue of ChangeDevicePropertyValue
+        | ChangeDevicePropertyState of ChangeDevicePropertyState
+        | RequestToChangeDevicePropertyValue of RequestToChangeDevicePropertyValue
         | ChangeDevicePropertyName of ChangeDevicePropertyName
 
-    let private SubscribedToPushNotificationsEvent (command : SubscribeToPushNotifications) : Event.Event =
+    let private SubscribedToPushNotifications (command : SubscribeToPushNotifications) : Event.Event =
         let event : Event.SubscribedToPushNotifications =
             { DeviceGroupId = command.DeviceGroupId
               Subscription = command.Subscription }
         Event.SubscribedToPushNotifications event
     
-    let private SensorStateChangedEvent (command : ChangeSensorState) : Event.Event =   
+    let private SensorStateChanged (command : ChangeSensorState) : Event.Event =   
         let sensorStateUpdate = command.SensorStateUpdate
         let event : Event.SensorStateChanged =
             { SensorId = sensorStateUpdate.SensorId
@@ -57,17 +57,28 @@ module internal Command =
               Timestamp = sensorStateUpdate.Timestamp }
         Event.SensorStateChanged event
 
-    let private SensorNameChangedEvent (command : ChangeSensorName) : Event.Event =
+    let private SensorNameChanged (command : ChangeSensorName) : Event.Event =
         let event : Event.SensorNameChanged =
             { SensorId = command.SensorId
               DeviceGroupId = command.DeviceGroupId
               SensorName = command.SensorName }
         Event.SensorNameChanged event
     
-    let private DevicePropertyChanged (command : SetDevicePropertyAvailable) : Event.Event =
-        Event.DevicePropertyAvailable command.DeviceProperty
+    let private DevicePropertyChanged (command : ChangeDevicePropertyState) : Event.Event =
+        let event : Event.DevicePropertyChanged =
+            { DeviceGroupId = command.DeviceProperty.DeviceGroupId
+              GatewayId = command.DeviceProperty.GatewayId
+              DeviceId = command.DeviceProperty.DeviceId
+              PropertyId = command.DeviceProperty.PropertyId
+              PropertyType = command.DeviceProperty.PropertyType
+              PropertyName = command.DeviceProperty.PropertyName
+              PropertyDescription = command.DeviceProperty.PropertyDescription
+              PropertyValue = command.DeviceProperty.PropertyValue
+              Protocol = command.DeviceProperty.Protocol
+              Timestamp = command.DeviceProperty.Timestamp }
+        Event.DevicePropertyChanged event
         
-    let private ChangeDevicePropertyValueRequested (command : ChangeDevicePropertyValue) : Event.Event =
+    let private ChangeDevicePropertyValueRequested (command : RequestToChangeDevicePropertyValue) : Event.Event =
         let event : Event.DevicePropertyChangeRequest=
            { DeviceGroupId = command.DeviceGroupId
              GatewayId = command.GatewayId
@@ -77,21 +88,21 @@ module internal Command =
         Event.DevicePropertyChangeRequested event
         
     let private ChangeDevicePropertyNameRequested (command : ChangeDevicePropertyName) : Event.Event =
-        let event : Event.DevicePropertyNameChangeRequest=
+        let event : Event.DevicePropertyNameChanged=
            { DeviceGroupId = command.DeviceGroupId
              GatewayId = command.GatewayId
              DeviceId = command.DeviceId
              PropertyId = command.PropertyId
              PropertyName = command.PropertyName }
-        Event.DevicePropertyNameChangeRequested event
+        Event.DevicePropertyNameChanged event
 
     let private CreateEventFromCommand (command : Command) : Event.Event =
         match command with
-        | SubscribeToPushNotifications subscribeToPushNotifications -> SubscribedToPushNotificationsEvent subscribeToPushNotifications 
-        | ChangeSensorState changeSensorState -> SensorStateChangedEvent changeSensorState
-        | ChangeSensorName changeSensorName -> SensorNameChangedEvent changeSensorName
-        | SetDevicePropertyAvailable setDevicePropertyAvailable -> DevicePropertyChanged setDevicePropertyAvailable
-        | ChangeDevicePropertyValue changeDevicePropertyValue -> ChangeDevicePropertyValueRequested changeDevicePropertyValue
+        | SubscribeToPushNotifications subscribeToPushNotifications -> SubscribedToPushNotifications subscribeToPushNotifications 
+        | ChangeSensorState changeSensorState -> SensorStateChanged changeSensorState
+        | ChangeSensorName changeSensorName -> SensorNameChanged changeSensorName
+        | ChangeDevicePropertyState setDevicePropertyAvailable -> DevicePropertyChanged setDevicePropertyAvailable
+        | RequestToChangeDevicePropertyValue changeDevicePropertyValue -> ChangeDevicePropertyValueRequested changeDevicePropertyValue
         | ChangeDevicePropertyName changeDevicePropertyName -> ChangeDevicePropertyNameRequested changeDevicePropertyName
 
     let FromDevicePropertyValue 
@@ -112,7 +123,7 @@ module internal Command =
               DeviceId = DeviceId deviceId
               PropertyId = PropertyId propertyId
               PropertyValue = propertyValue }
-            |> ChangeDevicePropertyValue
+            |> RequestToChangeDevicePropertyValue
             |> Some
         | None -> None
 

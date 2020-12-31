@@ -2,7 +2,6 @@ namespace Jottai
 
 module PushNotificationTests = 
     open Xunit
-    open System.Diagnostics
 
     let sentNotifications() =
         SentHttpRequestContents
@@ -114,5 +113,22 @@ module PushNotificationTests =
             context|> WriteMeasurement(Fake.Measurement (Measurement.Contact Measurement.Closed)) |> WaitUntilPushNotificationsAreSent
 
             Assert.Equal(expectedName, sentNotifications().[1].data.deviceNotification.sensorName)
+        }   
+
+    [<Fact>]
+    let NotifyDevicePropertyChange() =
+        async {
+            use context = SetupContext()
+            
+            let switcthOn = { Fake.ZWavePlusDevicePropertyDatum with value = "True" }
+            let switcthOff = { Fake.ZWavePlusDevicePropertyDatum with value = "False" }
+
+            PostDeviceData context.DeviceToken { Fake.DeviceData with data = [switcthOn] }
+            |> WaitUntilPushNotificationsAreSent
+
+            PostDeviceData context.DeviceToken { Fake.DeviceData with data = [switcthOff] }
+            |> WaitUntilPushNotificationsAreSent
+
+            Assert.Equal(2, SentHttpRequests.Count)
+            Assert.Equal("https://fcm.googleapis.com/fcm/send", SentHttpRequests.[0].RequestUri.ToString())
         }
-   

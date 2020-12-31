@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="ConvertDeviceProperty.fs" />
+    <Compile Include="ConvertDevicePropertyState.fs" />
     <Compile Include="Action.fs" />
     <Compile Include="DevicePropertyEventHandler.fs" />
   </ItemGroup>

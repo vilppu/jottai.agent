@@ -20,14 +20,14 @@ module internal ConvertDeviceProperty =
         | "BinarySwitch" -> BinarySwitch |> Some
         | _ -> None
     
-    let private FromStorable (storable : DevicePropertyStorage.StorableDeviceProperty) : DeviceProperty option =
+    let private FromStorable (storable : DevicePropertyStorage.StorableDeviceProperty) : DevicePropertyState option =
         let protocol = storable.Protocol |> ProtocolFromStorable
         let commandType = storable.PropertyType |> CommandTypeFromStorable
         let propertyValue = DeviceProperty.From storable.PropertyType storable.PropertyValue
 
         match (protocol, commandType, propertyValue) with
         | (Some protocol, Some commandType, Some propertyValue) ->
-            let command : DeviceProperty =
+            let command : DevicePropertyState =
                 { DeviceGroupId = DeviceGroupId storable.DeviceGroupId
                   GatewayId = GatewayId storable.GatewayId
                   DeviceId = DeviceId storable.DeviceId
@@ -42,13 +42,13 @@ module internal ConvertDeviceProperty =
             command |> Some
         | _ -> None
     
-    let FromStorables (storables : seq<DevicePropertyStorage.StorableDeviceProperty>) : DeviceProperty list =        
+    let FromStorables (storables : seq<DevicePropertyStorage.StorableDeviceProperty>) : DevicePropertyState list =        
         storables
         |> Seq.map FromStorable
         |> Seq.choose id
         |> Seq.toList
               
-    let ToApiObjects (commands : DeviceProperty list) : ApiObjects.DevicePropertyState list = 
+    let ToApiObjects (commands : DevicePropertyState list) : ApiObjects.DevicePropertyState list = 
               commands
               |> List.map (fun command ->            
                   { DeviceGroupId = command.DeviceGroupId.AsString

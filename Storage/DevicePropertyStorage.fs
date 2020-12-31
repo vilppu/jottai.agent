@@ -120,6 +120,21 @@ module DevicePropertyStorage =
                 then Some (deviceProperties.[0])
                 else None
         }
+
+    let InitialState defaultName =
+        { Id = ObjectId.Empty
+          DeviceGroupId = ""
+          GatewayId = ""
+          DeviceId = ""
+          PropertyId = ""
+          PropertyType = ""
+          PropertyName = ""
+          PropertyDescription = ""
+          PropertyValue = ""
+          Protocol = ""
+          LastUpdated = DateTimeOffset.UtcNow
+          LastActive = DateTimeOffset.UtcNow
+        }
         
     let Drop() =
         BsonStorage.Database.DropCollection(DevicePropertiesCollectionName)

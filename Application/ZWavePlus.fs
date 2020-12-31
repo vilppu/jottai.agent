@@ -10,11 +10,11 @@ module ZWavePlus =
         else
             None
 
-    let ToDeviceProperty
+    let ToDevicePropertyUpdate
         (deviceGroupId : DeviceGroupId)
         (deviceData : ApiObjects.DeviceData)
         (datum : ApiObjects.DeviceDatum)
-        : Option<DeviceProperty> =       
+        : Option<DevicePropertyUpdate> =       
     
         let timestamp =
             if System.String.IsNullOrWhiteSpace(deviceData.timestamp)
@@ -30,7 +30,7 @@ module ZWavePlus =
                   if isOn
                   then DeviceProperty.BinarySwitch DeviceProperty.On
                   else DeviceProperty.BinarySwitch DeviceProperty.Off
-                let deviceProperty : DeviceProperty =
+                let deviceProperty : DevicePropertyUpdate =
                     { DeviceGroupId = deviceGroupId
                       GatewayId = GatewayId deviceData.gatewayId
                       DeviceId = DeviceId deviceData.deviceId
@@ -40,7 +40,6 @@ module ZWavePlus =
                       PropertyDescription = PropertyDescription datum.propertyDescription
                       PropertyValue = propertyValue
                       Protocol = ZWavePlus
-                      LastUpdated = timestamp
-                      LastActive = timestamp }
+                      Timestamp = timestamp }
                 Some deviceProperty
             | _ -> None
