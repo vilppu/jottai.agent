@@ -7,7 +7,6 @@ module WaitForDevicePropertyChangeRequestedEvent =
             let eventFilter (event : Event.Event) =
                 match event with
                 | Event.DevicePropertyChangeRequested event ->
-                    printf "Event.DevicePropertyChangeRequested %s %s" event.DeviceGroupId.AsString deviceGroupId.AsString
                     if event.DeviceGroupId = deviceGroupId
                     then Some event
                     else None
@@ -15,8 +14,7 @@ module WaitForDevicePropertyChangeRequestedEvent =
 
             let! devicePropertyChangeRequest =
                 EventBus.Events
-                |> WaitForObservable.ThatPasses eventFilter 
-
-            printf "return devicePropertyChangeRequest"
+                |> WaitForObservable.ThatPasses eventFilter
+            
             return devicePropertyChangeRequest
         }
