@@ -58,8 +58,8 @@ module TestContext =
         member val AnotherDeviceGroupId = Application.GenerateDeviceGroupId() with get, set        
         member val DeviceGroupToken = "DeviceGroupToken" with get, set
         member val AnotherDeviceGroupToken = "AnotherDeviceGroupToken" with get, set
-        member val SensorToken = "SensorToken" with get, set
-        member val AnotherSensorToken = "AnotherSensorToken" with get, set
+        member val DeviceToken = "DeviceToken" with get, set
+        member val AnotherDeviceToken = "AnotherDeviceToken" with get, set
 
         interface IDisposable with
             member this.Dispose() =
@@ -71,6 +71,6 @@ module TestContext =
         context.AnotherDeviceGroupId <- AnotherTestDeviceGroupId        
         context.DeviceGroupToken <- GenerateUserToken context.DeviceGroupId
         context.AnotherDeviceGroupToken <- GenerateUserToken context.AnotherDeviceGroupId
-        context.SensorToken <- GenerateDeviceToken context.DeviceGroupId
-        context.AnotherSensorToken <- GenerateDeviceToken context.AnotherDeviceGroupId
+        context.DeviceToken <- GenerateDeviceToken context.DeviceGroupId
+        context.AnotherDeviceToken <- GenerateDeviceToken context.AnotherDeviceGroupId
         context

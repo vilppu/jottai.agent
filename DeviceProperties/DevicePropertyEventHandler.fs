@@ -11,6 +11,10 @@ module DevicePropertyEventHandler =
             | Event.DevicePropertyAvailable deviceProperty ->
                 do! Action.StoreDeviceProperty deviceProperty
                 publish (Event.DevicePropertyStored deviceProperty)
+
+            | Event.DevicePropertyNameChangeRequested event ->
+                do! DevicePropertyStorage.StoreDevicePropertyName event.DeviceGroupId.AsString event.GatewayId.AsString event.DeviceId.AsString event.PropertyId.AsString event.PropertyName.AsString
+                publish (Event.DevicePropertyNameChanged event)
             | _ -> ()
         }
     

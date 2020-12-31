@@ -9,7 +9,13 @@ module DevicePropertyClient =
         Http.Get token apiUrl
     
     let PostDevicePropertyValue token gatewayId deviceId propertyId propertyType propertyValue : Async<System.Net.Http.HttpResponseMessage> =
-        let apiUrl = sprintf "api/gateway/%s/device/%s/property/%s/%s/%s" gatewayId deviceId propertyId propertyType propertyValue
+        let apiUrl = sprintf "api/gateway/%s/device/%s/property/%s/%s/value/%s" gatewayId deviceId propertyId propertyType propertyValue
+        async {
+            return! Http.Post token apiUrl ""          
+        }
+    
+    let PostDevicePropertyName token gatewayId deviceId propertyId propertyType propertyName : Async<System.Net.Http.HttpResponseMessage> =
+        let apiUrl = sprintf "api/gateway/%s/device/%s/property/%s/%s/name/%s" gatewayId deviceId propertyId propertyType propertyName
         async {
             return! Http.Post token apiUrl ""          
         }

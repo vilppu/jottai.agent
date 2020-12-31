@@ -27,6 +27,22 @@ module Devices =
             let (SensorId unwrapped) = this
             unwrapped
     
+    type SensorName = 
+        | SensorName of string
+        member this.AsString = 
+            let (SensorName unwrapped) = this
+            unwrapped
+            
+    let ValidateSensorName value =
+        let value =
+            if System.String.IsNullOrWhiteSpace value
+            then ""
+            else value.Trim()
+        
+        if value.Length <= 64
+        then SensorName value |> Some
+        else None
+    
     type PropertyId = 
         | PropertyId of string
         member this.AsString = 
@@ -38,6 +54,16 @@ module Devices =
         member this.AsString = 
             let (PropertyName unwrapped) = this
             unwrapped
+            
+    let ValidatePropertyName value =
+        let value =
+            if System.String.IsNullOrWhiteSpace value
+            then ""
+            else value.Trim()
+        
+        if value.Length <= 64
+        then PropertyName value |> Some
+        else None
     
     type PropertyDescription = 
         | PropertyDescription of string
@@ -82,7 +108,7 @@ module Devices =
         { DeviceGroupId : DeviceGroupId
           DeviceId : DeviceId
           SensorId : SensorId
-          SensorName : string
+          SensorName : SensorName
           Measurement : Measurement.Measurement
           BatteryVoltage : Measurement.Voltage
           SignalStrength : Measurement.Rssi
@@ -115,10 +141,3 @@ module Devices =
           Protocol : DeviceProtocol
           LastUpdated : System.DateTimeOffset 
           LastActive : System.DateTimeOffset }
-
-    type DevicePropertyChangeRequest =
-        { DeviceGroupId : DeviceGroupId
-          GatewayId : GatewayId
-          DeviceId : DeviceId
-          PropertyId : PropertyId          
-          PropertyValue : DeviceProperty.DeviceProperty }

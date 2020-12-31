@@ -12,24 +12,32 @@ module internal Command =
     type ChangeSensorName = 
         { SensorId : SensorId
           DeviceGroupId : DeviceGroupId
-          SensorName : string }
+          SensorName : SensorName }
 
     type SetDevicePropertyAvailable =
         { DeviceProperty : DeviceProperty }
 
-    type DevicePropertyChangeRequest =
+    type ChangeDevicePropertyValue =
         { DeviceGroupId : DeviceGroupId
           GatewayId : GatewayId
           DeviceId : DeviceId
           PropertyId : PropertyId
           PropertyValue : DeviceProperty.DeviceProperty }
+
+    type ChangeDevicePropertyName =
+        { DeviceGroupId : DeviceGroupId
+          GatewayId : GatewayId
+          DeviceId : DeviceId
+          PropertyId : PropertyId
+          PropertyName : PropertyName }
     
     type Command =
         | SubscribeToPushNotifications of SubscribeToPushNotifications
         | ChangeSensorState of ChangeSensorState
         | ChangeSensorName of ChangeSensorName
         | SetDevicePropertyAvailable of SetDevicePropertyAvailable
-        | ChangeDevicePropertyValue of DevicePropertyChangeRequest
+        | ChangeDevicePropertyValue of ChangeDevicePropertyValue
+        | ChangeDevicePropertyName of ChangeDevicePropertyName
 
     let private SubscribedToPushNotificationsEvent (command : SubscribeToPushNotifications) : Event.Event =
         let event : Event.SubscribedToPushNotifications =
@@ -59,14 +67,23 @@ module internal Command =
     let private DevicePropertyChanged (command : SetDevicePropertyAvailable) : Event.Event =
         Event.DevicePropertyAvailable command.DeviceProperty
         
-    let private ChangeDevicePropertyValueRequested (command : DevicePropertyChangeRequest) : Event.Event =
-        let event : Devices.DevicePropertyChangeRequest=
+    let private ChangeDevicePropertyValueRequested (command : ChangeDevicePropertyValue) : Event.Event =
+        let event : Event.DevicePropertyChangeRequest=
            { DeviceGroupId = command.DeviceGroupId
              GatewayId = command.GatewayId
              DeviceId = command.DeviceId
              PropertyId = command.PropertyId
              PropertyValue = command.PropertyValue }
         Event.DevicePropertyChangeRequested event
+        
+    let private ChangeDevicePropertyNameRequested (command : ChangeDevicePropertyName) : Event.Event =
+        let event : Event.DevicePropertyNameChangeRequest=
+           { DeviceGroupId = command.DeviceGroupId
+             GatewayId = command.GatewayId
+             DeviceId = command.DeviceId
+             PropertyId = command.PropertyId
+             PropertyName = command.PropertyName }
+        Event.DevicePropertyNameChangeRequested event
 
     let private CreateEventFromCommand (command : Command) : Event.Event =
         match command with
@@ -74,9 +91,10 @@ module internal Command =
         | ChangeSensorState changeSensorState -> SensorStateChangedEvent changeSensorState
         | ChangeSensorName changeSensorName -> SensorNameChangedEvent changeSensorName
         | SetDevicePropertyAvailable setDevicePropertyAvailable -> DevicePropertyChanged setDevicePropertyAvailable
-        | ChangeDevicePropertyValue devicePropertyChangeRequest -> ChangeDevicePropertyValueRequested devicePropertyChangeRequest
+        | ChangeDevicePropertyValue changeDevicePropertyValue -> ChangeDevicePropertyValueRequested changeDevicePropertyValue
+        | ChangeDevicePropertyName changeDevicePropertyName -> ChangeDevicePropertyNameRequested changeDevicePropertyName
 
-    let FromDeviceProperty 
+    let FromDevicePropertyValue 
         (deviceGroupId : string)
         (gatewayId : string)
         (deviceId : string)
@@ -95,6 +113,27 @@ module internal Command =
               PropertyId = PropertyId propertyId
               PropertyValue = propertyValue }
             |> ChangeDevicePropertyValue
+            |> Some
+        | None -> None
+
+    let FromDevicePropertyName
+        (deviceGroupId : string)
+        (gatewayId : string)
+        (deviceId : string)
+        (propertyId : string)
+        (_ : string)
+        (propertyName : string)
+        : Command option =       
+        
+        let propertyName = ValidatePropertyName propertyName
+        match propertyName with
+        | Some propertyName ->
+            { DeviceGroupId = DeviceGroupId deviceGroupId
+              GatewayId = GatewayId gatewayId
+              DeviceId = DeviceId deviceId
+              PropertyId = PropertyId propertyId
+              PropertyName = propertyName }
+            |> ChangeDevicePropertyName
             |> Some
         | None -> None
   

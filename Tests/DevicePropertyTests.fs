@@ -40,7 +40,7 @@ module DevicePropertyTest =
                 timestamp = expectedTimestamp.ToString("o")
             }
 
-        PostDeviceData context.SensorToken deviceData
+        PostDeviceData context.DeviceToken deviceData
         |> WaitUntilDevicePropertyIsUpdated
 
         let result = context |> DeviceProperties
@@ -82,10 +82,10 @@ module DevicePropertyTest =
                 data = [updatedDeviceDatum]
             }
 
-        PostDeviceData context.SensorToken initialDeviceData
+        PostDeviceData context.DeviceToken initialDeviceData
         |> WaitUntilDevicePropertyIsUpdated
 
-        PostDeviceData context.SensorToken updatedDeviceData
+        PostDeviceData context.DeviceToken updatedDeviceData
         |> WaitUntilDevicePropertyIsUpdated
 
         let result = context |> DeviceProperties
@@ -106,7 +106,7 @@ module DevicePropertyTest =
             Fake.DeviceData with
                 data = [deviceDatum]
             }
-        PostDeviceData context.SensorToken deviceData
+        PostDeviceData context.DeviceToken deviceData
         |> WaitUntilDevicePropertyIsUpdated
 
         let result = context |> DeviceProperties
@@ -128,7 +128,7 @@ module DevicePropertyTest =
                 data = [deviceDatum]
             }
 
-        PostDeviceData context.SensorToken deviceData
+        PostDeviceData context.DeviceToken deviceData
         |> WaitUntilDevicePropertyIsUpdated
 
         let result = context |> DeviceProperties
@@ -146,7 +146,7 @@ module DevicePropertyTest =
                 data = [deviceDatum]
             }
 
-        PostDeviceData context.SensorToken deviceData
+        PostDeviceData context.DeviceToken deviceData
         |> WaitUntilDevicePropertyIsUpdated
         
         let result = context |> SensorState
@@ -167,7 +167,7 @@ module DevicePropertyTest =
                 data = [deviceDatum]
             }
 
-        PostDeviceData context.SensorToken deviceData |> Async.RunSynchronously |> ignore
+        PostDeviceData context.DeviceToken deviceData |> Async.RunSynchronously |> ignore
 
         let result = context |> DeviceProperties
 
@@ -181,7 +181,7 @@ module DevicePropertyTest =
         let gatewayId = "4035277665"
         let propertyId = "0x0002000001dc8013"
         let propertyType = "BinarySwitch"
-        let propertyValue = "False"        
+        let propertyValue = "False"
 
         let deviceDatum = {
             Fake.ZWavePlusDevicePropertyDatum with 
@@ -198,19 +198,59 @@ module DevicePropertyTest =
 
         async {
             let! devicePropertyChangeRequest =
-                PollDevicePropertyChangeRequest context.SensorToken
+                PollDevicePropertyChangeRequest context.DeviceToken
                 |> WaitUntilPollingDevicePropertyChangeRequests
 
-            PostDeviceData context.SensorToken deviceData
+            PostDeviceData context.DeviceToken deviceData
             |> WaitUntilDevicePropertyIsUpdated
 
-            PostDevicePropertyValue context.SensorToken gatewayId deviceId propertyId propertyType propertyValue
+            PostDevicePropertyValue context.DeviceToken gatewayId deviceId propertyId propertyType propertyValue
             |> Async.RunSynchronously
             |> ignore
 
             let! result = devicePropertyChangeRequest
         
             Assert.Equal("False" :> obj, result.PropertyValue)
+        }
+    
+    [<Fact>]
+    let ZWavePlusDevicePropertyNameCanBeChanged() = 
+        use context = SetupContext()
+        
+        let deviceId = "9"
+        let gatewayId = "4035277665"
+        let expected = "ChangedPropertyName"
+
+        let deviceDatum = {
+            Fake.ZWavePlusDevicePropertyDatum with        
+                propertyName = "InitialPropertyName"                
+        }
+
+        let deviceData = { 
+            Fake.DeviceData with
+                gatewayId = gatewayId
+                deviceId = deviceId
+                data = [deviceDatum]
+            }
+
+        async {
+            PostDeviceData context.DeviceToken deviceData
+            |> WaitUntilDevicePropertyIsUpdated
+
+            PostDevicePropertyName context.DeviceToken deviceData.gatewayId deviceData.deviceId deviceDatum.propertyId "BinarySwitch" expected
+            |> WaitUntilDevicePropertyNameIsChanged            
+
+            PostDevicePropertyValue context.DeviceToken deviceData.gatewayId deviceData.deviceId deviceDatum.propertyId "BinarySwitch" "True"
+            |> Async.RunSynchronously
+            |> ignore
+            
+            PostDeviceData context.DeviceToken deviceData
+            |> WaitUntilDevicePropertyIsUpdated
+            
+            let result = context |> DeviceProperties
+            
+            Assert.Equal(1, result.Length)
+            Assert.Equal(expected, result.Head.PropertyName)
         }
     
     [<Fact>]
@@ -222,10 +262,10 @@ module DevicePropertyTest =
 
         async {
             let! devicePropertyChangeRequest =
-                PollDevicePropertyChangeRequest context.SensorToken
+                PollDevicePropertyChangeRequest context.DeviceToken
                 |> WaitUntilPollingDevicePropertyChangeRequests
 
-            PostDevicePropertyValue context.SensorToken "1" "2" "3" propertyType propertyValue
+            PostDevicePropertyValue context.DeviceToken "1" "2" "3" propertyType propertyValue
             |> Async.RunSynchronously
             |> ignore
 
@@ -243,10 +283,10 @@ module DevicePropertyTest =
 
         async {
             let! devicePropertyChangeRequest =
-                PollDevicePropertyChangeRequest context.SensorToken
+                PollDevicePropertyChangeRequest context.DeviceToken
                 |> WaitUntilPollingDevicePropertyChangeRequests
 
-            PostDevicePropertyValue context.SensorToken "1" "2" "3" propertyType propertyValue
+            PostDevicePropertyValue context.DeviceToken "1" "2" "3" propertyType propertyValue
             |> Async.RunSynchronously
             |> ignore
 

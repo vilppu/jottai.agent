@@ -67,15 +67,19 @@ module Application =
         token
 
     let PostSensorName deviceGroupId sensorId sensorName : Async<unit> = 
-        async {    
-            let changeSensorName : Command.ChangeSensorName =
-                { SensorId = SensorId sensorId
-                  DeviceGroupId = DeviceGroupId deviceGroupId
-                  SensorName = sensorName}
-            let command = Command.ChangeSensorName changeSensorName
-            do! Command.Execute command
-        }    
-    
+        async {
+            let sensorName = ValidateSensorName sensorName
+            match sensorName with
+            | Some sensorName -> 
+                let changeSensorName : Command.ChangeSensorName =
+                    { SensorId = SensorId sensorId
+                      DeviceGroupId = DeviceGroupId deviceGroupId
+                      SensorName = sensorName}
+                let command = Command.ChangeSensorName changeSensorName
+                do! Command.Execute command
+            | None -> ()
+        }
+
     let GetSensorStates (deviceGroupId : string) : Async<ApiObjects.SensorState list> = 
         async {        
             let! statuses = SensorStateStorage.GetSensorStates deviceGroupId
@@ -131,7 +135,21 @@ module Application =
         (propertyValue : string)
         : Async<unit> =
         async {
-            match Command.FromDeviceProperty deviceGroupId gatewayId deviceId propertyId propertyType propertyValue with
+            match Command.FromDevicePropertyValue deviceGroupId gatewayId deviceId propertyId propertyType propertyValue with
+            | Some command -> do! Command.Execute command
+            | _ -> ()
+        }
+
+    let PostDevicePropertyName
+        (deviceGroupId : string)
+        (gatewayId : string)
+        (deviceId : string)
+        (propertyId : string)
+        (propertyType : string)
+        (propertyName : string)
+        : Async<unit> =
+        async {
+            match Command.FromDevicePropertyName deviceGroupId gatewayId deviceId propertyId propertyType propertyName with
             | Some command -> do! Command.Execute command
             | _ -> ()
         }

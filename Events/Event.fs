@@ -18,7 +18,21 @@ module Event =
     type SensorNameChanged = 
         { SensorId : SensorId
           DeviceGroupId : DeviceGroupId
-          SensorName : string }
+          SensorName : SensorName }
+
+    type DevicePropertyChangeRequest =
+        { DeviceGroupId : DeviceGroupId
+          GatewayId : GatewayId
+          DeviceId : DeviceId
+          PropertyId : PropertyId          
+          PropertyValue : DeviceProperty.DeviceProperty }
+
+    type DevicePropertyNameChangeRequest =
+        { DeviceGroupId : DeviceGroupId
+          GatewayId : GatewayId
+          DeviceId : DeviceId
+          PropertyId : PropertyId          
+          PropertyName : PropertyName }
 
     type Event =
         | SubscribedToPushNotifications of SubscribedToPushNotifications
@@ -30,7 +44,9 @@ module Event =
         | SensorNameStored of SensorNameChanged
         | DevicePropertyAvailable of DeviceProperty
         | DevicePropertyStored of DeviceProperty
-        | DevicePropertyChangeRequested of DevicePropertyChangeRequest
+        | DevicePropertyChangeRequested of DevicePropertyChangeRequest        
+        | DevicePropertyNameChangeRequested of DevicePropertyNameChangeRequest
+        | DevicePropertyNameChanged of DevicePropertyNameChangeRequest
         | PollingDevicePropertyChangeRequests
 
     let ToSensorStateUpdate (event : SensorStateChanged) : SensorStateUpdate = 

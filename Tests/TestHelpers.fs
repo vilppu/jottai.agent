@@ -65,6 +65,17 @@ module TestHelpers =
     
         action |> Async.RunSynchronously |> ignore
         waiter.Wait(waitTimeout) |> ignore
+    
+    let WaitUntilDevicePropertyNameIsChanged action =
+        use waiter = new SemaphoreSlim(0)
+        use subscription = Application.Events.Subscribe(fun event ->
+            match event with
+            | Event.DevicePropertyNameChanged _ -> waiter.Release() |> ignore
+            | _ -> ()
+            )
+    
+        action |> Async.RunSynchronously |> ignore
+        waiter.Wait(waitTimeout) |> ignore
 
     let SetupToReceivePushNotifications(context : Context) = 
         let result =
@@ -75,14 +86,14 @@ module TestHelpers =
         |> ignore
     
     let WriteMeasurement (measurement, deviceId) (context : Context) =
-        PostMeasurement context.SensorToken deviceId measurement
+        PostMeasurement context.DeviceToken deviceId measurement
 
     let WriteMeasurementSynchronously (measurement, deviceId) (context : Context) : unit =
         WriteMeasurement (measurement, deviceId) context
         |> WaitUntilSensorStateIsChanged
         
     let WriteDeviceDataSynchronously deviceData (context : Context) : unit =        
-        PostDeviceData (context.SensorToken) deviceData
+        PostDeviceData (context.DeviceToken) deviceData
         |> WaitUntilSensorStateIsChanged
     
     let SensorStateResponse (context : Context) =

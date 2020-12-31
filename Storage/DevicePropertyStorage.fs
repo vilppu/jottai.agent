@@ -32,27 +32,43 @@ module DevicePropertyStorage =
         BsonStorage.Database.GetCollection<StorableDeviceProperty> DevicePropertiesCollectionName
         |> BsonStorage.WithDescendingIndex "DeviceGroupId"
 
-    let private GetDevicePropertyExpression (deviceProperty : StorableDeviceProperty) =
-        let deviceGroupId = deviceProperty.DeviceGroupId
-        let gatewayId = deviceProperty.GatewayId
-        let deviceId = deviceProperty.DeviceId
-        let propertyId = deviceProperty.PropertyId
+    let private GetDevicePropertyExpression deviceGroupId gatewayId deviceId propertyId =
         
         let expr = Expressions.Lambda.Create<StorableDeviceProperty>(fun command ->
             command.DeviceGroupId = deviceGroupId &&
             command.GatewayId = gatewayId &&
             command.DeviceId = deviceId &&
             command.PropertyId = propertyId)
-        expr
+        expr        
 
     let private GetDevicePropertiesExpression (deviceGroupId : string) =        
         let deviceGroupId = deviceGroupId
         let expr = Expressions.Lambda.Create<StorableDeviceProperty>(fun x -> x.DeviceGroupId = deviceGroupId)
         expr
 
-    let StoreDeviceProperty (deviceProperty : StorableDeviceProperty) =
+    let StoreDevicePropertyName deviceGroupId gatewayId deviceId propertyId (name : string) =
 
-        let filter = GetDevicePropertyExpression deviceProperty
+        let filter = GetDevicePropertyExpression deviceGroupId gatewayId deviceId propertyId
+    
+        let update =
+            Builders<StorableDeviceProperty>.Update
+             .Set((fun s -> s.PropertyName), name)
+    
+        async {
+            do! devicePropertySemaphore.WaitAsync() |> Async.AwaitTask
+
+            try            
+                do! DevicePropertiesCollection.UpdateOneAsync<StorableDeviceProperty>(filter, update, BsonStorage.Upsert)
+                    :> Tasks.Task
+                    |> Async.AwaitTask
+
+            finally
+                devicePropertySemaphore.Release() |> ignore
+        }
+
+    let StoreDeviceProperty (deviceProperty : StorableDeviceProperty) =
+    
+        let filter = GetDevicePropertyExpression deviceProperty.DeviceGroupId deviceProperty.GatewayId deviceProperty.DeviceId deviceProperty.PropertyId
     
         let update =
             Builders<StorableDeviceProperty>.Update
@@ -89,6 +105,20 @@ module DevicePropertyStorage =
                 |> Async.AwaitTask
 
             return deviceProperties |> List.ofSeq
+        }
+
+    let GetDeviceProperty deviceGroupId gatewayId deviceId propertyId : Async<StorableDeviceProperty option> =
+        async {
+            let filter = GetDevicePropertyExpression deviceGroupId gatewayId deviceId propertyId
+
+            let! deviceProperties =
+                DevicePropertiesCollection.FindSync<StorableDeviceProperty>(filter).ToListAsync()
+                |> Async.AwaitTask
+            
+            return
+                if deviceProperties.Count = 1
+                then Some (deviceProperties.[0])
+                else None
         }
         
     let Drop() =

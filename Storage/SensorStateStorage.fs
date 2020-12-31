@@ -60,7 +60,7 @@ module SensorStateStorage =
                     
             finally
                 sensorNameSemaphore.Release() |> ignore
-        }    
+        }
 
     let StoreSensorState (sensorState : StorableSensorState) =
 

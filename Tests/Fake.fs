@@ -148,7 +148,7 @@ module Fake =
           rssi = "" }
 
     let ZWavePlusDevicePropertyDatum : ApiObjects.DeviceDatum =
-            { propertyId = null
+            { propertyId = "0x0002000001dc8013"
               propertyName = "Example device part"
               propertyDescription = "Example device part description"
               protocol = "Z-Wave Plus"

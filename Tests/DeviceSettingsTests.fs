@@ -30,7 +30,6 @@ module DeviceSettingsTest =
         let entry = result.Head
         Assert.Equal(expectedName, entry.SensorName)
     
-    
     [<Fact>]
     let MeasurementsDoNotMessUpSensorName() = 
         use context = SetupContext()

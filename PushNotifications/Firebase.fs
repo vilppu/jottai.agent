@@ -102,7 +102,7 @@ module private Firebase =
 
             let pushNotification : DevicePushNotification =
                 { DeviceId = reason.SensorState.DeviceId.AsString
-                  SensorName = sensorName
+                  SensorName = sensorName.AsString
                   MeasuredProperty = measurement |> Measurement.Name
                   MeasuredValue = measurement |> Measurement.Value
                   Timestamp = reason.SensorState.LastUpdated }

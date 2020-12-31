@@ -51,9 +51,10 @@ type ApiController (httpSend : HttpRequestMessage -> Async<HttpResponseMessage>)
     [<Route("sensor/{sensorId}/name/{sensorName}")>]
     [<HttpPost>]
     [<Authorize(Policy = Roles.User)>]
-    member this.PostSensorName (sensorId : string) (sensorName : string) : Async<unit> = 
+    member this.PostSensorName (sensorId : string) (sensorName : string) : Async<StatusCodeResult> = 
         async {
             do! Application.PostSensorName this.DeviceGroupId sensorId sensorName
+            return this.StatusCode(StatusCodes.Status202Accepted)   
         }
     
     [<Route("sensors")>]
@@ -79,16 +80,8 @@ type ApiController (httpSend : HttpRequestMessage -> Async<HttpResponseMessage>)
         async {
             return! Application.GetDeviceProperties this.DeviceGroupId
         }
-    
-    //[<Route("device/{deviceId}/property/{devicePropertyId}/name/{devicePartName}")>]
-    //[<HttpPost>]
-    //[<Authorize(Policy = Roles.User)>]
-    //member this.PostDevicePropertyName (deviceId : string) (devicePartId : string) (devicePartName : string) : Async<unit> = 
-    //    async {
-    //        do! Application.PostDevicePropertyName this.DeviceGroupId sensorId sensorName
-    //    }
 
-    [<Route("gateway/{gatewayId}/device/{deviceId}/property/{propertyId}/{propertyType}/{propertyValue}")>]
+    [<Route("gateway/{gatewayId}/device/{deviceId}/property/{propertyId}/{propertyType}/value/{propertyValue}")>]
     [<HttpPost>]
     [<Authorize(Policy = Roles.Device)>]
     member this.PostDevicePropertyValue
@@ -100,6 +93,21 @@ type ApiController (httpSend : HttpRequestMessage -> Async<HttpResponseMessage>)
         : Async<StatusCodeResult> =
         async {
             do! Application.PostDevicePropertyValue this.DeviceGroupId gatewayId deviceId propertyId propertyType propertyValue
+            return this.StatusCode(StatusCodes.Status202Accepted)   
+        }
+    
+    [<Route("gateway/{gatewayId}/device/{deviceId}/property/{propertyId}/{propertyType}/name/{propertyName}")>]
+    [<HttpPost>]
+    [<Authorize(Policy = Roles.User)>]
+    member this.PostDevicePropertyName
+        (gatewayId : string)
+        (deviceId : string)
+        (propertyId : string)
+        (propertyType : string)
+        (propertyName : string)
+        : Async<StatusCodeResult> = 
+        async {
+            do! Application.PostDevicePropertyName this.DeviceGroupId gatewayId deviceId propertyId propertyType propertyName
             return this.StatusCode(StatusCodes.Status202Accepted)   
         }
     
