@@ -17,8 +17,8 @@ module internal WaitForObservable =
                 |> Observable.subscribe(fun event ->
                     match event |> filter with
                     | Some event ->
-                        waiter.Release() |> ignore
                         result.OnNext (event |> Some)
+                        waiter.Release() |> ignore
                     | _ -> ()
                 )
 
