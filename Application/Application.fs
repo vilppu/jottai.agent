@@ -140,6 +140,8 @@ module Application =
         async {
             let deviceGroupId = DeviceGroupId deviceGroupId
 
+            EventBus.Publish Event.PollingDevicePropertyChangeRequests
+
             let! devicePropertyChangeRequest =
                 WaitForDevicePropertyChangeRequestedEvent.For deviceGroupId
 

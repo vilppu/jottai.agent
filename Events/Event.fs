@@ -31,6 +31,7 @@ module Event =
         | DevicePropertyAvailable of DeviceProperty
         | DevicePropertyStored of DeviceProperty
         | DevicePropertyChangeRequested of DevicePropertyChangeRequest
+        | PollingDevicePropertyChangeRequests
 
     let ToSensorStateUpdate (event : SensorStateChanged) : SensorStateUpdate = 
         { SensorId = event.SensorId

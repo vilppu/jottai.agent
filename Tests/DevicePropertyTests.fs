@@ -199,9 +199,7 @@ module DevicePropertyTest =
         async {
             let! devicePropertyChangeRequest =
                 PollDevicePropertyChangeRequest context.SensorToken
-                |> Async.StartChild
-
-            do! Async.Sleep (System.TimeSpan.FromMilliseconds 200.0)
+                |> WaitUntilPollingDevicePropertyChangeRequests
 
             PostDeviceData context.SensorToken deviceData
             |> WaitUntilDevicePropertyIsUpdated
@@ -225,9 +223,7 @@ module DevicePropertyTest =
         async {
             let! devicePropertyChangeRequest =
                 PollDevicePropertyChangeRequest context.SensorToken
-                |> Async.StartChild
-
-            do! Async.Sleep (System.TimeSpan.FromMilliseconds 200.0)
+                |> WaitUntilPollingDevicePropertyChangeRequests
 
             PostDevicePropertyValue context.SensorToken "1" "2" "3" propertyType propertyValue
             |> Async.RunSynchronously
@@ -248,9 +244,7 @@ module DevicePropertyTest =
         async {
             let! devicePropertyChangeRequest =
                 PollDevicePropertyChangeRequest context.SensorToken
-                |> Async.StartChild
-
-            do! Async.Sleep (System.TimeSpan.FromMilliseconds 200.0)
+                |> WaitUntilPollingDevicePropertyChangeRequests
 
             PostDevicePropertyValue context.SensorToken "1" "2" "3" propertyType propertyValue
             |> Async.RunSynchronously

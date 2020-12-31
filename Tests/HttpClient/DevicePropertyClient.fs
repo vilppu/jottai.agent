@@ -14,7 +14,8 @@ module DevicePropertyClient =
             return! Http.Post token apiUrl ""          
         }
     
-    let PollDevicePropertyChangeRequest token : Async<ApiObjects.DevicePropertyChangeRequest> = 
+    let PollDevicePropertyChangeRequest token : Async<ApiObjects.DevicePropertyChangeRequest> =
+
         let apiUrl = sprintf "api/device-property-change-request"
         let response = Http.Get token apiUrl
         async {
