@@ -6,6 +6,7 @@ module internal ConvertDevicePropertyState =
     let private ProtocolToStorable (deviceProtocol : DeviceProtocol ) : string =
         match deviceProtocol with
         | ZWavePlus -> "Z-Wave Plus"
+        | _ -> ""
 
     let private CommandTypeToStorable (commandType : PropertyType ) : string =
         match commandType with

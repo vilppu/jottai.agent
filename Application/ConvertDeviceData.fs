@@ -85,7 +85,7 @@ module internal ConvertDeviceData =
         (deviceGroupId : DeviceGroupId)
         (deviceData : ApiObjects.DeviceData)
         (deviceDatum : ApiObjects.DeviceDatum)
-        : Option<SensorStateUpdate> =
+        : DeviceDataUpdate option =
         
         let measurementOption = ToMeasurement deviceDatum
         let timestamp =
@@ -105,45 +105,27 @@ module internal ConvertDeviceData =
                   BatteryVoltage = ToBatteryVoltage deviceData
                   SignalStrength = ToRssi deviceData
                   Timestamp = timestamp }
-
-            Some sensorStateUpdate
+            
+            sensorStateUpdate |> SensorStateUpdate |> Some
         | None -> None
 
-    let private ToDeviceProtocol (deviceProtocol : string) : DeviceProtocol option =        
+    let private ToDeviceProtocol (deviceProtocol : string) : DeviceProtocol =        
         match deviceProtocol with
-            | "Z-Wave Plus" -> ZWavePlus |> Some            
-            | _ -> None
+            | "Z-Wave Plus" -> ZWavePlus
+            | _ -> ProtocolNotSpecified        
     
-    let private ToDevicePropertyUpdate
+    let private ToDeviceDataUpdate
         (deviceGroupId : DeviceGroupId)
         (deviceData : ApiObjects.DeviceData)
         (deviceDatum : ApiObjects.DeviceDatum)
-        : Option<DevicePropertyUpdate> =
+        : (DeviceDataUpdate option) =
 
-        let protocol = 
-            deviceDatum.protocol |> ToDeviceProtocol
-
-        match protocol with
-        | Some protocol ->
-            match protocol with
-            | ZWavePlus -> ZWavePlus.ToDevicePropertyUpdate deviceGroupId deviceData deviceDatum            
-        | _ -> None
-
-    let ToSensorStateUpdates (deviceGroupId : DeviceGroupId) (deviceData : ApiObjects.DeviceData)
-        : SensorStateUpdate list =
-        let data = 
-            match deviceData.data :> obj with
-            | null -> list.Empty
-            | _ -> deviceData.data
-
-        data
-        |> Seq.toList
-        |> List.map (fun deviceDatum -> ToSensorStateUpdate deviceGroupId deviceData deviceDatum)
-        |> List.choose (id)
-        
+        match deviceDatum.protocol |> ToDeviceProtocol with
+        | ZWavePlus -> ZWavePlus.ToDeviceDataUpdate deviceGroupId deviceData deviceDatum
+        | ProtocolNotSpecified -> ToSensorStateUpdate deviceGroupId deviceData deviceDatum
     
-    let ToDevicePropertyUpdates (deviceGroupId : DeviceGroupId) (deviceData : ApiObjects.DeviceData)
-        : DevicePropertyUpdate list =
+    let ToDeviceDataUpdates (deviceGroupId : DeviceGroupId) (deviceData : ApiObjects.DeviceData)
+        : DeviceDataUpdate list =
         let data = 
             match deviceData.data :> obj with
             | null -> list.Empty
@@ -151,5 +133,5 @@ module internal ConvertDeviceData =
 
         data
         |> Seq.toList
-        |> List.map (fun deviceDatum -> ToDevicePropertyUpdate deviceGroupId deviceData deviceDatum)
+        |> List.map (fun deviceDatum -> ToDeviceDataUpdate deviceGroupId deviceData deviceDatum)
         |> List.choose (id)

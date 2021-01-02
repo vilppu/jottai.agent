@@ -94,6 +94,7 @@ module Devices =
 
     type DeviceProtocol =
         | ZWavePlus
+        | ProtocolNotSpecified
 
     type SensorHistoryEntry = 
         { MeasuredValue : obj
@@ -115,15 +116,6 @@ module Devices =
           LastUpdated : System.DateTimeOffset
           LastActive : System.DateTimeOffset }
 
-    type SensorStateUpdate = 
-        { DeviceGroupId : DeviceGroupId
-          DeviceId : DeviceId
-          SensorId : SensorId
-          Measurement : Measurement.Measurement
-          BatteryVoltage : Measurement.Voltage
-          SignalStrength : Measurement.Rssi
-          Timestamp : System.DateTimeOffset }
-
     let EmptySensorHistory : SensorHistory = 
         { SensorId = ""
           MeasuredProperty = ""
@@ -142,6 +134,15 @@ module Devices =
           LastUpdated : System.DateTimeOffset 
           LastActive : System.DateTimeOffset }
 
+    type SensorStateUpdate = 
+        { DeviceGroupId : DeviceGroupId
+          DeviceId : DeviceId
+          SensorId : SensorId
+          Measurement : Measurement.Measurement
+          BatteryVoltage : Measurement.Voltage
+          SignalStrength : Measurement.Rssi
+          Timestamp : System.DateTimeOffset }
+
     type DevicePropertyUpdate =
         { DeviceGroupId : DeviceGroupId
           GatewayId : GatewayId
@@ -153,3 +154,7 @@ module Devices =
           PropertyValue : DeviceProperty.DeviceProperty
           Protocol : DeviceProtocol
           Timestamp : System.DateTimeOffset }
+
+    type DeviceDataUpdate =
+        | SensorStateUpdate of SensorStateUpdate
+        | DevicePropertyUpdate of DevicePropertyUpdate
