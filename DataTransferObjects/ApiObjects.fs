@@ -3,8 +3,9 @@
 module ApiObjects =
 
     type PropertyType = 
-        | Sensor = 0
-        | TwoWaySwitch = 1
+        | NotSpecified = 0
+        | Sensor = 1
+        | TwoWaySwitch = 2
 
     type Protocol = 
         | NotSpecified = 0
