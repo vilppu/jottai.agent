@@ -3,6 +3,7 @@
 open Microsoft.AspNetCore.Authorization
 open Microsoft.AspNetCore.Http
 open Microsoft.AspNetCore.Mvc
+open System.Linq
 open System.Net
 open System.Net.Http
 open ApiObjects
@@ -118,10 +119,18 @@ type ApiController (httpSend : HttpRequestMessage -> Async<HttpResponseMessage>)
     [<Route("device-data")>]
     [<HttpPost>]
     [<Authorize(Policy = Roles.Device)>]
-    member this.PostDeviceData([<FromBody>]deviceData : DeviceData) : Async<StatusCodeResult> =
+    member this.PostDeviceData([<FromBody>]deviceData : DeviceData) : Async<ActionResult> =
         async {
-            do! Application.PostDeviceData this.DeviceGroupId deviceData
-            return this.StatusCode(StatusCodes.Status201Created)                
+            if not this.ModelState.IsValid
+            then
+                let errors = this.ModelState.Values.SelectMany(fun value -> value.Errors.Select(fun e -> e.ErrorMessage))                                
+                return this.BadRequest(errors) :> ActionResult
+            elif deviceData :> obj |> isNull || deviceData.data :> obj |> isNull
+            then
+                return this.BadRequest() :> ActionResult            
+            else
+                do! Application.PostDeviceData this.DeviceGroupId deviceData
+                return this.StatusCode(StatusCodes.Status201Created) :> ActionResult
         }
     
     [<Route("device-property-change-request")>]
