@@ -5,7 +5,7 @@ module FirebaseObjects =
     [<CLIMutable>]
     type FirebaseDeviceNotificationContent = 
         { deviceId : string
-          sensorName : string
+          propertyName : string
           measuredProperty : string
           measuredValue : obj
           timestamp : System.DateTimeOffset }

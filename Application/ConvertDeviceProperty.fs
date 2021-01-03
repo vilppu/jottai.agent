@@ -2,42 +2,32 @@ namespace Jottai
 
 module internal ConvertDeviceProperty =
 
-    let private ProtocolToStorable (deviceProtocol : DeviceProtocol ) : string =
+    let private ProtocolToApiObject (deviceProtocol : DeviceProtocol ) : string =
         match deviceProtocol with
+        | ZWave -> "Z-Wave"
         | ZWavePlus -> "Z-Wave Plus"
-        | _ -> ""
+        | NotSpecified -> ""
 
-    let private CommandTypeToStorable (commandType : PropertyType ) : string =
-        match commandType with
-        | BinarySwitch -> "BinarySwitch"
-
-    let private ProtocolFromStorable (storableProtocol : string ) : DeviceProtocol option =
+    let private ProtocolFromStorable (storableProtocol : string ) : DeviceProtocol =
         match storableProtocol with
-        | "Z-Wave Plus" -> ZWavePlus |> Some
-        | _ -> None
-
-    let private CommandTypeFromStorable (storableCommandType : string ) : PropertyType option =
-        match storableCommandType with
-        | "BinarySwitch" -> BinarySwitch |> Some
-        | _ -> None
+        | "Z-Wave" -> ZWave
+        | "Z-Wave Plus" -> ZWavePlus
+        | _ -> NotSpecified
     
-    let private FromStorable (storable : DevicePropertyStorage.StorableDeviceProperty) : DevicePropertyState option =
-        let protocol = storable.Protocol |> ProtocolFromStorable
-        let commandType = storable.PropertyType |> CommandTypeFromStorable
+    let private FromStorable (storable : DevicePropertyStorage.StorableDeviceProperty) : DevicePropertyState option =        
         let propertyValue = DeviceProperty.From storable.PropertyType storable.PropertyValue
 
-        match (protocol, commandType, propertyValue) with
-        | (Some protocol, Some commandType, Some propertyValue) ->
+        match propertyValue with
+        | Some propertyValue ->
             let command : DevicePropertyState =
                 { DeviceGroupId = DeviceGroupId storable.DeviceGroupId
                   GatewayId = GatewayId storable.GatewayId
                   DeviceId = DeviceId storable.DeviceId
-                  PropertyId = PropertyId storable.PropertyId
-                  PropertyType = commandType                                    
+                  PropertyId = PropertyId storable.PropertyId                  
                   PropertyName = PropertyName storable.PropertyName
                   PropertyDescription = PropertyDescription storable.PropertyDescription
                   PropertyValue = propertyValue
-                  Protocol = protocol
+                  Protocol = storable.Protocol |> ProtocolFromStorable
                   LastUpdated = storable.LastUpdated
                   LastActive = storable.LastActive }
             command |> Some
@@ -49,17 +39,17 @@ module internal ConvertDeviceProperty =
         |> Seq.choose id
         |> Seq.toList
               
-    let ToApiObjects (commands : DevicePropertyState list) : ApiObjects.DevicePropertyState list = 
-              commands
-              |> List.map (fun command ->            
-                  { DeviceGroupId = command.DeviceGroupId.AsString
-                    GatewayId = command.GatewayId.AsString
-                    DeviceId = command.DeviceId.AsString
-                    PropertyId = command.PropertyId.AsString
-                    PropertyType = command.PropertyType |> CommandTypeToStorable
-                    PropertyName = command.PropertyName.AsString
-                    PropertyDescription = command.PropertyDescription.AsString                    
-                    PropertyValue = command.PropertyValue |> DeviceProperty.Value
-                    Protocol = command.Protocol |> ProtocolToStorable
-                    LastUpdated = command.LastUpdated
-                    LastActive = command.LastActive })
+    let ToApiObjects (states : DevicePropertyState list) : ApiObjects.DeviceProperty list = 
+              states
+              |> List.map (fun state ->            
+                  { DeviceGroupId = state.DeviceGroupId.AsString
+                    GatewayId = state.GatewayId.AsString
+                    DeviceId = state.DeviceId.AsString
+                    PropertyId = state.PropertyId.AsString
+                    PropertyName = state.PropertyName.AsString
+                    PropertyDescription = state.PropertyDescription.AsString                    
+                    PropertyType = state.PropertyValue |> DeviceProperty.Name
+                    PropertyValue = state.PropertyValue |> DeviceProperty.Value
+                    Protocol = state.Protocol |> ProtocolToApiObject
+                    LastUpdated = state.LastUpdated
+                    LastActive = state.LastActive })

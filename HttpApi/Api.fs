@@ -47,12 +47,12 @@ type ApiController (httpSend : HttpRequestMessage -> Async<HttpResponseMessage>)
     member this.NewGenerateDeviceGroupId() =
         Application.GenerateDeviceGroupId()
     
-    [<Route("sensor/{sensorId}/name/{sensorName}")>]
+    [<Route("sensor/{propertyId}/name/{propertyName}")>]
     [<HttpPost>]
     [<Authorize(Policy = Roles.User)>]
-    member this.PostSensorName (sensorId : string) (sensorName : string) : Async<unit> = 
+    member this.PostSensorName (propertyId : string) (propertyName : string) : Async<unit> = 
         async {
-            do! Application.PostSensorName this.DeviceGroupId sensorId sensorName
+            do! Application.PostSensorName this.DeviceGroupId propertyId propertyName
         }
     
     [<Route("sensors")>]
@@ -63,18 +63,18 @@ type ApiController (httpSend : HttpRequestMessage -> Async<HttpResponseMessage>)
             return! Application.GetSensorStates this.DeviceGroupId
         }
 
-    [<Route("sensor/{sensorId}/history/")>]
+    [<Route("sensor/{propertyId}/history/")>]
     [<HttpGet>]
     [<Authorize(Policy = Roles.User)>]
-    member this.GetSensorHistory (sensorId : string) : Async<ApiObjects.SensorHistory> =
+    member this.GetSensorHistory (propertyId : string) : Async<ApiObjects.SensorHistory> =
         async {
-            return! Application.GetSensorHistory this.DeviceGroupId sensorId
+            return! Application.GetSensorHistory this.DeviceGroupId propertyId
         }
     
     [<Route("device/properties")>]
     [<HttpGet>]
     [<Authorize(Policy = Roles.User)>]
-    member this.GetDeviceProperties() : Async<ApiObjects.DevicePropertyState list> = 
+    member this.GetDeviceProperties() : Async<ApiObjects.DeviceProperty list> = 
         async {
             return! Application.GetDeviceProperties this.DeviceGroupId
         }

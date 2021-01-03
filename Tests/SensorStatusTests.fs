@@ -216,4 +216,4 @@ module SensorStateTests =
         let result = context |> SensorState
         let entry = result.Head
         
-        Assert.Equal("ExampleDevice.Temperature", entry.SensorName)
+        Assert.Equal("ExampleDevice.Temperature", entry.PropertyName)

@@ -5,7 +5,9 @@ module Http =
     open System.Net.Http
     open System.Net.Http.Headers
     open Newtonsoft.Json
+    open Newtonsoft.Json.Converters
     
+    let private jsonOptions = new StringEnumConverter()
     let private GetBaseUrl() = Environment.GetEnvironmentVariable("JOTTAI_BASE_URL")
     let private HttpClient = new HttpClient(BaseAddress = Uri(GetBaseUrl()))
     
@@ -16,7 +18,7 @@ module Http =
             response
 
     let Post (token : string) (url : string) data = 
-        let json = JsonConvert.SerializeObject data
+        let json = JsonConvert.SerializeObject(data, jsonOptions)
         async {            
             use requestMessage = new HttpRequestMessage(HttpMethod.Post, url)
             use content = new StringContent(json, Text.Encoding.UTF8, "application/json")

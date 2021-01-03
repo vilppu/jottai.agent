@@ -13,12 +13,12 @@ module SensorDataServiceClient =
     let PostMeasurement token deviceId (measurement : Measurement.Measurement) =        
         let deviceData = 
           { timestamp = ""
-            gatewayId = ""
-            channel = ""
+            gatewayId = ""            
             deviceId = deviceId
             deviceName = ""
             manufacturerName = ""
             data = []
+            protocol = ApiObjects.Protocol.NotSpecified
             batteryVoltage = ""
             rssi = "" } 
             |> WithMeasurement(measurement)

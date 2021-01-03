@@ -19,7 +19,7 @@ module private Action =
     let SendDevicePropertyStateNotifications httpSend (devicePropertyState : DevicePropertyState) : Async<unit> =
         async {
             match devicePropertyState.PropertyValue with
-            | DeviceProperty.BinarySwitch _ ->
+            | DeviceProperty.TwoWaySwitch _ ->
                 if devicePropertyState.LastUpdated = devicePropertyState.LastActive then
                     do! Firebase.SendDevicePropertyStateNotification httpSend devicePropertyState
         }

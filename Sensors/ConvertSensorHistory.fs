@@ -34,7 +34,7 @@ module internal ConvertSensorHistory =
         if stored :> obj |> isNull then
             EmptySensorHistory
         else
-            { SensorId = stored.SensorId
+            { PropertyId = stored.PropertyId
               MeasuredProperty= stored.MeasuredProperty
               Entries = stored |> ToHistoryEntries }
         
@@ -44,7 +44,7 @@ module internal ConvertSensorHistory =
         
         { Id = ObjectId.Empty
           DeviceGroupId  = sensorState.DeviceGroupId.AsString
-          SensorId  = sensorState.SensorId.AsString
+          PropertyId  = sensorState.PropertyId.AsString
           MeasuredProperty = sensorState.Measurement |> Measurement.Name
           Entries = new List<SensorHistoryStorage.StorableSensorHistoryEntry>(updatedEntries) }
  

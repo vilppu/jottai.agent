@@ -6,11 +6,9 @@ module Authentication =
     open System
     open System.Collections.Generic
     open System.Linq
-    open System.Net
     open System.Net.Http
     open System.Security.Claims
-    open ApiObjects
-    
+    open ApiObjects    
 
     let private GetManagementAccessToken (httpSend  : HttpRequestMessage -> Async<HttpResponseMessage>) = 
         async {            

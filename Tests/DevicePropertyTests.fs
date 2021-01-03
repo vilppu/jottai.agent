@@ -10,7 +10,7 @@ module DevicePropertyTest =
         let expecteGatewayId = "4035277665"
         let expectedDeviceId = "9"
         let expectedPropertyId = "0x0002000001dc8013"
-        let expectedPropertyType = "BinarySwitch"
+        let expectedPropertyType = "TwoWaySwitch"
         let expectedPropertyName = "Switch"
         let expectedPropertyDescription = "Turn On/Off Device"
         let expectedPropertyValue = true :> obj
@@ -20,10 +20,9 @@ module DevicePropertyTest =
         let deviceDatum : ApiObjects.DeviceDatum =
             { Fake.ZWavePlusDevicePropertyDatum with                 
                   propertyId = expectedPropertyId
-                  propertyTypeId = "37"
+                  propertyType = ApiObjects.PropertyType.TwoWaySwitch
                   propertyName = expectedPropertyName
-                  propertyDescription = expectedPropertyDescription
-                  protocol = expectedProtocol
+                  propertyDescription = expectedPropertyDescription                  
                   unitOfMeasurement = ""
                   valueType = "bool"
                   value = "True"
@@ -37,6 +36,7 @@ module DevicePropertyTest =
                 data = [deviceDatum]
                 gatewayId = expecteGatewayId
                 deviceId = expectedDeviceId
+                protocol = ApiObjects.Protocol.ZWavePlus
                 timestamp = expectedTimestamp.ToString("o")
             }
 
@@ -159,7 +159,7 @@ module DevicePropertyTest =
 
         let deviceDatum = {
             Fake.ZWavePlusDevicePropertyDatum with
-                propertyTypeId = "35"
+                propertyType = ApiObjects.PropertyType.TwoWaySwitch
             }
 
         let deviceData = { 
@@ -180,7 +180,7 @@ module DevicePropertyTest =
         let deviceId = "9"
         let gatewayId = "4035277665"
         let propertyId = "0x0002000001dc8013"
-        let propertyType = "BinarySwitch"
+        let propertyType = "TwoWaySwitch"
         let propertyValue = "False"
 
         let deviceDatum = {
@@ -237,10 +237,10 @@ module DevicePropertyTest =
             PostDeviceData context.DeviceToken deviceData
             |> WaitUntilDevicePropertyIsUpdated
 
-            PostDevicePropertyName context.DeviceToken deviceData.gatewayId deviceData.deviceId deviceDatum.propertyId "BinarySwitch" expected
+            PostDevicePropertyName context.DeviceToken deviceData.gatewayId deviceData.deviceId deviceDatum.propertyId "TwoWaySwitch" expected
             |> WaitUntilDevicePropertyNameIsChanged            
 
-            PostDevicePropertyValue context.DeviceToken deviceData.gatewayId deviceData.deviceId deviceDatum.propertyId "BinarySwitch" "True"
+            PostDevicePropertyValue context.DeviceToken deviceData.gatewayId deviceData.deviceId deviceDatum.propertyId "TwoWaySwitch" "True"
             |> Async.RunSynchronously
             |> ignore
             
@@ -257,7 +257,7 @@ module DevicePropertyTest =
     let SwitchZWavePlusBinarySwitchOn() = 
         use context = SetupContext()        
         
-        let propertyType = "BinarySwitch"
+        let propertyType = "TwoWaySwitch"
         let propertyValue = "True"
 
         async {
@@ -278,7 +278,7 @@ module DevicePropertyTest =
     let SwitchZWavePlusBinarySwitchOff() = 
         use context = SetupContext()        
         
-        let propertyType = "BinarySwitch"
+        let propertyType = "TwoWaySwitch"
         let propertyValue = "False"
 
         async {

@@ -1,20 +1,35 @@
 namespace Jottai
 
 module internal ConvertSensorState =
-    open Microsoft.FSharp.Data.UnitSystems.SI.UnitSymbols   
+    open Microsoft.FSharp.Data.UnitSystems.SI.UnitSymbols  
+
+    let private ProtocolToApiObject (deviceProtocol : DeviceProtocol ) : string =
+        match deviceProtocol with
+        | ZWave -> "Z-Wave"
+        | ZWavePlus -> "Z-Wave Plus"
+        | NotSpecified -> ""
+
+    let private ProtocolFromStorable (storableProtocol : string ) : DeviceProtocol =
+        match storableProtocol with
+        | "Z-Wave" -> ZWave
+        | "Z-Wave Plus" -> ZWavePlus
+        | _ -> NotSpecified
     
     let private FromStorable (storable : SensorStateStorage.StorableSensorState) : SensorState option =
-        match Measurement.From storable.MeasuredProperty storable.MeasuredValue with
+        match Measurement.From storable.PropertyType storable.PropertyValue with
         | Some measurement ->
             (
             let batteryVoltage : Measurement.Voltage = storable.BatteryVoltage * 1.0<V>
             let signalStrength : Measurement.Rssi = storable.SignalStrength
 
-            { SensorId = SensorId storable.SensorId
-              DeviceGroupId = DeviceGroupId storable.DeviceGroupId
+            { DeviceGroupId = DeviceGroupId storable.DeviceGroupId
+              GatewayId = GatewayId storable.GatewayId
+              PropertyId = PropertyId storable.PropertyId
               DeviceId = DeviceId storable.DeviceId
-              SensorName = SensorName storable.SensorName
+              PropertyName = PropertyName storable.PropertyName
+              PropertyDescription = PropertyDescription storable.PropertyDescription
               Measurement = measurement
+              Protocol = storable.Protocol |> ProtocolFromStorable
               BatteryVoltage = batteryVoltage
               SignalStrength = signalStrength
               LastActive = storable.LastActive
@@ -39,10 +54,11 @@ module internal ConvertSensorState =
               |> List.map (fun sensorState ->            
                   { DeviceGroupId = sensorState.DeviceGroupId.AsString
                     DeviceId = sensorState.DeviceId.AsString
-                    SensorId = sensorState.SensorId.AsString
-                    SensorName = sensorState.SensorName.AsString
+                    PropertyId = sensorState.PropertyId.AsString
+                    PropertyName = sensorState.PropertyName.AsString
                     MeasuredProperty = sensorState.Measurement |> Measurement.Name
                     MeasuredValue = sensorState.Measurement |> Measurement.Value
+                    Protocol = sensorState.Protocol |> ProtocolToApiObject
                     BatteryVoltage = float(sensorState.BatteryVoltage)
                     SignalStrength = sensorState.SignalStrength
                     LastUpdated = sensorState.LastUpdated

@@ -84,7 +84,7 @@ module private Firebase =
 
     type private DevicePushNotification =
         { DeviceId : string
-          SensorName : string
+          PropertyName : string
           MeasuredProperty : string
           MeasuredValue : obj
           Timestamp : DateTimeOffset }
@@ -103,7 +103,7 @@ module private Firebase =
         | SensorStatePushNotification state ->
             let pushNotification : DevicePushNotification =
                 { DeviceId = state.DeviceId.AsString
-                  SensorName = state.SensorName.AsString
+                  PropertyName = state.PropertyName.AsString
                   MeasuredProperty = state.Measurement |> Measurement.Name
                   MeasuredValue = state.Measurement |> Measurement.Value
                   Timestamp = state.LastUpdated }
@@ -111,7 +111,7 @@ module private Firebase =
         | DevicePropertyStatePushNotification state ->            
             let pushNotification : DevicePushNotification =
                 { DeviceId = state.DeviceId.AsString
-                  SensorName = state.PropertyName.AsString
+                  PropertyName = state.PropertyName.AsString
                   MeasuredProperty = state.PropertyValue |> DeviceProperty.Name
                   MeasuredValue = state.PropertyValue |> DeviceProperty.Value
                   Timestamp = state.LastUpdated }
@@ -126,7 +126,7 @@ module private Firebase =
                 
             let notification : FirebaseObjects.FirebaseDeviceNotificationContent =
                 { deviceId = pushNotification.DeviceId
-                  sensorName = pushNotification.SensorName
+                  propertyName = pushNotification.PropertyName
                   measuredProperty = pushNotification.MeasuredProperty
                   measuredValue = pushNotification.MeasuredValue
                   timestamp = pushNotification.Timestamp }

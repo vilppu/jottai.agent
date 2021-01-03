@@ -2,6 +2,15 @@
 
 module ApiObjects =
 
+    type PropertyType = 
+        | Sensor = 0
+        | TwoWaySwitch = 1
+
+    type Protocol = 
+        | NotSpecified = 0
+        | ZWave = 1
+        | ZWavePlus = 2
+
     type RefreshTokenRequest = 
         { Code : string
           RedirectUri : string }
@@ -18,10 +27,9 @@ module ApiObjects =
 
     type DeviceDatum = 
         { propertyId : string
-          propertyTypeId : string
+          propertyType : PropertyType
           propertyName : string
           propertyDescription : string
-          protocol : string
           unitOfMeasurement : string
           valueType : string
           value : string
@@ -31,8 +39,8 @@ module ApiObjects =
     
     type DeviceData = 
         { gatewayId : string
-          channel : string
           deviceId : string
+          protocol : Protocol
           manufacturerName : string
           deviceName : string
           data : DeviceDatum list
@@ -51,23 +59,24 @@ module ApiObjects =
           Timestamp : System.DateTimeOffset }
     
     type SensorHistory = 
-        { SensorId : string
+        { PropertyId : string
           MeasuredProperty : string
           Entries : SensorHistoryEntry list }
 
     type SensorState = 
         { DeviceGroupId : string
           DeviceId : string
-          SensorId : string
-          SensorName : string
+          PropertyId : string
+          PropertyName : string
           MeasuredProperty : string
           MeasuredValue : obj
+          Protocol : string
           BatteryVoltage : float
           SignalStrength : float
           LastUpdated : System.DateTimeOffset
           LastActive : System.DateTimeOffset }
 
-    type DevicePropertyState = 
+    type DeviceProperty = 
         { DeviceGroupId : string
           GatewayId : string
           DeviceId : string

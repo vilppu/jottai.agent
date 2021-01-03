@@ -102,12 +102,12 @@ module TestHelpers =
     let SensorState(context : Context) =
         GetSensorState context.DeviceGroupToken |> Async.RunSynchronously
     
-    let SensorHistoryResponse sensorId (context : Context) =
-        GetSensorHistoryResponse context.DeviceGroupToken sensorId
+    let SensorHistoryResponse propertyId (context : Context) =
+        GetSensorHistoryResponse context.DeviceGroupToken propertyId
         |> Async.RunSynchronously
     
-    let SensorHistory sensorId (context : Context) =
-        GetSensorHistory context.DeviceGroupToken sensorId
+    let SensorHistory propertyId (context : Context) =
+        GetSensorHistory context.DeviceGroupToken propertyId
         |> Async.RunSynchronously        
         
     let DeviceProperties(context : Context) =

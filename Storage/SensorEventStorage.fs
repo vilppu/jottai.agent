@@ -11,9 +11,9 @@ module SensorEventStorage =
           Id : ObjectId
           DeviceGroupId : string
           DeviceId : string
-          SensorId : string
-          MeasuredProperty : string
-          MeasuredValue : obj
+          PropertyId : string
+          PropertyType : string
+          PropertyValue : obj
           Voltage : float
           SignalStrength : float
           Timestamp : DateTimeOffset }

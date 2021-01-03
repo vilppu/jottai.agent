@@ -19,11 +19,11 @@ module SensorHistoryTests =
         use context = SetupContext()
         let example = Measurement.RelativeHumidity 78.0
         let deviceId = "device-1"
-        let sensorId = deviceId + ".rh"
+        let propertyId = deviceId + ".rh"
 
         context |> WriteMeasurementSynchronously(Fake.MeasurementFromDevice example deviceId)
 
-        let result = context |> SensorHistory sensorId
+        let result = context |> SensorHistory propertyId
         let entry = result.Entries.Head
         
         Assert.Equal("RelativeHumidity", result.MeasuredProperty)
@@ -34,13 +34,13 @@ module SensorHistoryTests =
         use context = SetupContext()
         let example = Measurement.RelativeHumidity 78.0
         let deviceId = "device-1"
-        let sensorId = deviceId + ".rh"
+        let propertyId = deviceId + ".rh"
 
         context |> WriteMeasurementSynchronously(Fake.MeasurementFromDevice (Measurement.RelativeHumidity 78.0) deviceId)
         context |> WriteMeasurementSynchronously(Fake.MeasurementFromDevice (Measurement.RelativeHumidity 80.0) deviceId)
         context |> WriteMeasurementSynchronously(Fake.MeasurementFromDevice (Measurement.RelativeHumidity 79.0) deviceId)
 
-        let result = context |> SensorHistory sensorId
+        let result = context |> SensorHistory propertyId
         let entry = result.Entries.Head      
         
         Assert.Equal(79.0, entry.MeasuredValue :?> float)
@@ -50,11 +50,11 @@ module SensorHistoryTests =
         use context = SetupContext()
         let example = Measurement.RelativeHumidity 78.0
         let deviceId = "device-1"
-        let sensorId = deviceId + ".rh"
+        let propertyId = deviceId + ".rh"
 
         context |> WriteMeasurementSynchronously(Fake.MeasurementFromDevice example deviceId)
 
-        let result = context |> SensorHistory sensorId
+        let result = context |> SensorHistory propertyId
         let entry = result.Entries.Head
 
         Assert.True((System.DateTimeOffset.UtcNow - entry.Timestamp).TotalMinutes < 1.0)
@@ -65,12 +65,12 @@ module SensorHistoryTests =
         let example = Measurement.RelativeHumidity 78.0
         let anotherExample = Measurement.RelativeHumidity 80.0
         let deviceId = "device-1"
-        let sensorId = deviceId + ".rh"
+        let propertyId = deviceId + ".rh"
 
         context |> WriteMeasurementSynchronously(Fake.MeasurementFromDevice example deviceId)
         context |> WriteMeasurementSynchronously(Fake.MeasurementFromDevice anotherExample deviceId)
 
-        let result = context |> SensorHistory sensorId
+        let result = context |> SensorHistory propertyId
         
         Assert.Equal(2, result.Entries.Length)
     
@@ -82,14 +82,14 @@ module SensorHistoryTests =
         let latest = Measurement.RelativeHumidity expectedValue
         let bigNumberOfEvents = expectedLimit * 2
         let deviceId = "device-1"
-        let sensorId = deviceId + ".rh"
+        let propertyId = deviceId + ".rh"
 
         for i in 1..bigNumberOfEvents do
             let measurement = Measurement.RelativeHumidity(float (i))
             context |> WriteMeasurementSynchronously(Fake.MeasurementFromDevice measurement deviceId)
         context |> WriteMeasurementSynchronously(Fake.MeasurementFromDevice latest deviceId)
 
-        let result = context |> SensorHistory sensorId
+        let result = context |> SensorHistory propertyId
 
         Assert.Equal(expectedLimit, result.Entries.Length)
         Assert.Equal(expectedValue, result.Entries.Head.MeasuredValue :?> float)
@@ -98,7 +98,7 @@ module SensorHistoryTests =
     let StoreOnlyMeasurementChanges() = 
         use context = SetupContext()
         let deviceId = "device-1"
-        let sensorId = deviceId + ".rh"
+        let propertyId = deviceId + ".rh"
 
         context |> WriteMeasurementSynchronously(Fake.MeasurementFromDevice (Measurement.RelativeHumidity 77.0) deviceId)
         context |> WriteMeasurementSynchronously(Fake.MeasurementFromDevice (Measurement.RelativeHumidity 78.0) deviceId)
@@ -107,7 +107,7 @@ module SensorHistoryTests =
         context |> WriteMeasurementSynchronously(Fake.MeasurementFromDevice (Measurement.RelativeHumidity 81.0) deviceId)
         context |> WriteMeasurementSynchronously(Fake.MeasurementFromDevice (Measurement.RelativeHumidity 82.0) deviceId)
         
-        let result = context |> SensorHistory sensorId
+        let result = context |> SensorHistory propertyId
         
         Assert.Equal(5, result.Entries.Length)
 
@@ -116,14 +116,14 @@ module SensorHistoryTests =
     let StoreOnlyStateChanges() = 
         use context = SetupContext()
         let deviceId = "device-1"
-        let sensorId = deviceId + ".contact"
+        let propertyId = deviceId + ".contact"
         let measurement = Measurement.Contact Measurement.Open
 
         context |> WriteMeasurementSynchronously(Fake.MeasurementFromDevice measurement deviceId)
         context |> WriteMeasurementSynchronously(Fake.MeasurementFromDevice measurement deviceId)
         context |> WriteMeasurementSynchronously(Fake.MeasurementFromDevice measurement deviceId)
         
-        let result = context |> SensorHistory sensorId
+        let result = context |> SensorHistory propertyId
         
         Assert.Equal(1, result.Entries.Length)
 
@@ -133,11 +133,11 @@ module SensorHistoryTests =
         let example = Measurement.RelativeHumidity 77.0
         let anotherExample = Measurement.RelativeHumidity 80.0
         let deviceId = "device-1"
-        let sensorId = deviceId + ".rh"
+        let propertyId = deviceId + ".rh"
         context |> WriteMeasurementSynchronously(Fake.MeasurementFromDevice example deviceId)
         context |> WriteMeasurementSynchronously(Fake.MeasurementFromDevice anotherExample "device-2")
         
-        let result = context |> SensorHistory sensorId
+        let result = context |> SensorHistory propertyId
         
         Assert.Equal(1, result.Entries.Length)
     
@@ -146,13 +146,13 @@ module SensorHistoryTests =
         use context = SetupContext()
         let example = Measurement.RelativeHumidity 78.1
         let deviceId = "device-1"
-        let sensorId = deviceId + ".rh"
+        let propertyId = deviceId + ".rh"
         let savedDeviceGroupToken = context.DeviceGroupToken
 
         context.DeviceGroupToken <- context.AnotherDeviceGroupToken
         context |> WriteMeasurementSynchronously(Fake.MeasurementFromDevice example deviceId)
 
         context.DeviceGroupToken <- savedDeviceGroupToken
-        let result =  context |> SensorHistory sensorId
+        let result =  context |> SensorHistory propertyId
         
         Assert.Equal(1, result.Entries.Length)

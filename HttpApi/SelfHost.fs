@@ -61,6 +61,7 @@ module SelfHost =
         member this.ConfigureServices(services : IServiceCollection) =
             let configureJson (options : MvcNewtonsoftJsonOptions) = 
                 options.SerializerSettings.ContractResolver <- CamelCasePropertyNamesContractResolver()
+                options.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter())
             let configureJsonAction = new Action<MvcNewtonsoftJsonOptions>(configureJson)            
             
             services

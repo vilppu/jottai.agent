@@ -30,8 +30,8 @@ module DevicePropertyClient =
             return result
         }
     
-    let GetDeviceProperties token : Async<ApiObjects.DevicePropertyState list> = 
+    let GetDeviceProperties token : Async<ApiObjects.DeviceProperty list> = 
         let response = GetDevicePropertiesResponse token
         async { let! content = response |> Http.ContentOrFail
-                let result = JsonConvert.DeserializeObject<List<ApiObjects.DevicePropertyState>>(content)
+                let result = JsonConvert.DeserializeObject<List<ApiObjects.DeviceProperty>>(content)
                 return result |> Seq.toList }

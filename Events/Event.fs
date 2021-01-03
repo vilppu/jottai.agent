@@ -7,25 +7,28 @@ module Event =
           Subscription : Notification.Subscription }
 
     type SensorStateChanged = 
-        { SensorId : SensorId
-          DeviceGroupId : DeviceGroupId
+        { DeviceGroupId : DeviceGroupId
+          GatewayId : GatewayId
           DeviceId : DeviceId
+          PropertyId : PropertyId          
+          PropertyName : PropertyName
+          PropertyDescription : PropertyDescription
           Measurement : Measurement.Measurement
+          Protocol : DeviceProtocol
           BatteryVoltage : Measurement.Voltage
           SignalStrength : Measurement.Rssi
           Timestamp : System.DateTimeOffset }
 
     type SensorNameChanged = 
-        { SensorId : SensorId
+        { PropertyId : PropertyId
           DeviceGroupId : DeviceGroupId
-          SensorName : SensorName }
+          PropertyName : PropertyName }
 
     type DevicePropertyChanged =
         { DeviceGroupId : DeviceGroupId
           GatewayId : GatewayId
           DeviceId : DeviceId
-          PropertyId : PropertyId
-          PropertyType : PropertyType
+          PropertyId : PropertyId          
           PropertyName : PropertyName
           PropertyDescription : PropertyDescription
           PropertyValue : DeviceProperty.DeviceProperty
@@ -62,22 +65,25 @@ module Event =
         | DevicePropertyNameStored of DevicePropertyNameChanged
 
     let ToSensorStateUpdate (event : SensorStateChanged) : SensorStateUpdate = 
-        { SensorId = event.SensorId
+        { GatewayId = event.GatewayId
+          PropertyId = event.PropertyId
+          PropertyName = event.PropertyName
+          PropertyDescription = event.PropertyDescription
           DeviceGroupId = event.DeviceGroupId
           DeviceId = event.DeviceId
           Measurement = event.Measurement
+          Protocol = event.Protocol
           BatteryVoltage = event.BatteryVoltage
           SignalStrength = event.SignalStrength
           Timestamp = event.Timestamp }
 
-    let ToDevicePropertyUpdate (event : DevicePropertyChanged) : DevicePropertyUpdate = 
-        { DeviceGroupId = event.DeviceGroupId
-          GatewayId = event.GatewayId
-          DeviceId = event.DeviceId
+    let ToDevicePropertyUpdate (event : DevicePropertyChanged) : DevicePropertyStateUpdate = 
+        { GatewayId = event.GatewayId
           PropertyId = event.PropertyId
-          PropertyType = event.PropertyType
           PropertyName = event.PropertyName
           PropertyDescription = event.PropertyDescription
+          DeviceGroupId = event.DeviceGroupId
+          DeviceId = event.DeviceId
           PropertyValue = event.PropertyValue
           Protocol = event.Protocol
           Timestamp = event.Timestamp }

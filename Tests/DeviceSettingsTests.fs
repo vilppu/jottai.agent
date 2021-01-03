@@ -21,47 +21,47 @@ module DeviceSettingsTest =
         use context = SetupContext()
         let expectedName = "ExampleSensorName"
         let deviceId = "ExampleDevice"
-        let sensorId = "ExampleDevice.temperature"
+        let propertyId = "ExampleDevice.temperature"
         context |> WriteMeasurementSynchronously(Fake.SomeMeasurementFromDevice deviceId)
 
-        ChangeSensorName context.DeviceGroupToken sensorId expectedName
+        ChangeSensorName context.DeviceGroupToken propertyId expectedName
 
         let result = context |> SensorState
         let entry = result.Head
-        Assert.Equal(expectedName, entry.SensorName)
+        Assert.Equal(expectedName, entry.PropertyName)
     
     [<Fact>]
     let MeasurementsDoNotMessUpSensorName() = 
         use context = SetupContext()
         let expectedName = "ExampleSensorName"
         let deviceId = "ExampleDevice"
-        let sensorId = "ExampleDevice.temperature"
+        let propertyId = "ExampleDevice.temperature"
         
         context |> WriteMeasurementSynchronously(Fake.SomeMeasurementFromDevice deviceId)
 
-        ChangeSensorName context.DeviceGroupToken sensorId expectedName
+        ChangeSensorName context.DeviceGroupToken propertyId expectedName
         
         context |> WriteMeasurementSynchronously(Fake.SomeMeasurementFromDevice deviceId)
 
         let result = context |> SensorState
         let entry = result.Head
-        Assert.Equal(expectedName, entry.SensorName)
+        Assert.Equal(expectedName, entry.PropertyName)
     
     
     [<Fact>]
     let SensorCanBeRenamed() = 
         use context = SetupContext()
         let deviceId = "ExampleDevice"
-        let sensorId = "ExampleDevice.temperature"
+        let propertyId = "ExampleDevice.temperature"
         
         context |> WriteMeasurementSynchronously(Fake.SomeMeasurementFromDevice deviceId)
 
-        ChangeSensorName context.DeviceGroupToken sensorId "SensorA"
+        ChangeSensorName context.DeviceGroupToken propertyId "SensorA"
         
         context |> WriteMeasurementSynchronously(Fake.SomeMeasurementFromDevice deviceId)
 
-        ChangeSensorName context.DeviceGroupToken sensorId "SensorB"
+        ChangeSensorName context.DeviceGroupToken propertyId "SensorB"
 
         let result = context |> SensorState
         let entry = result.Head
-        Assert.Equal("SensorB", entry.SensorName)
+        Assert.Equal("SensorB", entry.PropertyName)

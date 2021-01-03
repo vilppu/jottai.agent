@@ -7,7 +7,7 @@ module internal Commands =
             SensorStateUpdate = sensorStateUpdate
         }
 
-    let private ChangeDeviceProperty (deviceProperty : DevicePropertyUpdate) : Command.ChangeDevicePropertyState =
+    let private ChangeDeviceProperty (deviceProperty : DevicePropertyStateUpdate) : Command.ChangeDevicePropertyState =
         {
             DeviceProperty = deviceProperty
         }
@@ -17,7 +17,7 @@ module internal Commands =
         |> ChangeSensorState
         |> Command.ChangeSensorState
     
-    let private DevicePropertyUpdateToCommand (devicePropertyUpdate: DevicePropertyUpdate) : Command.Command =
+    let private DevicePropertyUpdateToCommand (devicePropertyUpdate: DevicePropertyStateUpdate) : Command.Command =
         devicePropertyUpdate
         |> ChangeDeviceProperty
         |> Command.ChangeDevicePropertyState

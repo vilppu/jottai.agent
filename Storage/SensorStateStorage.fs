@@ -15,11 +15,14 @@ module SensorStateStorage =
         { [<BsonIgnoreIfDefault>]
           mutable Id : ObjectId
           mutable DeviceGroupId : string
-          mutable DeviceId : string
-          mutable SensorId : string
-          mutable SensorName : string
-          mutable MeasuredProperty : string
-          mutable MeasuredValue : obj
+          mutable GatewayId : string
+          mutable DeviceId : string          
+          mutable PropertyId : string
+          mutable PropertyName : string
+          mutable PropertyDescription : string
+          mutable PropertyType : string
+          mutable PropertyValue : obj
+          mutable Protocol : string
           mutable BatteryVoltage : float
           mutable SignalStrength : float
           mutable LastUpdated : DateTimeOffset
@@ -31,10 +34,10 @@ module SensorStateStorage =
         BsonStorage.Database.GetCollection<StorableSensorState> SensorsCollectionName
         |> BsonStorage.WithDescendingIndex "DeviceGroupId"
     
-    let private GetSensorExpression (deviceGroupId : string) (sensorId : string) =
-        let sensorId = sensorId
+    let private GetSensorExpression (deviceGroupId : string) (propertyId : string) =
+        let propertyId = propertyId
         let deviceGroupId = deviceGroupId
-        let expr = Expressions.Lambda.Create<StorableSensorState>(fun x -> x.DeviceGroupId = deviceGroupId && x.SensorId = sensorId)
+        let expr = Expressions.Lambda.Create<StorableSensorState>(fun x -> x.DeviceGroupId = deviceGroupId && x.PropertyId = propertyId)
         expr
     
     let private GetSensorsExpression (deviceGroupId : string) =        
@@ -42,13 +45,13 @@ module SensorStateStorage =
         let expr = Expressions.Lambda.Create<StorableSensorState>(fun x -> x.DeviceGroupId = deviceGroupId)
         expr
 
-    let StoreSensorName (deviceGroupId : string) (sensorId : string) (sensorName : string) =
+    let StoreSensorName (deviceGroupId : string) (propertyId : string) (propertyName : string) =
         
         let filter =
-            GetSensorExpression deviceGroupId sensorId
+            GetSensorExpression deviceGroupId propertyId
 
         let update =
-            Builders<StorableSensorState>.Update.Set((fun s -> s.SensorName), sensorName)
+            Builders<StorableSensorState>.Update.Set((fun s -> s.PropertyName), propertyName)
 
         async {
             do! sensorNameSemaphore.WaitAsync() |> Async.AwaitTask
@@ -64,16 +67,16 @@ module SensorStateStorage =
 
     let StoreSensorState (sensorState : StorableSensorState) =
 
-        let filter = GetSensorExpression sensorState.DeviceGroupId sensorState.SensorId
+        let filter = GetSensorExpression sensorState.DeviceGroupId sensorState.PropertyId
     
         let update =
             Builders<StorableSensorState>.Update             
              .Set((fun s -> s.DeviceGroupId), sensorState.DeviceGroupId)
              .Set((fun s -> s.DeviceId), sensorState.DeviceId)
-             .Set((fun s -> s.SensorId), sensorState.SensorId)
-             .Set((fun s -> s.SensorName), sensorState.SensorName)
-             .Set((fun s -> s.MeasuredProperty), sensorState.MeasuredProperty)
-             .Set((fun s -> s.MeasuredValue), sensorState.MeasuredValue)
+             .Set((fun s -> s.PropertyId), sensorState.PropertyId)
+             .Set((fun s -> s.PropertyName), sensorState.PropertyName)
+             .Set((fun s -> s.PropertyType), sensorState.PropertyType)
+             .Set((fun s -> s.PropertyValue), sensorState.PropertyValue)
              .Set((fun s -> s.BatteryVoltage), sensorState.BatteryVoltage)
              .Set((fun s -> s.SignalStrength), sensorState.SignalStrength)
              .Set((fun s -> s.LastUpdated), sensorState.LastUpdated)
@@ -84,16 +87,16 @@ module SensorStateStorage =
 
             try            
                 do! SensorsCollection.UpdateOneAsync<StorableSensorState>(filter, update, BsonStorage.Upsert)
-                    :> System.Threading.Tasks.Task
+                    :> Tasks.Task
                     |> Async.AwaitTask
 
             finally
                 sensorStateSemaphore.Release() |> ignore
         }
 
-    let GetSensorState deviceGroupId sensorId : Async<StorableSensorState> =
+    let GetSensorState deviceGroupId propertyId : Async<StorableSensorState> =
         async {
-            let filter = GetSensorExpression deviceGroupId sensorId
+            let filter = GetSensorExpression deviceGroupId propertyId
 
             let! sensorState =
                 SensorsCollection.FindSync<StorableSensorState>(filter).SingleOrDefaultAsync()
@@ -116,11 +119,14 @@ module SensorStateStorage =
     let InitialState defaultName =
         { Id = ObjectId.Empty
           DeviceGroupId = ""
+          GatewayId = ""
           DeviceId = ""
-          SensorId = ""
-          SensorName = defaultName
-          MeasuredProperty = ""
-          MeasuredValue = null
+          PropertyId = ""
+          PropertyName = defaultName
+          PropertyDescription = defaultName
+          PropertyType = ""
+          PropertyValue = null
+          Protocol = ""
           BatteryVoltage = 0.0
           SignalStrength = 0.0
           LastUpdated = DateTimeOffset.UtcNow

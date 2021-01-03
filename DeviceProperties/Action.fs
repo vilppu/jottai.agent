@@ -2,7 +2,7 @@ namespace Jottai
 
 module internal Action =
 
-    let GetDevicePropertyState (update : DevicePropertyUpdate) : Async<DevicePropertyState> =
+    let GetDevicePropertyState (update : DevicePropertyStateUpdate) : Async<DevicePropertyState> =
         async {
             let! previousState = DevicePropertyStorage.GetDeviceProperty update.DeviceGroupId.AsString update.GatewayId.AsString update.DeviceId.AsString update.PropertyId.AsString 
             return ConvertDevicePropertyState.FromDevicePropertyUpdate update previousState

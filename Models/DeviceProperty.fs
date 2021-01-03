@@ -2,43 +2,51 @@
 
 module DeviceProperty =
     
-    type BinarySwitch = 
+    type TwoWaySwitch = 
         | On
         | Off
     
     type DeviceProperty = 
-        | BinarySwitch of BinarySwitch
+        | TwoWaySwitch of TwoWaySwitch
+
+    let IsDevicePropert (propertyName : string) (propertyValue : obj) : DeviceProperty option =
+        match propertyName with
+        | "TwoWaySwitch" ->
+            if (propertyValue :?> bool)
+            then TwoWaySwitch On |> Some
+            else TwoWaySwitch Off |> Some
+        | _ -> None
 
     let From (propertyName : string) (propertyValue : obj) : DeviceProperty option =
         match propertyName with
-        | "BinarySwitch" ->
+        | "TwoWaySwitch" ->
             if (propertyValue :?> bool)
-            then BinarySwitch On |> Some
-            else BinarySwitch Off |> Some
+            then TwoWaySwitch On |> Some
+            else TwoWaySwitch Off |> Some
         | _ -> None
 
     let FromString (propertyName : string) (propertyValue : string) : DeviceProperty option =        
         match propertyName with
-        | "BinarySwitch" ->
+        | "TwoWaySwitch" ->
             let valueIsBoolean, isOn = System.Boolean.TryParse(propertyValue)
             match (valueIsBoolean, isOn) with
             | (true, propertyValue) ->            
                 if propertyValue
-                then BinarySwitch On |> Some
-                else BinarySwitch Off |> Some
+                then TwoWaySwitch On |> Some
+                else TwoWaySwitch Off |> Some
             | _ -> None
         | _ -> None
 
     let ValueAsString (deviceProperty : DeviceProperty) : string =
         match deviceProperty with
-        | BinarySwitch binarySwitch ->
-            match binarySwitch with
+        | TwoWaySwitch twoWaySwitch ->
+            match twoWaySwitch with
             | On -> "True"
             | Off -> "False"
 
     let Value (deviceProperty : DeviceProperty) : obj =
         match deviceProperty with
-        | BinarySwitch binarySwitch ->
+        | TwoWaySwitch binarySwitch ->
             match binarySwitch with
             | On -> true :> obj
             | Off -> false :> obj

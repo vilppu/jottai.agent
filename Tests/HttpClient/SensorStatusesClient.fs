@@ -14,11 +14,11 @@ module SensorStateClient =
                 let result = JsonConvert.DeserializeObject<List<ApiObjects.SensorState>>(content)
                 return result |> Seq.toList }
     
-    let GetSensorHistoryResponse token sensorId = 
-        let apiUrl = sprintf "api/sensor/%s/history" sensorId
+    let GetSensorHistoryResponse token propertyId = 
+        let apiUrl = sprintf "api/sensor/%s/history" propertyId
         Http.Get token apiUrl
     
-    let GetSensorHistory token sensorId = 
-        let response = GetSensorHistoryResponse token sensorId
+    let GetSensorHistory token propertyId = 
+        let response = GetSensorHistoryResponse token propertyId
         async { let! content = response |> Http.ContentOrFail
                 return JsonConvert.DeserializeObject<ApiObjects.SensorHistory>(content) }

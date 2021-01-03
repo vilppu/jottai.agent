@@ -6,12 +6,11 @@ module DevicePropertyToDeviceDataMapping =
     let private ToDeviceDatum (deviceProperty : DeviceProperty.DeviceProperty)
         : ApiObjects.DeviceDatum =
         match deviceProperty with
-        | DeviceProperty.BinarySwitch _ ->
+        | DeviceProperty.TwoWaySwitch _ ->
             { propertyId = "0x1234567890"
               propertyName = "Switch"
-              propertyDescription = "Turn On/Off Device"
-              protocol = "Z-Wave Plus"
-              propertyTypeId = "37"
+              propertyDescription = "Turn On/Off Device"              
+              propertyType = ApiObjects.PropertyType.TwoWaySwitch
               unitOfMeasurement = ""
               value = "True"
               valueType = "bool"

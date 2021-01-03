@@ -66,15 +66,15 @@ module Application =
         let token = tokenWithDashes.Replace("-", "").ToLower()
         token
 
-    let PostSensorName deviceGroupId sensorId sensorName : Async<unit> = 
+    let PostSensorName deviceGroupId propertyId propertyName : Async<unit> = 
         async {
-            let sensorName = ValidateSensorName sensorName
-            match sensorName with
-            | Some sensorName -> 
+            let propertyName = ValidatePropertyName propertyName
+            match propertyName with
+            | Some propertyName -> 
                 let changeSensorName : Command.ChangeSensorName =
-                    { SensorId = SensorId sensorId
+                    { PropertyId = PropertyId propertyId
                       DeviceGroupId = DeviceGroupId deviceGroupId
-                      SensorName = sensorName}
+                      PropertyName = propertyName}
                 let command = Command.ChangeSensorName changeSensorName
                 do! Command.Execute command
             | None -> ()
@@ -90,9 +90,9 @@ module Application =
                 |> ConvertSensorState.ToApiObjects
         }
 
-    let GetSensorHistory (deviceGroupId : string) (sensorId : string) : Async<ApiObjects.SensorHistory> =
+    let GetSensorHistory (deviceGroupId : string) (propertyId : string) : Async<ApiObjects.SensorHistory> =
         async {
-            let! history = SensorHistoryStorage.GetSensorHistory deviceGroupId sensorId
+            let! history = SensorHistoryStorage.GetSensorHistory deviceGroupId propertyId
             let result =
                 history
                 |> ConvertSensorHistory.FromStorable
@@ -100,7 +100,7 @@ module Application =
             return result
         }   
    
-    let GetDeviceProperties (deviceGroupId : string) : Async<ApiObjects.DevicePropertyState list> =
+    let GetDeviceProperties (deviceGroupId : string) : Async<ApiObjects.DeviceProperty list> =
         async {
             let! commands = DevicePropertyStorage.GetDeviceProperties deviceGroupId
             let result =

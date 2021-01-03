@@ -13,12 +13,13 @@
     <PackageReference Include="MongoDB.Driver" Version="2.11.3" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ZWavePlus.fs" />
-    <Compile Include="WaitForObservable.fs" />
+    <Compile Include="Convert.fs" />
+    <Compile Include="ConvertDevicePropertyUpdate.fs" />
+    <Compile Include="ConvertSensorStateUpdate.fs" />
     <Compile Include="ConvertDeviceData.fs" />
+    <Compile Include="WaitForObservable.fs" />
     <Compile Include="ConvertSensorHistory.fs" />
     <Compile Include="ConvertSensortState.fs" />
-    <Compile Include="ConvertSensorStateUpdate.fs" />
     <Compile Include="ConvertDeviceProperty.fs" />
     <Compile Include="ConvertDevicePropertyChangeRequest.fs" />
     <Compile Include="WaitForDevicePropertyChangeRequestedEvent.fs" />

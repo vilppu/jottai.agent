@@ -112,7 +112,7 @@ module PushNotificationTests =
             ChangeSensorName context.DeviceGroupToken "ExampleDevice.contact" expectedName
             context|> WriteMeasurement(Fake.Measurement (Measurement.Contact Measurement.Closed)) |> WaitUntilPushNotificationsAreSent
 
-            Assert.Equal(expectedName, sentNotifications().[1].data.deviceNotification.sensorName)
+            Assert.Equal(expectedName, sentNotifications().[1].data.deviceNotification.propertyName)
         }   
 
     [<Fact>]

@@ -10,14 +10,14 @@ module internal Command =
         { SensorStateUpdate : SensorStateUpdate }
 
     type ChangeSensorName = 
-        { SensorId : SensorId
+        { PropertyId : PropertyId
           DeviceGroupId : DeviceGroupId
-          SensorName : SensorName }
+          PropertyName : PropertyName }
 
     type ChangeDevicePropertyState =
-        { DeviceProperty : DevicePropertyUpdate }
+        { DeviceProperty : DevicePropertyStateUpdate }
 
-    type RequestToChangeDevicePropertyValue =
+    type RequestToChangeDeviceProperty =
         { DeviceGroupId : DeviceGroupId
           GatewayId : GatewayId
           DeviceId : DeviceId
@@ -36,7 +36,7 @@ module internal Command =
         | ChangeSensorState of ChangeSensorState
         | ChangeSensorName of ChangeSensorName
         | ChangeDevicePropertyState of ChangeDevicePropertyState
-        | RequestToChangeDevicePropertyValue of RequestToChangeDevicePropertyValue
+        | RequestToChangeDevicePropertyValue of RequestToChangeDeviceProperty
         | ChangeDevicePropertyName of ChangeDevicePropertyName
 
     let private SubscribedToPushNotifications (command : SubscribeToPushNotifications) : Event.Event =
@@ -48,10 +48,14 @@ module internal Command =
     let private SensorStateChanged (command : ChangeSensorState) : Event.Event =   
         let sensorStateUpdate = command.SensorStateUpdate
         let event : Event.SensorStateChanged =
-            { SensorId = sensorStateUpdate.SensorId
+            { GatewayId = sensorStateUpdate.GatewayId
+              PropertyId = sensorStateUpdate.PropertyId
+              PropertyName = sensorStateUpdate.PropertyName
+              PropertyDescription = sensorStateUpdate.PropertyDescription
               DeviceGroupId = sensorStateUpdate.DeviceGroupId
               DeviceId = sensorStateUpdate.DeviceId
               Measurement = sensorStateUpdate.Measurement
+              Protocol = sensorStateUpdate.Protocol
               BatteryVoltage = sensorStateUpdate.BatteryVoltage
               SignalStrength = sensorStateUpdate.SignalStrength
               Timestamp = sensorStateUpdate.Timestamp }
@@ -59,9 +63,9 @@ module internal Command =
 
     let private SensorNameChanged (command : ChangeSensorName) : Event.Event =
         let event : Event.SensorNameChanged =
-            { SensorId = command.SensorId
+            { PropertyId = command.PropertyId
               DeviceGroupId = command.DeviceGroupId
-              SensorName = command.SensorName }
+              PropertyName = command.PropertyName }
         Event.SensorNameChanged event
     
     let private DevicePropertyChanged (command : ChangeDevicePropertyState) : Event.Event =
@@ -69,8 +73,7 @@ module internal Command =
             { DeviceGroupId = command.DeviceProperty.DeviceGroupId
               GatewayId = command.DeviceProperty.GatewayId
               DeviceId = command.DeviceProperty.DeviceId
-              PropertyId = command.DeviceProperty.PropertyId
-              PropertyType = command.DeviceProperty.PropertyType
+              PropertyId = command.DeviceProperty.PropertyId              
               PropertyName = command.DeviceProperty.PropertyName
               PropertyDescription = command.DeviceProperty.PropertyDescription
               PropertyValue = command.DeviceProperty.PropertyValue
@@ -78,7 +81,7 @@ module internal Command =
               Timestamp = command.DeviceProperty.Timestamp }
         Event.DevicePropertyChanged event
         
-    let private ChangeDevicePropertyValueRequested (command : RequestToChangeDevicePropertyValue) : Event.Event =
+    let private ChangeDevicePropertyValueRequested (command : RequestToChangeDeviceProperty) : Event.Event =
         let event : Event.DevicePropertyChangeRequest=
            { DeviceGroupId = command.DeviceGroupId
              GatewayId = command.GatewayId

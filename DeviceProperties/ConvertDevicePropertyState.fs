@@ -8,11 +8,7 @@ module internal ConvertDevicePropertyState =
         | ZWavePlus -> "Z-Wave Plus"
         | _ -> ""
 
-    let private CommandTypeToStorable (commandType : PropertyType ) : string =
-        match commandType with
-        | BinarySwitch -> "BinarySwitch"
-
-    let FromDevicePropertyUpdate (update : DevicePropertyUpdate) (previousState : DevicePropertyStorage.StorableDeviceProperty option) : DevicePropertyState =
+    let FromDevicePropertyUpdate (update : DevicePropertyStateUpdate) (previousState : DevicePropertyStorage.StorableDeviceProperty option) : DevicePropertyState =
         let previousState =
             match previousState with
             | Some previousState -> previousState
@@ -29,7 +25,6 @@ module internal ConvertDevicePropertyState =
           GatewayId = update.GatewayId
           DeviceId = update.DeviceId
           PropertyId = update.PropertyId
-          PropertyType = update.PropertyType
           PropertyName = update.PropertyName
           PropertyDescription = update.PropertyDescription
           PropertyValue = update.PropertyValue
@@ -44,10 +39,10 @@ module internal ConvertDevicePropertyState =
           GatewayId = deviceProperty.GatewayId.AsString
           DeviceId = deviceProperty.DeviceId.AsString
           PropertyId = deviceProperty.PropertyId.AsString
-          PropertyType = deviceProperty.PropertyType |> CommandTypeToStorable
           PropertyName = deviceProperty.PropertyName.AsString
           PropertyDescription = deviceProperty.PropertyDescription.AsString
-          PropertyValue = deviceProperty.PropertyValue |> DeviceProperty.Value          
+          PropertyType = deviceProperty.PropertyValue |> DeviceProperty.Name
+          PropertyValue = deviceProperty.PropertyValue |> DeviceProperty.Value
           Protocol = deviceProperty.Protocol |> ProtocolToStorable
           LastUpdated = deviceProperty.LastUpdated
           LastActive = deviceProperty.LastActive

@@ -29,7 +29,7 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Events", "Events\Events.fsp
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Sensors", "Sensors\Sensors.fsproj", "{4CC508D0-BE01-4B1D-A0E1-F543F7B4C9C0}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "DeviceProperties", "DeviceProperties\DeviceProperties.fsproj", "{739DD423-FE64-403E-9B80-E8D10AA9AD61}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "DeviceProperties", "DeviceProperties\DeviceProperties.fsproj", "{D9C06ECE-2019-4240-844E-F3EFF47A126E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -73,10 +73,10 @@ Global
 		{4CC508D0-BE01-4B1D-A0E1-F543F7B4C9C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4CC508D0-BE01-4B1D-A0E1-F543F7B4C9C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4CC508D0-BE01-4B1D-A0E1-F543F7B4C9C0}.Release|Any CPU.Build.0 = Release|Any CPU
-		{739DD423-FE64-403E-9B80-E8D10AA9AD61}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{739DD423-FE64-403E-9B80-E8D10AA9AD61}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{739DD423-FE64-403E-9B80-E8D10AA9AD61}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{739DD423-FE64-403E-9B80-E8D10AA9AD61}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D9C06ECE-2019-4240-844E-F3EFF47A126E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D9C06ECE-2019-4240-844E-F3EFF47A126E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D9C06ECE-2019-4240-844E-F3EFF47A126E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D9C06ECE-2019-4240-844E-F3EFF47A126E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
