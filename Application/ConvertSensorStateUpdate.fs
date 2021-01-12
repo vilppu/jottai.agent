@@ -10,15 +10,18 @@ module internal ConvertSensorStateUpdate =
         then true
         else false
 
+    let private IsNotEmpty source =
+        not(source |> IsEmpty)
+
     let private LowerCase source =
         if String.IsNullOrWhiteSpace(source)
         then ""
         else source.ToLower()
     
     let private MeasuredPropertyName (deviceDatum : ApiObjects.DeviceDatum) : string =
-        if deviceDatum.propertyName |> IsEmpty
-        then ""
-        else deviceDatum.propertyName |> LowerCase
+        match deviceDatum.unitOfMeasurement with
+        | "C" -> "temperature"
+        | _ -> deviceDatum.propertyName |> LowerCase
     
     let private ToRoundedNumericValue input : float option = 
         match input with
@@ -43,16 +46,21 @@ module internal ConvertSensorStateUpdate =
             match input with
             | FirstRegexGroup "(\d+(?:\.\d+)?)" value -> Some(float (value))
             | _ -> None
-        
-    let private ToMeasurement (deviceDatum : ApiObjects.DeviceDatum) : Measurement.Measurement option =
     
+    let private ParseNumericValue (deviceDatum : ApiObjects.DeviceDatum) : float option =
+        let valueIsNumeric, value = System.Double.TryParse(deviceDatum.value)
+        if valueIsNumeric
+        then value |> Some
+        else deviceDatum.formattedValue |> ToRoundedNumericValue
+
+    let private ToMeasurement (deviceDatum : ApiObjects.DeviceDatum) : Measurement.Measurement option =
         match deviceDatum |> MeasuredPropertyName with
         | "rh" -> 
-            match deviceDatum.formattedValue |> ToRoundedNumericValue with
+            match deviceDatum |> ParseNumericValue with
             | Some value -> Some(Measurement.RelativeHumidity value)
             | None -> None
         | "temperature" -> 
-            match deviceDatum.formattedValue |> ToRoundedNumericValue with
+            match deviceDatum |> ParseNumericValue with
             | Some value -> Some(Measurement.Temperature(value * 1.0<C>))
             | None -> None
         | "detect" | "presenceofwater" -> 
