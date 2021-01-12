@@ -94,7 +94,17 @@ module MeasurementsToDeviceDataMapping =
               formattedValue = ""
               minimumValue = ""
               maximumValue = "" } : ApiObjects.DeviceDatum
-            : ApiObjects.DeviceDatum
+        | _ ->
+            { propertyId = null
+              propertyName = ""
+              propertyDescription = ""
+              propertyType = ApiObjects.PropertyType.Sensor
+              value = null              
+              valueType = null
+              unitOfMeasurement = ""
+              formattedValue = ""
+              minimumValue = ""
+              maximumValue = "" } : ApiObjects.DeviceDatum
     
     let SensorDataEventWithDeviceId deviceId = 
         { timestamp = ""

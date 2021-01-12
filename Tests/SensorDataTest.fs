@@ -42,6 +42,8 @@ module SensorDataTest =
     
     [<Theory>]
     [<InlineData("C", "3.4", "Temperature", 3.4)>]
+    [<InlineData("Lux", "3.4", "Luminance", 3.4)>]
+    [<InlineData("MM", "3.4", "SeismicIntensity", 3.4)>]
     let SensorCanSendUnitOfMeasurementAsSymbol(symbol : string, sentValue : string, expectedType: string, expectedValue : obj) = 
         use context = SetupContext()
         

@@ -21,6 +21,8 @@ module internal ConvertSensorStateUpdate =
     let private MeasuredPropertyName (deviceDatum : ApiObjects.DeviceDatum) : string =
         match deviceDatum.unitOfMeasurement with
         | "C" -> "temperature"
+        | "Lux" -> "luminance"
+        | "MM" -> "seismicIntensity"
         | _ -> deviceDatum.propertyName |> LowerCase
     
     let private ToRoundedNumericValue input : float option = 
@@ -62,6 +64,18 @@ module internal ConvertSensorStateUpdate =
         | "temperature" -> 
             match deviceDatum |> ParseNumericValue with
             | Some value -> Some(Measurement.Temperature(value * 1.0<C>))
+            | None -> None
+        | "acceleration" -> 
+            match deviceDatum |> ParseNumericValue with
+            | Some value -> Some(Measurement.Acceleration(value * 1.0<m/s^2>))
+            | None -> None
+        | "luminance" -> 
+            match deviceDatum |> ParseNumericValue with
+            | Some value -> Some(Measurement.Luminance(value * 1.0<lx>))
+            | None -> None
+        | "seismicIntensity" -> 
+            match deviceDatum |> ParseNumericValue with
+            | Some value -> Some(Measurement.SeismicIntensity(value * 1.0<Measurement.MM>))
             | None -> None
         | "detect" | "presenceofwater" -> 
             Some(Measurement.PresenceOfWater(if deviceDatum.value = "1" then Measurement.Present
