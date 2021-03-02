@@ -4,6 +4,8 @@ module Measurement =
 
     open Microsoft.FSharp.Data.UnitSystems.SI.UnitSymbols
 
+    [<Measure>] type MM
+
     type Voltage = float<V>
     
     type Rssi = float
@@ -11,6 +13,12 @@ module Measurement =
     type Temperature = float<C>
     
     type RelativeHumidity = float
+
+    type Acceleration = float<m/s^2>
+
+    type Luminance = float<lx>
+
+    type SeismicIntensity = float<MM>
     
     type PresenceOfWater = 
         | NotPresent
@@ -32,6 +40,9 @@ module Measurement =
         | PresenceOfWater of PresenceOfWater
         | Contact of Contact
         | Motion of Motion
+        | Acceleration of Acceleration
+        | Luminance of Luminance
+        | SeismicIntensity of SeismicIntensity
 
     let From (measuredProperty : string) (measuredValue : obj) : Measurement option =
         match measuredProperty with
@@ -43,6 +54,15 @@ module Measurement =
             |> Some
         | "Temperature" ->
             Temperature ((measuredValue :?> float) * 1.0<C>)
+            |> Some
+        | "Acceleration" ->
+            Acceleration ((measuredValue :?> float) * 1.0<m/s^2>)
+            |> Some
+        | "Luminance" ->
+            Luminance ((measuredValue :?> float) * 1.0<lx>)
+            |> Some
+        | "SeismicIntensity" ->
+            SeismicIntensity ((measuredValue :?> float) * 1.0<MM>)
             |> Some
         | "RelativeHumidity" ->
             RelativeHumidity (measuredValue :?> float)
@@ -72,6 +92,15 @@ module Measurement =
 
         | Temperature temperature ->
             float(temperature) :> obj
+
+        | Acceleration acceleration ->
+            float(acceleration) :> obj
+
+        | Luminance luminance ->
+            float(luminance) :> obj
+
+        | SeismicIntensity seismicIntensity ->
+            float(seismicIntensity) :> obj
 
         | RelativeHumidity relativeHumidity ->
             float(relativeHumidity) :> obj
