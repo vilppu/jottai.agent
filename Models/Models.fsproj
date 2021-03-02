@@ -8,7 +8,6 @@
     <Compile Include="Notification.fs" />
     <Compile Include="Measurement.fs" />
     <Compile Include="DeviceProperty.fs" />
-    <Compile Include="PropertyType.fs" />
     <Compile Include="Devices.fs" />
   </ItemGroup>
 

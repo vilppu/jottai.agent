@@ -20,68 +20,94 @@ module internal ConvertSensorStateUpdate =
         then ""
         else deviceDatum.propertyName |> LowerCase
     
-    let private ToRoundedNumericValue input : float option = 
-        match input with
-        | null -> None
-        | _ -> 
-            let (|FirstRegexGroup|_|) pattern input = 
-                let m = Regex.Match(input, pattern)
-                if (m.Success) then Some m.Groups.[1].Value
-                else None
-            match input with
-            | FirstRegexGroup "(\d+(?:\.\d+)?)" value -> Some(System.Math.Round(float (value)))
-            | _ -> None
+    let private ParseBoolean value : bool option = 
+        let valueIsBoolean, parsedValue = Boolean.TryParse(value)
+        if valueIsBoolean
+        then Some parsedValue
+        else None
+        
+    let private ParseInteger value : int option = 
+        let valueIsInteger, parsedValue = Int32.TryParse(value)
+        if valueIsInteger
+        then Some parsedValue
+        else None
     
-    let private ToNumericValue input : float option= 
-        match input with
-        | null -> None
-        | _ -> 
-            let (|FirstRegexGroup|_|) pattern input = 
-                let m = Regex.Match(input, pattern)
-                if (m.Success) then Some m.Groups.[1].Value
-                else None
-            match input with
-            | FirstRegexGroup "(\d+(?:\.\d+)?)" value -> Some(float (value))
+    let private ParseDecimal value : float option = 
+        let valueIsDecimal, parsedValue = Double.TryParse(value, Globalization.NumberStyles.Any, Globalization.CultureInfo.InvariantCulture)
+        if valueIsDecimal
+        then Some parsedValue
+        else None
+    
+    let private ToBooleanValue (deviceDatum : ApiObjects.DeviceDatum) : bool option = 
+        match deviceDatum.valueType with
+        | ApiObjects.ValueType.Boolean -> deviceDatum.value |> ParseBoolean
+        | ApiObjects.ValueType.Integer ->
+            match deviceDatum.value |> ParseInteger with
+            | Some integer -> Some(if integer = 0 then false else true)
             | _ -> None
+        | _ -> None        
+    
+    let private ToRoundedNumericValue (deviceDatum : ApiObjects.DeviceDatum) : float option = 
+        match deviceDatum.valueType with
+        | ApiObjects.ValueType.Integer ->
+            match deviceDatum.value |> ParseInteger with
+            | Some integer -> Some (float(integer))
+            | _ -> None
+        | ApiObjects.ValueType.Decimal ->            
+            match deviceDatum.value |> ParseDecimal with
+            | Some decimal -> Some (float((int(decimal))))
+            | _ -> None            
+        | _ -> None
+    
+    let private ToNumericValue (deviceDatum : ApiObjects.DeviceDatum) : float option= 
+        match deviceDatum.valueType with
+        | ApiObjects.ValueType.Integer ->
+            match deviceDatum.value |> ParseInteger with
+            | Some integer -> Some (float(integer))
+            | _ -> None
+        | ApiObjects.ValueType.Decimal -> deviceDatum.value |> ParseDecimal
+        | _ -> None
         
     let private ToMeasurement (deviceDatum : ApiObjects.DeviceDatum) : Measurement.Measurement option =
-    
-        match deviceDatum |> MeasuredPropertyName with
-        | "rh" -> 
-            match deviceDatum.formattedValue |> ToRoundedNumericValue with
-            | Some value -> Some(Measurement.RelativeHumidity value)
-            | None -> None
-        | "temperature" -> 
-            match deviceDatum.formattedValue |> ToRoundedNumericValue with
-            | Some value -> Some(Measurement.Temperature(value * 1.0<C>))
-            | None -> None
-        | "detect" | "presenceofwater" -> 
-            Some(Measurement.PresenceOfWater(if deviceDatum.value = "1" then Measurement.Present
-                                    else Measurement.NotPresent))
-        | "contact" -> 
-            Some(Measurement.Contact(if deviceDatum.value = "1" then Measurement.Open
-                            else Measurement.Closed))
-        | "pir" | "motion" -> 
-            Some(Measurement.Measurement.Motion(if deviceDatum.value = "1" then Measurement.Motion
-                        else Measurement.NoMotion))
-        | "voltage" -> 
-            match deviceDatum.value |> ToNumericValue with
+        match deviceDatum.propertyType with
+        | ApiObjects.PropertyType.Voltage ->
+            match deviceDatum |> ToNumericValue with
             | Some value -> Some(Measurement.Voltage(value * 1.0<V>))
-            | None -> None
-        | "rssi" -> 
-            match deviceDatum.value |> ToNumericValue with
+            | _ -> None
+        | ApiObjects.PropertyType.Rssi ->
+            match deviceDatum |> ToNumericValue with
             | Some value -> Some(Measurement.Rssi(value))
-            | None -> None
+            | _ -> None
+        | ApiObjects.PropertyType.Temperature ->
+            match deviceDatum |> ToRoundedNumericValue with
+            | Some value -> Some(Measurement.Temperature(value * 1.0<C>))
+            | _ -> None
+        | ApiObjects.PropertyType.RelativeHumidity ->
+            match deviceDatum |> ToRoundedNumericValue with
+            | Some value -> Some(Measurement.RelativeHumidity value)
+            | _ -> None
+        | ApiObjects.PropertyType.PresenceOfWater ->
+            match deviceDatum |> ToBooleanValue with
+            | Some value -> Some(Measurement.PresenceOfWater(if value then Measurement.Present else Measurement.NotPresent))
+            | _ -> None
+        | ApiObjects.PropertyType.Contact -> 
+            match deviceDatum |> ToBooleanValue with
+            | Some value -> Some(Measurement.Contact(if value then Measurement.Open else Measurement.Closed))
+            | _ -> None
+        | ApiObjects.PropertyType.Motion -> 
+            match deviceDatum |> ToBooleanValue with
+            | Some value -> Some(Measurement.Measurement.Motion(if value then Measurement.Motion else Measurement.NoMotion))
+            | _ -> None
         | _ -> None
         
     let private ToBatteryVoltage (deviceData : ApiObjects.DeviceData) : Measurement.Voltage = 
-        match deviceData.batteryVoltage |> ToNumericValue with
+        match deviceData.batteryVoltage |> ParseDecimal with
         | Some value -> 
             value * 1.0<V>
         | _ -> 0.0<V>
         
     let private ToRssi (deviceData : ApiObjects.DeviceData) : Measurement.Rssi= 
-        match deviceData.rssi |> ToNumericValue with
+        match deviceData.rssi |> ParseDecimal with
         | Some value -> 
             value
         | _ -> 0.0

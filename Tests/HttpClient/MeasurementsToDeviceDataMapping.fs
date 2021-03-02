@@ -9,38 +9,35 @@ module MeasurementsToDeviceDataMapping =
         | Measurement.Temperature temperature -> 
             let value = float(temperature).ToString(CultureInfo.InvariantCulture)
             { propertyId = null
-              propertyType = ApiObjects.PropertyType.Sensor
+              propertyType = ApiObjects.PropertyType.Temperature
               propertyName = "TEMPERATURE"
               propertyDescription = ""
-              value = ""
-              valueType = null
+              value = value
+              valueType = ApiObjects.ValueType.Decimal
               unitOfMeasurement = ""
-              formattedValue = sprintf "%s C" value
               minimumValue = ""
               maximumValue = "" } : ApiObjects.DeviceDatum
         | Measurement.RelativeHumidity relativeHumidity -> 
             let value = float(relativeHumidity).ToString(CultureInfo.InvariantCulture)
             { propertyId = null
-              propertyType = ApiObjects.PropertyType.Sensor
+              propertyType = ApiObjects.PropertyType.RelativeHumidity
               propertyName = "RH"
               propertyDescription = ""
-              value = ""
-              valueType = null
+              value = value
+              valueType = ApiObjects.ValueType.Decimal
               unitOfMeasurement = ""
-              formattedValue = sprintf "%s %%" value
               minimumValue = ""
               maximumValue = "" } : ApiObjects.DeviceDatum
         | Measurement.PresenceOfWater presenceOfWater -> 
             { propertyId = null
               propertyName = "DETECT"
               propertyDescription = ""
-              propertyType = ApiObjects.PropertyType.Sensor
+              propertyType = ApiObjects.PropertyType.PresenceOfWater
               value = 
                   if presenceOfWater = Measurement.Present then "1"
                   else "0"
-              valueType = null
+              valueType = ApiObjects.ValueType.Integer
               unitOfMeasurement = ""
-              formattedValue = ""
               minimumValue = ""
               maximumValue = "" } : ApiObjects.DeviceDatum
         | Measurement.Contact contact -> 
@@ -48,26 +45,24 @@ module MeasurementsToDeviceDataMapping =
             { propertyId = null
               propertyName = "CONTACT"
               propertyDescription = ""
-              propertyType = ApiObjects.PropertyType.Sensor
+              propertyType = ApiObjects.PropertyType.Contact
               value = 
                   if contact = Measurement.Open then "1"
                   else "0"              
-              valueType = null
-              unitOfMeasurement = ""
-              formattedValue = ""
+              valueType = ApiObjects.ValueType.Integer
+              unitOfMeasurement = ""              
               minimumValue = ""
               maximumValue = "" } : ApiObjects.DeviceDatum
         | Measurement.Measurement.Motion motion ->             
             { propertyId = null
               propertyName = "pir"
               propertyDescription = ""
-              propertyType = ApiObjects.PropertyType.Sensor
+              propertyType = ApiObjects.PropertyType.Motion
               value = 
                   if motion = Measurement.Motion then "1"
                   else "0"              
-              valueType = null
-              unitOfMeasurement = ""
-              formattedValue = ""
+              valueType = ApiObjects.ValueType.Integer
+              unitOfMeasurement = ""              
               minimumValue = ""
               maximumValue = "" } : ApiObjects.DeviceDatum
         | Measurement.Voltage voltage ->
@@ -75,11 +70,10 @@ module MeasurementsToDeviceDataMapping =
             { propertyId = null
               propertyName = "voltage"
               propertyDescription = ""
-              propertyType = ApiObjects.PropertyType.Sensor
+              propertyType = ApiObjects.PropertyType.Voltage
               value = value              
-              valueType = null
-              unitOfMeasurement = ""
-              formattedValue = ""
+              valueType = ApiObjects.ValueType.Decimal
+              unitOfMeasurement = ""              
               minimumValue = ""
               maximumValue = "" } : ApiObjects.DeviceDatum
         | Measurement.Rssi rssi -> 
@@ -87,11 +81,10 @@ module MeasurementsToDeviceDataMapping =
             { propertyId = null
               propertyName = "rssi"
               propertyDescription = ""
-              propertyType = ApiObjects.PropertyType.Sensor
+              propertyType = ApiObjects.PropertyType.Rssi
               value = value              
-              valueType = null
-              unitOfMeasurement = ""
-              formattedValue = ""
+              valueType = ApiObjects.ValueType.Decimal
+              unitOfMeasurement = ""              
               minimumValue = ""
               maximumValue = "" } : ApiObjects.DeviceDatum
             : ApiObjects.DeviceDatum

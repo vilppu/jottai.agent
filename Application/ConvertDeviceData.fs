@@ -7,10 +7,19 @@ module internal ConvertDeviceData =
         (deviceData : ApiObjects.DeviceData)
         (deviceDatum : ApiObjects.DeviceDatum)
         : (DeviceDataUpdate option) =
+        let sensorStateUpdate = ConvertSensorStateUpdate.FromDeviceData
+        let devicePropertyUpdate = ConvertDevicePropertyUpdate.FromDeviceData
 
-        match deviceDatum.propertyType |> Convert.PropertyTypeFromApiObject with
-        | PropertyType.Sensor -> ConvertSensorStateUpdate.FromDeviceData deviceGroupId deviceData deviceDatum
-        | _ -> ConvertDevicePropertyUpdate.FromDeviceData deviceGroupId deviceData deviceDatum
+        match deviceDatum.propertyType with
+        | ApiObjects.PropertyType.Voltage -> sensorStateUpdate deviceGroupId deviceData deviceDatum
+        | ApiObjects.PropertyType.Rssi -> sensorStateUpdate deviceGroupId deviceData deviceDatum
+        | ApiObjects.PropertyType.Temperature -> sensorStateUpdate deviceGroupId deviceData deviceDatum
+        | ApiObjects.PropertyType.RelativeHumidity -> sensorStateUpdate deviceGroupId deviceData deviceDatum
+        | ApiObjects.PropertyType.PresenceOfWater -> sensorStateUpdate deviceGroupId deviceData deviceDatum
+        | ApiObjects.PropertyType.Contact -> sensorStateUpdate deviceGroupId deviceData deviceDatum
+        | ApiObjects.PropertyType.Motion -> sensorStateUpdate deviceGroupId deviceData deviceDatum
+        | ApiObjects.PropertyType.TwoWaySwitch -> devicePropertyUpdate deviceGroupId deviceData deviceDatum
+        | _ -> failwithf "%s is not a valid property type" (deviceDatum.propertyType.ToString())        
     
     let ToDeviceDataUpdates (deviceGroupId : DeviceGroupId) (deviceData : ApiObjects.DeviceData)
         : DeviceDataUpdate list =

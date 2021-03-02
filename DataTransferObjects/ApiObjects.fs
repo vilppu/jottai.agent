@@ -2,15 +2,25 @@
 
 module ApiObjects =
 
-    type PropertyType = 
-        | NotSpecified = 0
-        | Sensor = 1
-        | TwoWaySwitch = 2
+    type PropertyType =
+        | Voltage = 1
+        | Rssi = 2
+        | Temperature = 3
+        | RelativeHumidity = 4
+        | PresenceOfWater = 5
+        | Contact = 6
+        | Motion = 7
+        | TwoWaySwitch = 8
 
     type Protocol = 
-        | NotSpecified = 0
-        | ZWave = 1
-        | ZWavePlus = 2
+        | NotSpecified = 1
+        | ZWave = 2
+        | ZWavePlus = 3
+
+    type ValueType =
+        | Boolean = 1
+        | Integer = 2
+        | Decimal = 3
 
     type RefreshTokenRequest = 
         { Code : string
@@ -32,9 +42,8 @@ module ApiObjects =
           propertyName : string
           propertyDescription : string
           unitOfMeasurement : string
-          valueType : string
+          valueType : ValueType          
           value : string
-          formattedValue : string
           minimumValue: string
           maximumValue: string }
     

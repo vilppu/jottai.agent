@@ -16,8 +16,8 @@ module ConvertDevicePropertyUpdate =
 
     let private ParsePropertyValue (datum : ApiObjects.DeviceDatum)
         : DeviceProperty.DeviceProperty option =                
-        match datum.propertyType |> Convert.PropertyTypeFromApiObject with
-        | PropertyType.TwoWaySwitch -> datum |> ParseTwoWaySwitch
+        match datum.propertyType with
+        | ApiObjects.PropertyType.TwoWaySwitch ->  datum |> ParseTwoWaySwitch
         | _ -> None
 
     let FromDeviceData

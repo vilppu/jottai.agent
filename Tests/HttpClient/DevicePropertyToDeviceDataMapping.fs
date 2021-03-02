@@ -13,8 +13,7 @@ module DevicePropertyToDeviceDataMapping =
               propertyType = ApiObjects.PropertyType.TwoWaySwitch
               unitOfMeasurement = ""
               value = "True"
-              valueType = "bool"
-              formattedValue = "True"
+              valueType = ApiObjects.ValueType.Boolean
               minimumValue = "0"
               maximumValue = "0" }
     

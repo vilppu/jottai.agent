@@ -121,7 +121,7 @@ module DevicePropertyStorage =
                 else None
         }
 
-    let InitialState defaultName =
+    let InitialState defaultName : StorableDeviceProperty =
         { Id = ObjectId.Empty
           DeviceGroupId = ""
           GatewayId = ""

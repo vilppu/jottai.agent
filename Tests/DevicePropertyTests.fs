@@ -24,9 +24,8 @@ module DevicePropertyTest =
                   propertyName = expectedPropertyName
                   propertyDescription = expectedPropertyDescription                  
                   unitOfMeasurement = ""
-                  valueType = "bool"
+                  valueType = ApiObjects.ValueType.Boolean
                   value = "True"
-                  formattedValue = "True"
                   minimumValue = "0"
                   maximumValue = "0"
               }
