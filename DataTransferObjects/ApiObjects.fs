@@ -12,7 +12,8 @@ module ApiObjects =
         | Motion = 7
         | Luminance = 8
         | SeismicIntensity = 9
-        | TwoWaySwitch = 10
+        | Acceleration = 10
+        | TwoWaySwitch = 11
 
     type Protocol = 
         | NotSpecified = 1

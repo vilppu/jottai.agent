@@ -20,6 +20,7 @@ module internal ConvertDeviceData =
         | ApiObjects.PropertyType.Motion -> sensorStateUpdate deviceGroupId deviceData deviceDatum
         | ApiObjects.PropertyType.Luminance -> sensorStateUpdate deviceGroupId deviceData deviceDatum
         | ApiObjects.PropertyType.SeismicIntensity -> sensorStateUpdate deviceGroupId deviceData deviceDatum
+        | ApiObjects.PropertyType.Acceleration -> sensorStateUpdate deviceGroupId deviceData deviceDatum
         | ApiObjects.PropertyType.TwoWaySwitch -> devicePropertyUpdate deviceGroupId deviceData deviceDatum
         | _ -> failwithf "%s is not a valid property type" (deviceDatum.propertyType.ToString())        
     

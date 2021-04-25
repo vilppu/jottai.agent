@@ -109,8 +109,17 @@ module MeasurementsToDeviceDataMapping =
               unitOfMeasurement = ""
               minimumValue = ""
               maximumValue = "" } : ApiObjects.DeviceDatum
-        | _ ->
-            failwith ("Unknown measurement " + (measurement.ToString()))
+        | Measurement.Acceleration acceleration -> 
+            let value = float(acceleration).ToString(CultureInfo.InvariantCulture)
+            { propertyId = null
+              propertyType = ApiObjects.PropertyType.Acceleration
+              propertyName = "Acceleration"
+              propertyDescription = ""
+              value = value
+              valueType = ApiObjects.ValueType.Decimal
+              unitOfMeasurement = ""
+              minimumValue = ""
+              maximumValue = "" } : ApiObjects.DeviceDatum
     
     let SensorDataEventWithDeviceId deviceId = 
         { timestamp = ""

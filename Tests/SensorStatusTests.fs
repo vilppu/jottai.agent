@@ -159,7 +159,7 @@ module SensorStateTests =
     [<Fact>]
     let TellLuminance() = 
         use context = SetupContext()
-        let example = Measurement.Luminance 5.0<lx>
+        let example = Measurement.Luminance 5.004<lx>
         context |> WriteMeasurementSynchronously(Fake.Measurement example)
         
         let result = context |> SensorState
@@ -178,6 +178,18 @@ module SensorStateTests =
         let entry = result.Head
 
         Assert.Equal("SeismicIntensity", entry.MeasuredProperty)
+        Assert.Equal(5.0, entry.MeasuredValue :?> float)
+    
+    [<Fact>]
+    let TellAcceleration() = 
+        use context = SetupContext()
+        let example = Measurement.Acceleration 5.0<m/s^2>
+        context |> WriteMeasurementSynchronously(Fake.Measurement example)
+        
+        let result = context |> SensorState
+        let entry = result.Head
+
+        Assert.Equal("Acceleration", entry.MeasuredProperty)
         Assert.Equal(5.0, entry.MeasuredValue :?> float)
     
     [<Fact>]

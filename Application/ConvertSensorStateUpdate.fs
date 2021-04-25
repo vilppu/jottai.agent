@@ -106,6 +106,10 @@ module internal ConvertSensorStateUpdate =
             match deviceDatum |> ToRoundedNumericValue with
             | Some value -> Some(Measurement.SeismicIntensity(value * 1.0<Measurement.MM>))
             | _ -> None
+        | ApiObjects.PropertyType.Acceleration ->
+            match deviceDatum |> ToRoundedNumericValue with
+            | Some value -> Some(Measurement.Acceleration(value * 1.0<m/s^2>))
+            | _ -> None
         | _ -> None
         
     let private ToBatteryVoltage (deviceData : ApiObjects.DeviceData) : Measurement.Voltage = 

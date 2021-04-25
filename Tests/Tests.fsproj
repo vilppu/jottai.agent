@@ -36,7 +36,6 @@
     <Compile Include="SensorHistoryTests.fs" />
     <Compile Include="SensorStatusTests.fs" />
     <Compile Include="PushNotificationTests.fs" />
-    <Compile Include="SensorDataTest.fs" />
     <Compile Include="TokenTests.fs" />
     <Compile Include="DeviceSettingsTests.fs" />
     <Compile Include="DevicePropertyTests.fs" />
