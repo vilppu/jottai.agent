@@ -40,24 +40,24 @@ module SensorDataTest =
     //     timer.Stop()
     //     Assert.True(timer.ElapsedMilliseconds < int64(10000))
     
-    [<Theory>]
-    [<InlineData("C", "3.4", "Temperature", 3.4)>]
-    [<InlineData("Lux", "3.4", "Luminance", 3.4)>]
-    [<InlineData("MM", "3.4", "SeismicIntensity", 3.4)>]
-    let SensorCanSendUnitOfMeasurementAsSymbol(symbol : string, sentValue : string, expectedType: string, expectedValue : obj) = 
-        use context = SetupContext()
+    // [<Theory>]
+    // [<InlineData("C", "3.4", ApiObjects.PropertyType.Temperature, "Temperature", 3.4)>]
+    // [<InlineData("Lux", "3.4", ApiObjects.PropertyType.Luminance, "Luminance", 3.4)>]
+    // [<InlineData("MM", "3.4", ApiObjects.PropertyType.SeismicIntensity, "SeismicIntensity", 3.4)>]
+    // let SensorCanSendUnitOfMeasurementAsSymbol(symbol : string, sentValue : string, propertyType : ApiObjects.PropertyType, expectedType: string, expectedValue : obj) = 
+    //     use context = SetupContext()
         
-        let deviceDatum = { Fake.ZWavePlusDevicePropertyDatum with
-                                                              propertyType = ApiObjects.PropertyType.Sensor
-                                                              value = sentValue
-                                                              unitOfMeasurement = symbol }
-        let deviceData = { Fake.DeviceData with data = [deviceDatum] }
+    //     let deviceDatum = { Fake.ZWavePlusDevicePropertyDatum with
+    //                                                           propertyType = propertyType
+    //                                                           value = sentValue
+    //                                                           unitOfMeasurement = symbol }
+    //     let deviceData = { Fake.DeviceData with data = [deviceDatum] }
 
-        PostDeviceData context.DeviceToken deviceData
-        |> WaitUntilSensorStateIsChanged
+    //     PostDeviceData context.DeviceToken deviceData
+    //     |> WaitUntilSensorStateIsChanged
 
-        let result = (context |> SensorState).Head
+    //     let result = (context |> SensorState).Head
 
-        Assert.Equal(expectedType, result.MeasuredProperty)
-        Assert.Equal(expectedValue, result.MeasuredValue)
+    //     Assert.Equal(expectedType, result.MeasuredProperty)
+    //     Assert.Equal(expectedValue, result.MeasuredValue)
         

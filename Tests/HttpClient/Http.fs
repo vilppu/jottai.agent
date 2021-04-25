@@ -18,8 +18,7 @@ module Http =
         else
             response
 
-    let Post (token : string) (url : string) data = 
-        let json = JsonConvert.SerializeObject(data, jsonOptions)
+    let PostJson (token : string) (url : string) (json : string) =
         async {            
             use requestMessage = new HttpRequestMessage(HttpMethod.Post, url)
             use content = new StringContent(json, Text.Encoding.UTF8, "application/json")
@@ -27,6 +26,12 @@ module Http =
             requestMessage.Headers.Authorization <- AuthenticationHeaderValue("Bearer", token)
             let! response = HttpClient.SendAsync(requestMessage) |> Async.AwaitTask
             return response |> FailOnServerErrorOrBadRequest
+        }
+
+    let Post (token : string) (url : string) data = 
+        async {
+            let json = JsonConvert.SerializeObject(data, jsonOptions)
+            return! PostJson token url json
         }
     
     let Get (token : string) (url : string) = 

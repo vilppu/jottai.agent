@@ -10,7 +10,9 @@ module ApiObjects =
         | PresenceOfWater = 5
         | Contact = 6
         | Motion = 7
-        | TwoWaySwitch = 8
+        | Luminance = 8
+        | SeismicIntensity = 9
+        | TwoWaySwitch = 10
 
     type Protocol = 
         | NotSpecified = 1

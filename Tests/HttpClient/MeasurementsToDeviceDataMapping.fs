@@ -68,7 +68,7 @@ module MeasurementsToDeviceDataMapping =
         | Measurement.Voltage voltage ->
             let value = float(voltage).ToString(CultureInfo.InvariantCulture)
             { propertyId = null
-              propertyName = "voltage"
+              propertyName = "Voltage"
               propertyDescription = ""
               propertyType = ApiObjects.PropertyType.Voltage
               value = value              
@@ -87,17 +87,30 @@ module MeasurementsToDeviceDataMapping =
               unitOfMeasurement = ""              
               minimumValue = ""
               maximumValue = "" } : ApiObjects.DeviceDatum
-        | _ ->
+        | Measurement.Luminance luminance -> 
+            let value = float(luminance).ToString(CultureInfo.InvariantCulture)
             { propertyId = null
-              propertyName = ""
+              propertyType = ApiObjects.PropertyType.Luminance
+              propertyName = "Luminance"
               propertyDescription = ""
-              propertyType = ApiObjects.PropertyType.Sensor
-              value = null              
-              valueType = null
+              value = value
+              valueType = ApiObjects.ValueType.Decimal
               unitOfMeasurement = ""
-              formattedValue = ""
               minimumValue = ""
               maximumValue = "" } : ApiObjects.DeviceDatum
+        | Measurement.SeismicIntensity seismicIntensity -> 
+            let value = float(seismicIntensity).ToString(CultureInfo.InvariantCulture)
+            { propertyId = null
+              propertyType = ApiObjects.PropertyType.SeismicIntensity
+              propertyName = "SeismicIntensity"
+              propertyDescription = ""
+              value = value
+              valueType = ApiObjects.ValueType.Decimal
+              unitOfMeasurement = ""
+              minimumValue = ""
+              maximumValue = "" } : ApiObjects.DeviceDatum
+        | _ ->
+            failwith ("Unknown measurement " + (measurement.ToString()))
     
     let SensorDataEventWithDeviceId deviceId = 
         { timestamp = ""

@@ -157,6 +157,30 @@ module SensorStateTests =
         Assert.Equal(true, entry.MeasuredValue :?> bool)
     
     [<Fact>]
+    let TellLuminance() = 
+        use context = SetupContext()
+        let example = Measurement.Luminance 5.0<lx>
+        context |> WriteMeasurementSynchronously(Fake.Measurement example)
+        
+        let result = context |> SensorState
+        let entry = result.Head
+
+        Assert.Equal("Luminance", entry.MeasuredProperty)
+        Assert.Equal(5.0, entry.MeasuredValue :?> float)
+    
+    [<Fact>]
+    let TellSeismicIntensity() = 
+        use context = SetupContext()
+        let example = Measurement.SeismicIntensity 5.0<Measurement.MM>
+        context |> WriteMeasurementSynchronously(Fake.Measurement example)
+        
+        let result = context |> SensorState
+        let entry = result.Head
+
+        Assert.Equal("SeismicIntensity", entry.MeasuredProperty)
+        Assert.Equal(5.0, entry.MeasuredValue :?> float)
+    
+    [<Fact>]
     let TellVoltage() = 
         use context = SetupContext()
         let example = Measurement.Voltage 3.4<V>

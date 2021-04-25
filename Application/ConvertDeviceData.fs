@@ -18,6 +18,8 @@ module internal ConvertDeviceData =
         | ApiObjects.PropertyType.PresenceOfWater -> sensorStateUpdate deviceGroupId deviceData deviceDatum
         | ApiObjects.PropertyType.Contact -> sensorStateUpdate deviceGroupId deviceData deviceDatum
         | ApiObjects.PropertyType.Motion -> sensorStateUpdate deviceGroupId deviceData deviceDatum
+        | ApiObjects.PropertyType.Luminance -> sensorStateUpdate deviceGroupId deviceData deviceDatum
+        | ApiObjects.PropertyType.SeismicIntensity -> sensorStateUpdate deviceGroupId deviceData deviceDatum
         | ApiObjects.PropertyType.TwoWaySwitch -> devicePropertyUpdate deviceGroupId deviceData deviceDatum
         | _ -> failwithf "%s is not a valid property type" (deviceDatum.propertyType.ToString())        
     
