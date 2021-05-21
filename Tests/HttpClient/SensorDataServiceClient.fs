@@ -9,6 +9,12 @@ module SensorDataServiceClient =
         async {
             return! Http.Post token apiUrl deviceData
         }
+    
+    let PostDeviceDataJson token (deviceDataJson : string) = 
+        let apiUrl = "api/device-data"
+        async {
+            return! Http.PostJson token apiUrl deviceDataJson
+        }
 
     let PostMeasurement token deviceId (measurement : Measurement.Measurement) =        
         let deviceData = 

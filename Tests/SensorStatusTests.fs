@@ -14,6 +14,16 @@ module SensorStateTests =
         let response = context |> SensorStateResponse
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode)
+
+    [<Fact>]
+    let ShouldAcceptJsonRequest() = 
+        use context = SetupContext() 
+        let example = Measurement.RelativeHumidity 78.0
+        let (measurement, deviceId) = Fake.Measurement example
+        let deviceDataJson = "{   \"gatewayId\": \"4035277665\",  \"deviceId\": \"9\",  \"protocol\": \"ZWavePlus\",  \"manufacturerName\": \"Telldus\",  \"batteryVoltage\": \"\",  \"rssi\": \"\",  \"timestamp\": \"2021-04-26T13:56:35Z\",  \"data\": [  {    \"propertyId\": \"155795472\",    \"propertyType\": \"TwoWaySwitch\",    \"propertyName\": \"Switch\",    \"propertyDescription\": \"Turn On/Off Device\",    \"unitOfMeasurement\": \"\",    \"valueType\": \"Boolean\",    \"value\": \"True\",    \"formattedValue\": \"True\",    \"minimumValue\": \"0\",    \"maximumValue\": \"0\"  }  ]}"
+
+        WriteDeviceDataJsonSynchronously deviceDataJson context
+        
     
     [<Fact>]
     let TellOnlyTheLatestMeasurentFromAnSensor() = 

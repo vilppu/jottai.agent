@@ -92,6 +92,10 @@ module TestHelpers =
         WriteMeasurement (measurement, deviceId) context
         |> WaitUntilSensorStateIsChanged
         
+    let WriteDeviceDataJsonSynchronously (deviceDataJson : string) (context : Context) : unit =        
+        PostDeviceDataJson (context.DeviceToken) deviceDataJson
+        |> WaitUntilSensorStateIsChanged
+        
     let WriteDeviceDataSynchronously deviceData (context : Context) : unit =        
         PostDeviceData (context.DeviceToken) deviceData
         |> WaitUntilSensorStateIsChanged
