@@ -32,7 +32,6 @@ module SensorHistoryTests =
     [<Fact>]
     let SensorHistoryContainsMeasurementsChronologically() = 
         use context = SetupContext()
-        let example = Measurement.RelativeHumidity 78.0
         let deviceId = "device-1"
         let propertyId = deviceId + ".rh"
 

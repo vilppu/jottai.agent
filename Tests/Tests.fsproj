@@ -2,17 +2,21 @@
 
   <PropertyGroup>
     <EnableDefaultCompileItems>False</EnableDefaultCompileItems>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <DebugType>portable</DebugType>
     <AssemblyName>Tests</AssemblyName>
     <PackageId>Tests</PackageId>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="C:\Users\timov_000\.nuget\packages\fsharp.core\5.0.1\contentFiles\any\netstandard2.0\FSharp.Core.xml" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\HttpApi\HttpApi.fsproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.1" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.9.4" />
     <PackageReference Include="xunit.assert" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
       <PrivateAssets>all</PrivateAssets>
@@ -22,7 +26,6 @@
     <PackageReference Include="Microsoft.DotNet.InternalAbstractions" Version="1.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Fake.fs" />
     <Compile Include="HttpClient\Http.fs" />
     <Compile Include="HttpClient\DevicePropertyToDeviceDataMapping.fs" />
     <Compile Include="HttpClient\MeasurementsToDeviceDataMapping.fs" />
@@ -31,8 +34,9 @@
     <Compile Include="HttpClient\SensorDataServiceClient.fs" />
     <Compile Include="HttpClient\SensorStatusesClient.fs" />
     <Compile Include="HttpClient\DevicePropertyClient.fs" />
-    <Compile Include="TestContext.fs" />
-    <Compile Include="TestHelpers.fs" />
+    <Compile Include="Support\Fake.fs" />
+    <Compile Include="Support\TestContext.fs" />
+    <Compile Include="Support\TestHelpers.fs" />
     <Compile Include="SensorHistoryTests.fs" />
     <Compile Include="SensorStatusTests.fs" />
     <Compile Include="PushNotificationTests.fs" />
@@ -41,6 +45,6 @@
     <Compile Include="DevicePropertyTests.fs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="5.0.0" />
+    <PackageReference Update="FSharp.Core" Version="5.0.1" />
   </ItemGroup>
 </Project>

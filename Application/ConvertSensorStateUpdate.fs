@@ -2,7 +2,6 @@ namespace Jottai
 
 module internal ConvertSensorStateUpdate =
     open System
-    open System.Text.RegularExpressions    
     open Microsoft.FSharp.Data.UnitSystems.SI.UnitSymbols
 
     let private IsEmpty source =
@@ -15,24 +14,19 @@ module internal ConvertSensorStateUpdate =
         then ""
         else source.ToLower()
     
-    let private MeasuredPropertyName (deviceDatum : ApiObjects.DeviceDatum) : string =
-        if deviceDatum.propertyName |> IsEmpty
-        then ""
-        else deviceDatum.propertyName |> LowerCase
-    
-    let private ParseBoolean value : bool option = 
+    let private ParseBoolean (value : string) : bool option = 
         let valueIsBoolean, parsedValue = Boolean.TryParse(value)
         if valueIsBoolean
         then Some parsedValue
         else None
         
-    let private ParseInteger value : int option = 
+    let private ParseInteger (value : string) : int option = 
         let valueIsInteger, parsedValue = Int32.TryParse(value)
         if valueIsInteger
         then Some parsedValue
         else None
     
-    let private ParseDecimal value : float option = 
+    let private ParseDecimal (value : string) : float option = 
         let valueIsDecimal, parsedValue = Double.TryParse(value, Globalization.NumberStyles.Any, Globalization.CultureInfo.InvariantCulture)
         if valueIsDecimal
         then Some parsedValue
