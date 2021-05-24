@@ -20,8 +20,8 @@ module TestContext =
         Environment.SetEnvironmentVariable("JOTTAI_MONGODB_DATABASE", "Jottai_Test")
         Environment.SetEnvironmentVariable("JOTTAI_TOKEN_SECRET", "fake-token-secret")
         Environment.SetEnvironmentVariable("JOTTAI_FCM_KEY", "fake")
-        SensorEventStorage.Drop TestDeviceGroupId
-        SensorEventStorage.Drop AnotherTestDeviceGroupId
+        SensorEventStorage.Drop (DeviceGroupId TestDeviceGroupId)
+        SensorEventStorage.Drop (DeviceGroupId AnotherTestDeviceGroupId)
         SensorStateStorage.Drop()
         SensorHistoryStorage.Drop()
         DevicePropertyStorage.Drop()

@@ -4,26 +4,24 @@ module internal Action =
 
     let GetSensorState (update : SensorStateUpdate) : Async<SensorState> =
         async {
-            let! previousState = SensorStateStorage.GetSensorState update.DeviceGroupId.AsString update.PropertyId.AsString
-            return ConvertSensorState.FromSensorStateUpdate update previousState
+            let! sensorState = SensorStateStorage.GetSensorState update
+            return sensorState
         }
 
     let GetSensorHistory (update : SensorStateUpdate) : Async<SensorHistory> =
         async {
-            let! sensorHistory = SensorHistoryStorage.GetSensorHistory update.DeviceGroupId.AsString update.PropertyId.AsString
-            return FromStorable sensorHistory
+            let! sensorHistory = SensorHistoryStorage.GetSensorHistory  update.DeviceGroupId update.PropertyId
+            return sensorHistory
         }    
 
     let StoreSensorState (sensorState : SensorState) : Async<unit> =
-        async {
-            let storable = ConvertSensorState.ToStorable sensorState                
-            do! SensorStateStorage.StoreSensorState storable
+        async {            
+            do! SensorStateStorage.StoreSensorState sensorState
         }
 
     let StoreSensorHistory (sensorState : SensorState) (sensorHistory : SensorHistory) : Async<unit> =
         async {
             let hasChanged = sensorState.LastUpdated = sensorState.LastActive
             if hasChanged then
-                let storableSensorHistory = ConvertSensorHistory.ToStorable sensorState sensorHistory
-                do! SensorHistoryStorage.UpsertSensorHistory storableSensorHistory
+                do! SensorHistoryStorage.UpsertSensorHistory sensorState sensorHistory
         }

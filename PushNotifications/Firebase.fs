@@ -101,26 +101,34 @@ module private Firebase =
     let private PushNotification reason =
         match reason with
         | SensorStatePushNotification state ->
+
+            let (DeviceId deviceId) = state.DeviceId
+            let (PropertyName propertyName) = state.PropertyName
+
             let pushNotification : DevicePushNotification =
-                { DeviceId = state.DeviceId.AsString
-                  PropertyName = state.PropertyName.AsString
+                { DeviceId = deviceId
+                  PropertyName = propertyName
                   MeasuredProperty = state.Measurement |> Measurement.Name
                   MeasuredValue = state.Measurement |> Measurement.Value
                   Timestamp = state.LastUpdated }
             pushNotification
-        | DevicePropertyStatePushNotification state ->            
+        | DevicePropertyStatePushNotification state ->
+
+            let (DeviceId deviceId) = state.DeviceId
+            let (PropertyName propertyName) = state.PropertyName
+            
             let pushNotification : DevicePushNotification =
-                { DeviceId = state.DeviceId.AsString
-                  PropertyName = state.PropertyName.AsString
+                { DeviceId = deviceId
+                  PropertyName = propertyName
                   MeasuredProperty = state.PropertyValue |> DeviceProperty.Name
                   MeasuredValue = state.PropertyValue |> DeviceProperty.Value
                   Timestamp = state.LastUpdated }
             pushNotification
         
     let private SendFirebasePushNotifications httpSend reason =
-        async {                
-            let deviceGroupId =  DeviceGroupId reason
-            let! subscriptions = PushNotificationSubscriptionStorage.ReadPushNotificationSubscriptions deviceGroupId.AsString
+        async {
+            let (DeviceGroupId deviceGroupId) =  DeviceGroupId reason
+            let! subscriptions = PushNotificationSubscriptionStorage.ReadPushNotificationSubscriptions deviceGroupId
 
             let pushNotification = PushNotification reason
                 
@@ -139,8 +147,8 @@ module private Firebase =
                   registration_ids = subscriptions }
                       
             let! subsriptionChanges = SendFirebaseMessages httpSend subscriptions pushNotification
-            do! PushNotificationSubscriptionStorage.RemoveRegistrations deviceGroupId.AsString subsriptionChanges.SubscriptionsToBeRemoved
-            do! PushNotificationSubscriptionStorage.AddRegistrations deviceGroupId.AsString subsriptionChanges.SubscriptionsToBeAdded
+            do! PushNotificationSubscriptionStorage.RemoveRegistrations deviceGroupId subsriptionChanges.SubscriptionsToBeRemoved
+            do! PushNotificationSubscriptionStorage.AddRegistrations deviceGroupId subsriptionChanges.SubscriptionsToBeAdded
         }
 
     let private SendPushNotifications httpSend reason =

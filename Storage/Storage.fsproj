@@ -5,6 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="C:\Users\timov_000\.nuget\packages\fsharp.core\5.0.1\contentFiles\any\netstandard2.0\FSharp.Core.xml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="Expressions.fs" />
     <Compile Include="BsonStorage.fs" />
     <Compile Include="PushNotificationSubscriptionStorage.fs" />
@@ -16,6 +20,10 @@
 
   <ItemGroup>
     <PackageReference Include="MongoDB.Driver" Version="2.12.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Models\Models.fsproj" />
   </ItemGroup>
 
   <ItemGroup>

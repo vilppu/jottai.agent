@@ -17,7 +17,7 @@ module SensorEventHandler =
                 publish (Event.SensorStateStored sensorState)
 
             | Event.SensorNameChanged event ->
-                do! SensorStateStorage.StoreSensorName event.DeviceGroupId.AsString event.PropertyId.AsString event.PropertyName.AsString
+                do! SensorStateStorage.StoreSensorName event.DeviceGroupId event.PropertyId event.PropertyName
                 publish (Event.SensorNameStored event)
 
             | _ -> ()

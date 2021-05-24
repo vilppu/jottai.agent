@@ -9,6 +9,9 @@
     <RuntimeIdentifiers>win10-x64;debian.8-x64</RuntimeIdentifiers>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="C:\Users\timov_000\.nuget\packages\fsharp.core\5.0.1\contentFiles\any\netstandard2.0\FSharp.Core.xml" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="5.0.6" />
     <PackageReference Include="Microsoft.AspNetCore.Cors" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.2.0" />

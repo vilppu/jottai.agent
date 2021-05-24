@@ -82,30 +82,27 @@ module Application =
 
     let GetSensorStates (deviceGroupId : string) : Async<ApiObjects.SensorState list> = 
         async {        
-            let! statuses = SensorStateStorage.GetSensorStates deviceGroupId
+            let! statuses = SensorStateStorage.GetSensorStates (DeviceGroupId deviceGroupId)
 
             return
                 statuses
-                |> ConvertSensorState.FromStorables
                 |> ConvertSensorState.ToApiObjects
         }
 
-    let GetSensorHistory (deviceGroupId : string) (propertyId : string) : Async<ApiObjects.SensorHistory> =
+    let GetSensorHistory (deviceGroupId : DeviceGroupId) (propertyId : PropertyId) : Async<ApiObjects.SensorHistory> =
         async {
             let! history = SensorHistoryStorage.GetSensorHistory deviceGroupId propertyId
             let result =
                 history
-                |> ConvertSensorHistory.FromStorable
                 |> ConvertSensorHistory.ToApiObject
             return result
         }   
    
-    let GetDeviceProperties (deviceGroupId : string) : Async<ApiObjects.DeviceProperty list> =
+    let GetDeviceProperties (deviceGroupId : DeviceGroupId) : Async<ApiObjects.DeviceProperty list> =
         async {
             let! commands = DevicePropertyStorage.GetDeviceProperties deviceGroupId
             let result =
                 commands
-                |> ConvertDeviceProperty.FromStorables
                 |> ConvertDeviceProperty.ToApiObjects
             return result
         }

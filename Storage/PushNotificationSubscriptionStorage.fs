@@ -10,7 +10,7 @@ module PushNotificationSubscriptionStorage =
 
     [<CLIMutable>]
     [<BsonIgnoreExtraElements>]
-    type StorablePushNotificationSubscriptions = 
+    type PushNotificationSubscriptions = 
         { 
           [<BsonIgnoreIfDefault>]
           mutable Id : ObjectId
@@ -20,7 +20,7 @@ module PushNotificationSubscriptionStorage =
     let private PushNotificationSubscriptionCollectionName = "PushNotificationSubscriptions"
 
     let PushNotificationSubscriptionCollection = 
-        BsonStorage.Database.GetCollection<StorablePushNotificationSubscriptions> PushNotificationSubscriptionCollectionName
+        BsonStorage.Database.GetCollection<PushNotificationSubscriptions> PushNotificationSubscriptionCollectionName
         |> BsonStorage.WithDescendingIndex "DeviceGroupId"
         
     let Drop() =
@@ -29,12 +29,12 @@ module PushNotificationSubscriptionStorage =
     let private RemovePushNotificationSubscriptions (deviceGroupId : string) (tokens : string list)=
         let deviceGroupId = deviceGroupId
         let collection = PushNotificationSubscriptionCollection
-        let stored = collection.Find<StorablePushNotificationSubscriptions>(fun x -> x.DeviceGroupId = deviceGroupId)
+        let stored = collection.Find<PushNotificationSubscriptions>(fun x -> x.DeviceGroupId = deviceGroupId)
         async {
-            let! stored = stored.FirstOrDefaultAsync<StorablePushNotificationSubscriptions>() |> Async.AwaitTask
+            let! stored = stored.FirstOrDefaultAsync<PushNotificationSubscriptions>() |> Async.AwaitTask
             stored.Tokens.RemoveAll (fun token -> tokens.Contains(token)) |> ignore
             return!
-                collection.ReplaceOneAsync<StorablePushNotificationSubscriptions>((fun x -> x.DeviceGroupId = deviceGroupId), stored, BsonStorage.Replace)
+                collection.ReplaceOneAsync<PushNotificationSubscriptions>((fun x -> x.DeviceGroupId = deviceGroupId), stored, BsonStorage.Replace)
                 |> Async.AwaitTask
                 |> Async.Ignore
         }
@@ -43,9 +43,9 @@ module PushNotificationSubscriptionStorage =
         async {
             let collection = PushNotificationSubscriptionCollection
             let deviceGroupId = deviceGroupId
-            let stored = collection.Find<StorablePushNotificationSubscriptions>(fun x -> x.DeviceGroupId = deviceGroupId)
-            let! stored = stored.FirstOrDefaultAsync<StorablePushNotificationSubscriptions>() |> Async.AwaitTask
-            let stored : StorablePushNotificationSubscriptions =
+            let stored = collection.Find<PushNotificationSubscriptions>(fun x -> x.DeviceGroupId = deviceGroupId)
+            let! stored = stored.FirstOrDefaultAsync<PushNotificationSubscriptions>() |> Async.AwaitTask
+            let stored : PushNotificationSubscriptions =
                 if stored :> obj |> isNull then
                     { Id = ObjectId.Empty
                       DeviceGroupId = deviceGroupId
@@ -57,7 +57,7 @@ module PushNotificationSubscriptionStorage =
             if not(toBeAdded |> List.isEmpty) then
                 do!
                     stored.Tokens.AddRange toBeAdded
-                    collection.ReplaceOneAsync<StorablePushNotificationSubscriptions>((fun x -> x.DeviceGroupId = deviceGroupId), stored, BsonStorage.Replace)
+                    collection.ReplaceOneAsync<PushNotificationSubscriptions>((fun x -> x.DeviceGroupId = deviceGroupId), stored, BsonStorage.Replace)
                     |> Async.AwaitTask
                     |> Async.Ignore
         }
@@ -66,10 +66,10 @@ module PushNotificationSubscriptionStorage =
         async {
             let collection = PushNotificationSubscriptionCollection
             let deviceGroupId = deviceGroupId
-            let tokens = collection.Find<StorablePushNotificationSubscriptions>(fun x -> x.DeviceGroupId = deviceGroupId)
+            let tokens = collection.Find<PushNotificationSubscriptions>(fun x -> x.DeviceGroupId = deviceGroupId)
 
             let! subscriptionsForDeviceGroup =
-                tokens.FirstOrDefaultAsync<StorablePushNotificationSubscriptions>()
+                tokens.FirstOrDefaultAsync<PushNotificationSubscriptions>()
                 |> Async.AwaitTask
 
             let result =

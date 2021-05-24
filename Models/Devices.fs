@@ -3,42 +3,13 @@ namespace Jottai
 [<AutoOpen>]
 module Devices =
 
-    type DeviceGroupId = 
-        | DeviceGroupId of string
-        member this.AsString = 
-            let (DeviceGroupId unwrapped) = this
-            unwrapped
-    
-    type GatewayId = 
-        | GatewayId of string
-        member this.AsString = 
-            let (GatewayId unwrapped) = this
-            unwrapped
-    
-    type DeviceId = 
-        | DeviceId of string
-        member this.AsString = 
-            let (DeviceId unwrapped) = this
-            unwrapped
-    
-    type PropertyId = 
-        | PropertyId of string
-        member this.AsString = 
-            let (PropertyId unwrapped) = this
-            unwrapped
-    
-    type PropertyName = 
-        | PropertyName of string
-        member this.AsString = 
-            let (PropertyName unwrapped) = this
-            unwrapped
-    
-    type PropertyDescription = 
-        | PropertyDescription of string
-        member this.AsString = 
-            let (PropertyDescription unwrapped) = this
-            unwrapped
-            
+    type DeviceGroupId = DeviceGroupId of string    
+    type GatewayId = GatewayId of string    
+    type DeviceId = DeviceId of string    
+    type PropertyId = PropertyId of string
+    type PropertyName = PropertyName of string
+    type PropertyDescription = PropertyDescription of string
+
     let ValidatePropertyName value =
         let value =
             if System.String.IsNullOrWhiteSpace value
@@ -59,12 +30,14 @@ module Devices =
           Timestamp : System.DateTimeOffset }
 
     type SensorHistory = 
-        { PropertyId : string
+        { DeviceGroupId : DeviceGroupId
+          PropertyId : PropertyId
           MeasuredProperty : string
           Entries : SensorHistoryEntry list }
 
     let EmptySensorHistory : SensorHistory = 
-        { PropertyId = ""
+        { DeviceGroupId = DeviceGroupId ""
+          PropertyId = PropertyId ""
           MeasuredProperty = ""
           Entries = List.empty }
 

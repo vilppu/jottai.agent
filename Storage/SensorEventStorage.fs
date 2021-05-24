@@ -1,26 +1,11 @@
 ﻿namespace Jottai
 
-module SensorEventStorage = 
-    open System
-    open MongoDB.Bson
-    open MongoDB.Bson.Serialization.Attributes
-
-    [<CLIMutable>]
-    type StorableSensorEvent = 
-        { [<BsonIgnoreIfDefault>]
-          Id : ObjectId
-          DeviceGroupId : string
-          DeviceId : string
-          PropertyId : string
-          PropertyType : string
-          PropertyValue : obj
-          Voltage : float
-          SignalStrength : float
-          Timestamp : DateTimeOffset }
+module SensorEventStorage =
     
-    let SensorEvents (deviceGroupId : string) =
+    let private SensorEvents (deviceGroupId : DeviceGroupId) =
+        let (DeviceGroupId deviceGroupId) = deviceGroupId
         let collectionName = "SensorEvents." + deviceGroupId
-        BsonStorage.Database.GetCollection<StorableSensorEvent> collectionName
+        BsonStorage.Database.GetCollection<SensorStateUpdate> collectionName
         |> BsonStorage.WithDescendingIndex "DeviceGroupId"
         |> BsonStorage.WithDescendingIndex "DeviceId"
         |> BsonStorage.WithDescendingIndex "Timestamp"
@@ -29,8 +14,9 @@ module SensorEventStorage =
         let collection = SensorEvents deviceGroupId
         BsonStorage.Database.DropCollection(collection.CollectionNamespace.CollectionName)
     
-    let StoreSensorEvent (storableSensorEvent : StorableSensorEvent) = 
+    let StoreSensorEvent (sensorStateUpdate : SensorStateUpdate) =     
+                                        
         async {
-            let collection = SensorEvents storableSensorEvent.DeviceGroupId
-            do! collection.InsertOneAsync(storableSensorEvent) |> Async.AwaitTask
+            let collection = SensorEvents sensorStateUpdate.DeviceGroupId
+            do! collection.InsertOneAsync(sensorStateUpdate) |> Async.AwaitTask
         }

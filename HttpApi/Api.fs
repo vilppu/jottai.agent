@@ -69,7 +69,7 @@ type ApiController (httpSend : HttpRequestMessage -> Async<HttpResponseMessage>)
     [<Authorize(Policy = Roles.User)>]
     member this.GetSensorHistory (propertyId : string) : Async<ApiObjects.SensorHistory> =
         async {
-            return! Application.GetSensorHistory this.DeviceGroupId propertyId
+            return! Application.GetSensorHistory (DeviceGroupId this.DeviceGroupId) (PropertyId propertyId)
         }
     
     [<Route("device/properties")>]
@@ -77,7 +77,7 @@ type ApiController (httpSend : HttpRequestMessage -> Async<HttpResponseMessage>)
     [<Authorize(Policy = Roles.User)>]
     member this.GetDeviceProperties() : Async<ApiObjects.DeviceProperty list> = 
         async {
-            return! Application.GetDeviceProperties this.DeviceGroupId
+            return! Application.GetDeviceProperties (DeviceGroupId this.DeviceGroupId)
         }
 
     [<Route("gateway/{gatewayId}/device/{deviceId}/property/{propertyId}/{propertyType}/value/{propertyValue}")>]

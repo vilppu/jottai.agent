@@ -143,7 +143,7 @@ module internal ConvertSensorStateUpdate =
                 { DeviceGroupId = deviceGroupId
                   GatewayId = GatewayId deviceData.deviceId
                   DeviceId = deviceId
-                  PropertyId = PropertyId (deviceId.AsString + "." + property)
+                  PropertyId = PropertyId (deviceData.deviceId + "." + property)
                   PropertyName = PropertyName ""
                   PropertyDescription = PropertyDescription ""
                   Measurement = measurement
@@ -154,14 +154,3 @@ module internal ConvertSensorStateUpdate =
             
             sensorStateUpdate |> SensorStateUpdate |> Some
         | None -> None
-
-    let ToStorable (update : SensorStateUpdate) : SensorEventStorage.StorableSensorEvent  =            
-            { Id = MongoDB.Bson.ObjectId.Empty
-              DeviceGroupId =  update.DeviceGroupId.AsString
-              DeviceId = update.DeviceId.AsString
-              PropertyId = update.PropertyId.AsString
-              PropertyType = update.Measurement |> Measurement.Name
-              PropertyValue = update.Measurement |> Measurement.Value
-              Voltage = (float)update.BatteryVoltage
-              SignalStrength = (float)update.SignalStrength
-              Timestamp = update.Timestamp }

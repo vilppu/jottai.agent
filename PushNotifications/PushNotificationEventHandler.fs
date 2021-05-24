@@ -9,7 +9,8 @@ module PushNotificationEventHandler =
         async {
             match event with
             | Event.SubscribedToPushNotifications subscribed ->
-                do! PushNotificationSubscriptionStorage.StorePushNotificationSubscriptions subscribed.DeviceGroupId.AsString [subscribed.Subscription.Token]
+                let (DeviceGroupId deviceGroupId) = subscribed.DeviceGroupId
+                do! PushNotificationSubscriptionStorage.StorePushNotificationSubscriptions deviceGroupId [subscribed.Subscription.Token]
                 publish (Event.PushNotificationSubscriptionStored subscribed)
 
             | Event.SensorStateStored sensorState ->

@@ -45,6 +45,7 @@ module SelfHost =
                               httpSend : HttpRequestMessage -> Async<HttpResponseMessage>) =
 
             app
+                .UseDeveloperExceptionPage()
                 .UsePathBase(new Microsoft.AspNetCore.Http.PathString(GetUrl().PathAndQuery))
                 .UseAuthentication()
                 //.UseCors(fun options ->
@@ -134,7 +135,7 @@ module SelfHost =
                 .ConfigureServices(fun services -> 
                     services.AddSingleton(httpSend).AddSingleton(authenticationOptions)
                     |> ignore)
-                .UseKestrel()
+                .UseKestrel()                
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseStartup<Startup>()
                 .UseUrls(host)

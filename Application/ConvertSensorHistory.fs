@@ -1,24 +1,6 @@
 namespace Jottai
 
 module internal ConvertSensorHistory =
-
-    let private ToEntry (entry : SensorHistoryStorage.StorableSensorHistoryEntry) : SensorHistoryEntry =
-        let measuredValue = entry.MeasuredValue
-        { MeasuredValue = measuredValue
-          Timestamp = entry.Timestamp.ToUniversalTime() }
-          
-    let private ToHistoryEntries (stored : SensorHistoryStorage.StorableSensorHistory) : SensorHistoryEntry list =
-         stored.Entries
-         |> List.ofSeq
-         |> List.map ToEntry
-
-    let FromStorable(stored : SensorHistoryStorage.StorableSensorHistory) : SensorHistory =
-        if stored :> obj |> isNull then
-            EmptySensorHistory
-        else
-            { PropertyId = stored.PropertyId
-              MeasuredProperty= stored.MeasuredProperty
-              Entries = stored |> ToHistoryEntries }
         
     let ToApiObject (history : SensorHistory) : ApiObjects.SensorHistory =
         let entries =
@@ -29,7 +11,7 @@ module internal ConvertSensorHistory =
                     Timestamp = entry.Timestamp }
                 sensorHistoryResultEntry
                 )
-
-        { PropertyId = history.PropertyId
+        let (PropertyId propertyId) = history.PropertyId
+        { PropertyId = propertyId
           MeasuredProperty = history.MeasuredProperty
           Entries = entries }

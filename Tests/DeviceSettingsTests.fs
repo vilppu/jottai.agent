@@ -1,6 +1,6 @@
 ﻿namespace Jottai
 
-module DeviceSettingsTest = 
+module SensorSettingsTest = 
     open System.Net
     open Xunit
     
