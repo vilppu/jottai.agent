@@ -1,20 +1,96 @@
 namespace Jottai
 
 module DevicePropertyStorage =
+    open System
     open System.Threading
+    open MongoDB.Bson
+    open MongoDB.Bson.Serialization.Attributes
     open MongoDB.Driver
+    
+    [<CLIMutable>]
+    [<BsonIgnoreExtraElements>]
+    type StorableDeviceProperty = 
+        { [<BsonIgnoreIfDefault>]
+          mutable Id : ObjectId
+          mutable DeviceGroupId : string
+          mutable GatewayId : string
+          mutable DeviceId : string
+          mutable PropertyId : string
+          mutable PropertyType : string
+          mutable PropertyName : string
+          mutable PropertyDescription : string
+          mutable PropertyValue : obj
+          mutable Protocol : string
+          mutable LastUpdated : DateTimeOffset
+          mutable LastActive : DateTimeOffset }
+
+    let private StorableDeviceProperty (devicePropertyState : DevicePropertyState)
+        : StorableDeviceProperty =
+        let (DeviceGroupId deviceGroupId) = devicePropertyState.DeviceGroupId
+        let (GatewayId gatewayId) = devicePropertyState.GatewayId
+        let (DeviceId deviceId) = devicePropertyState.DeviceId
+        let (PropertyId propertyId) = devicePropertyState.PropertyId
+        let (PropertyName propertyName) = devicePropertyState.PropertyName
+        let (PropertyDescription propertyDescription) = devicePropertyState.PropertyDescription
+        let propertyType = devicePropertyState.PropertyValue |> DeviceProperty.Name
+        let propertyValue = devicePropertyState.PropertyValue |> DeviceProperty.Value
+        let protocol = 
+            match devicePropertyState.Protocol with
+               | ZWave -> "ZWave"
+               | ZWavePlus -> "ZWavePlus"
+               | _ -> "NotSpecified"
+        let lastUpdated = devicePropertyState.LastUpdated
+        let lastActive = devicePropertyState.LastActive     
+
+        { Id = new ObjectId()
+          DeviceGroupId = deviceGroupId
+          GatewayId = gatewayId
+          DeviceId = deviceId
+          PropertyId = propertyId
+          PropertyType = propertyType
+          PropertyName = propertyName
+          PropertyDescription = propertyDescription
+          PropertyValue = propertyValue
+          Protocol = protocol
+          LastUpdated = lastUpdated
+          LastActive = lastActive}
+
+    let private DevicePropertyState (storableDeviceProperty : StorableDeviceProperty)
+        : DevicePropertyState =
+        
+        let protocol = 
+            match storableDeviceProperty.Protocol with
+               | "ZWave" -> ZWave
+               | "ZWavePlus" -> ZWavePlus
+               | _ -> NotSpecified
+
+        { DeviceGroupId = DeviceGroupId storableDeviceProperty.DeviceGroupId        
+          GatewayId = GatewayId storableDeviceProperty.GatewayId
+          DeviceId = DeviceId storableDeviceProperty.DeviceId
+          PropertyId = PropertyId storableDeviceProperty.PropertyId
+          PropertyName = PropertyName storableDeviceProperty.PropertyName          
+          PropertyDescription = PropertyDescription storableDeviceProperty.PropertyDescription
+          PropertyValue = (DeviceProperty.From storableDeviceProperty.PropertyType storableDeviceProperty.PropertyValue).Value
+          Protocol = protocol          
+          LastUpdated = storableDeviceProperty.LastUpdated
+          LastActive = storableDeviceProperty.LastActive }
+
     let sensorNameSemaphore = new SemaphoreSlim(1)
     let devicePropertySemaphore = new SemaphoreSlim(1)
 
     let private DevicePropertiesCollectionName = "DeviceProperties"
 
     let private DevicePropertiesCollection = 
-        BsonStorage.Database.GetCollection<DevicePropertyState> DevicePropertiesCollectionName
+        BsonStorage.Database.GetCollection<StorableDeviceProperty> DevicePropertiesCollectionName
         |> BsonStorage.WithDescendingIndex "DeviceGroupId"
 
     let private GetDevicePropertyExpression deviceGroupId gatewayId deviceId propertyId =
+        let (DeviceGroupId deviceGroupId) = deviceGroupId
+        let (GatewayId gatewayId) = gatewayId
+        let (DeviceId deviceId) = deviceId
+        let (PropertyId propertyId) = propertyId
         
-        let expr = Expressions.Lambda.Create<DevicePropertyState>(fun command ->
+        let expr = Expressions.Lambda.Create<StorableDeviceProperty>(fun command ->
             command.DeviceGroupId = deviceGroupId &&
             command.GatewayId = gatewayId &&
             command.DeviceId = deviceId &&
@@ -22,7 +98,8 @@ module DevicePropertyStorage =
         expr        
 
     let private GetDevicePropertiesExpression (deviceGroupId : DeviceGroupId) =
-        let expr = Expressions.Lambda.Create<DevicePropertyState>(fun x -> x.DeviceGroupId = deviceGroupId)
+        let (DeviceGroupId deviceGroupId) = deviceGroupId
+        let expr = Expressions.Lambda.Create<StorableDeviceProperty>(fun x -> x.DeviceGroupId = deviceGroupId)
         expr
         
     let GetDeviceProperty (update : DevicePropertyStateUpdate) : Async<DevicePropertyState> =
@@ -32,19 +109,20 @@ module DevicePropertyStorage =
             
         
             let! deviceProperties =
-                DevicePropertiesCollection.FindSync<DevicePropertyState>(filter).ToListAsync()
+                DevicePropertiesCollection.FindSync<StorableDeviceProperty>(filter).ToListAsync()
                 |> Async.AwaitTask
                     
             let previousState =
                 if deviceProperties.Count = 1
                 then Some (deviceProperties.[0])
-                else None
-                
+                else None               
+            
             let lastActive = update.Timestamp
             let lastUpdated =
                 match previousState with
                 | Some previousState ->
-                    if update.PropertyValue <> previousState.PropertyValue
+                    let previousPropertyValue = (DeviceProperty.From previousState.PropertyType previousState.PropertyValue).Value
+                    if update.PropertyValue <> previousPropertyValue
                     then update.Timestamp
                     else previousState.LastUpdated
                 | None -> update.Timestamp
@@ -65,16 +143,16 @@ module DevicePropertyStorage =
     let StoreDevicePropertyName deviceGroupId gatewayId deviceId propertyId propertyName =
 
         let filter = GetDevicePropertyExpression deviceGroupId gatewayId deviceId propertyId
-    
+        let (PropertyName propertyName) = propertyName
         let update =
-            Builders<DevicePropertyState>.Update
+            Builders<StorableDeviceProperty>.Update
              .Set((fun s -> s.PropertyName), propertyName)
     
         async {
             do! devicePropertySemaphore.WaitAsync() |> Async.AwaitTask
 
             try            
-                do! DevicePropertiesCollection.UpdateOneAsync<DevicePropertyState>(filter, update, BsonStorage.Upsert)
+                do! DevicePropertiesCollection.UpdateOneAsync<StorableDeviceProperty>(filter, update, BsonStorage.Upsert)
                     :> Tasks.Task
                     |> Async.AwaitTask
 
@@ -85,25 +163,13 @@ module DevicePropertyStorage =
     let StoreDeviceProperty (deviceProperty : DevicePropertyState) =        
             async {
             
-            let filter = GetDevicePropertyExpression deviceProperty.DeviceGroupId deviceProperty.GatewayId deviceProperty.DeviceId deviceProperty.PropertyId       
-    
-            let update =
-                Builders<DevicePropertyState>.Update
-                 .Set((fun s -> s.DeviceGroupId), deviceProperty.DeviceGroupId)
-                 .Set((fun s -> s.GatewayId), deviceProperty.GatewayId)
-                 .Set((fun s -> s.DeviceId), deviceProperty.DeviceId)
-                 .Set((fun s -> s.PropertyId), deviceProperty.PropertyId)
-                 .Set((fun s -> s.PropertyName), deviceProperty.PropertyName)
-                 .Set((fun s -> s.PropertyDescription), deviceProperty.PropertyDescription)
-                 .Set((fun s -> s.PropertyValue), deviceProperty.PropertyValue)
-                 .Set((fun s -> s.Protocol), deviceProperty.Protocol)
-                 .Set((fun s -> s.LastUpdated), deviceProperty.LastUpdated)
-                 .Set((fun s -> s.LastActive), deviceProperty.LastActive)
+            let filter = GetDevicePropertyExpression deviceProperty.DeviceGroupId deviceProperty.GatewayId deviceProperty.DeviceId deviceProperty.PropertyId           
+            let storable = deviceProperty |> StorableDeviceProperty
 
             do! devicePropertySemaphore.WaitAsync() |> Async.AwaitTask
 
             try            
-                do! DevicePropertiesCollection.UpdateOneAsync<DevicePropertyState>(filter, update, BsonStorage.Upsert)
+                do! DevicePropertiesCollection.ReplaceOneAsync<StorableDeviceProperty>(filter, storable, BsonStorage.Replace)
                     :> Tasks.Task
                     |> Async.AwaitTask
 
@@ -116,10 +182,10 @@ module DevicePropertyStorage =
             let filter = GetDevicePropertiesExpression deviceGroupId
 
             let! deviceProperties =
-                DevicePropertiesCollection.FindSync<DevicePropertyState>(filter).ToListAsync()
+                DevicePropertiesCollection.FindSync<StorableDeviceProperty>(filter).ToListAsync()
                 |> Async.AwaitTask
 
-            return deviceProperties |> List.ofSeq
+            return deviceProperties |> Seq.map DevicePropertyState |> List.ofSeq
         }
         
     let Drop() =

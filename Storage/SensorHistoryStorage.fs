@@ -1,8 +1,30 @@
 namespace Jottai
 
 module SensorHistoryStorage =
+    open System
+    open MongoDB.Bson
+    open MongoDB.Bson.Serialization.Attributes
     open MongoDB.Driver
     open Jottai.Expressions
+
+    [<CLIMutable>]
+    [<BsonIgnoreExtraElements>]
+    type StorableSensorHistoryEntry = 
+        { [<BsonIgnoreIfDefault>]
+          Id : ObjectId
+          MeasuredValue : obj
+          Timestamp : DateTimeOffset }
+
+    [<CLIMutable>]
+    [<BsonIgnoreExtraElements>]
+    type StorableSensorHistory = 
+        { 
+          [<BsonIgnoreIfDefault>]
+          Id : ObjectId
+          DeviceGroupId : string
+          PropertyId : string
+          MeasuredProperty : string
+          Entries : Collections.Generic.List<StorableSensorHistoryEntry> }
 
     let private SensorHistoryCollectionName = "SensorHistory"
     

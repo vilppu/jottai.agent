@@ -16,7 +16,12 @@ module TestHelpers =
             )
     
         asyncOperation |> Async.RunSynchronously |> ignore
-        waiter.Wait(waitTimeout) |> ignore
+        let receivedSensorStateStored = waiter.Wait(waitTimeout)
+        subscription.Dispose()
+        
+        if not receivedSensorStateStored
+            then failwith "Did not receive SensorStateStored event"
+            else ()
     
     let WaitUntilPushNotificationsAreSent asyncOperation =
         use waiter = new SemaphoreSlim(0)
@@ -28,7 +33,12 @@ module TestHelpers =
             )
     
         asyncOperation |> Async.RunSynchronously |> ignore
-        waiter.Wait(waitTimeout) |> ignore
+        let receivedPushNotificationsSent = waiter.Wait(waitTimeout)
+        subscription.Dispose()
+        
+        if not receivedPushNotificationsSent
+            then failwith "Did not receive PushNotificationsSent event"
+            else ()
     
     let WaitUntilPushNotificationSubscriptionStored asyncOperation =
         use waiter = new SemaphoreSlim(0)
@@ -39,7 +49,12 @@ module TestHelpers =
             )
     
         asyncOperation |> Async.RunSynchronously |> ignore
-        waiter.Wait(waitTimeout) |> ignore 
+        let receivedPushNotificationSubscriptionStored = waiter.Wait(waitTimeout)
+        subscription.Dispose()
+        
+        if not receivedPushNotificationSubscriptionStored
+            then failwith "Did not receive PushNotificationSubscriptionStored event"
+            else ()
         
     let WaitUntilPollingDevicePropertyChangeRequests asyncOperation =
         async {
@@ -51,8 +66,12 @@ module TestHelpers =
                 )
         
             let! result = asyncOperation |> Async.StartChild
-            waiter.Wait(waitTimeout) |> ignore
-            return result
+            let receivedPollingDevicePropertyChangeRequests = waiter.Wait(waitTimeout)
+            subscription.Dispose()
+            
+            if not receivedPollingDevicePropertyChangeRequests
+                then return failwith "Did not receive PollingDevicePropertyChangeRequests event"
+                else return result
         }
     
     let WaitUntilDevicePropertyIsUpdated action =
@@ -64,7 +83,12 @@ module TestHelpers =
             )
     
         action |> Async.RunSynchronously |> ignore
-        waiter.Wait(waitTimeout) |> ignore
+        let receivedDevicePropertyStored = waiter.Wait(waitTimeout)
+        subscription.Dispose()
+        
+        if not receivedDevicePropertyStored
+            then failwith "Did not receive DevicePropertyStored event"
+            else ()
     
     let WaitUntilDevicePropertyNameIsChanged action =
         use waiter = new SemaphoreSlim(0)
@@ -75,7 +99,12 @@ module TestHelpers =
             )
     
         action |> Async.RunSynchronously |> ignore
-        waiter.Wait(waitTimeout) |> ignore
+        let receivedDevicePropertyNameStored = waiter.Wait(waitTimeout)
+        subscription.Dispose()
+        
+        if not receivedDevicePropertyNameStored
+            then failwith "Did not receive receivedDevicePropertyNameStored event"
+            else ()
 
     let SetupToReceivePushNotifications(context : Context) = 
         let result =

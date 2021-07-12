@@ -10,7 +10,7 @@ module internal Action =
 
     let GetSensorHistory (update : SensorStateUpdate) : Async<SensorHistory> =
         async {
-            let! sensorHistory = SensorHistoryStorage.GetSensorHistory  update.DeviceGroupId update.PropertyId
+            let! sensorHistory = SensorHistoryStorage.GetSensorHistory update.DeviceGroupId update.PropertyId
             return sensorHistory
         }    
 
