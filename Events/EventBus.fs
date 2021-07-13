@@ -3,16 +3,23 @@
 module EventBus =
 
     open System
-    open FSharp.Control.Reactive
 
-    let private EventsSubject =
-        Subject<Event.Event>.broadcast
+    let mutable private subscriptions : Map<Guid, Event.Event -> Async<unit>> = Map.empty
 
-    let Events : IObservable<Event.Event> =
-        EventsSubject :> IObservable<Event.Event>
+    type private DisposableSubscription(onEvent) =
 
-    let Publish (event : Event.Event) : unit =
-        EventsSubject.OnNext event
-        
-    let Disposable =
-        EventsSubject :> IDisposable
+        let subscriptionId = Guid.NewGuid()
+        do subscriptions <- subscriptions |> Map.add subscriptionId onEvent
+
+        interface IDisposable with
+            member __.Dispose() =
+                subscriptions <- subscriptions |> Map.remove subscriptionId
+
+    let Publish (event: Event.Event) : Async<unit> =
+        async {
+            for KeyValue(_, onEvent) in subscriptions do
+                do! (onEvent event)            
+        }
+
+    let Subscribe (onEvent: Event.Event -> Async<unit>) : IDisposable =
+        new DisposableSubscription(onEvent) :> IDisposable

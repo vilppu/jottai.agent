@@ -30,12 +30,9 @@ module SensorStateTests =
         use context = SetupContext()
         let previous = Measurement.RelativeHumidity 80.0
         let newest = Measurement.RelativeHumidity 78.0
-        context |> WriteMeasurementSynchronously(Fake.Measurement previous)
-        Threading.Thread.Sleep 1000 |> ignore
-        context |> WriteMeasurementSynchronously(Fake.Measurement previous)
-        Threading.Thread.Sleep 1000 |> ignore
-        context |> WriteMeasurementSynchronously(Fake.Measurement newest)
-        Threading.Thread.Sleep 1000 |> ignore
+        context |> WriteMeasurementSynchronously(Fake.Measurement previous)        
+        //context |> WriteMeasurementSynchronously(Fake.Measurement previous)        
+        context |> WriteMeasurementSynchronously(Fake.Measurement newest)        
 
         let result = context |> SensorState
 

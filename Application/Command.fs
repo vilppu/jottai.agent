@@ -155,5 +155,5 @@ module internal Command =
         async {
             let event = CreateEventFromCommand command
             do! Persistence.Store event
-            do EventBus.Publish event
+            do! EventBus.Publish event
         }

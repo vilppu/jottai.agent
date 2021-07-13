@@ -14,11 +14,12 @@ module DeviceSettingsClient =
     let PostSensorNameSynchronously token propertyId name : Async<System.Net.Http.HttpResponseMessage>= 
         async {
             use waiter = new System.Threading.SemaphoreSlim(0)
-            use subscription = Application.Events.Subscribe(fun event ->
-                match event with
-                | Event.Event.SensorNameStored _ -> waiter.Release() |> ignore
-                | _ -> ()
-                )
+            use _ = EventBus.Subscribe(fun event ->
+                async {
+                    match event with
+                    | Event.Event.SensorNameStored _ -> waiter.Release() |> ignore
+                    | _ -> ()                
+                })
             
             let! response = PostSensorName token propertyId name
 
